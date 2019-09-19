@@ -9,4 +9,4 @@ void LoadAISnowBoard_R(); //Load Snowboard for Tails AI
 
 void LoadTails_AI_R(); //Load Tails AI when not Sonic or Tails
 
-void IsTailsUnlocked();
+DataPointer(char, IceCapFlag, 0x3B188B4);

@@ -7,7 +7,6 @@ bool IsChaoGardenBanned = false;
 bool IsHubBanned = false;
 bool IsBossBanned = false;
 
-bool TailsUnlocked = false;
 
 extern "C" {
 
@@ -24,7 +23,7 @@ extern "C" {
 
 
 		//Allow Tails AI to spawn in acton stages, hub world and chao garden.
-		WriteCall((void*)0x47ed8e, CheckTailsAI_R); //make the game crash
+		WriteCall((void*)0x47ed8e, CheckTailsAI_R); 
 		WriteCall((void*)0x47e943, CheckTailsAI_R);
 		WriteCall((void*)0x47ea46, CheckTailsAI_R);
 		WriteCall((void*)0x47ec62, CheckTailsAI_R);
@@ -38,7 +37,7 @@ extern "C" {
 		WriteCall((void*)0x4e9664, LoadAISnowBoard_R);
 
 
-		
+	
 		//Prevent Character Select Mod 
 		HMODULE CharSel = GetModuleHandle(L"SADXCharSel");
 		if (CharSel)
