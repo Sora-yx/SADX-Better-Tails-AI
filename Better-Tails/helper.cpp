@@ -74,6 +74,12 @@ int CheckTailsAI_R(void) {
 						return CheckTailsAI(); //fix funny ending crash
 					}
 					break;
+				case LevelIDs_Casinopolis:
+					if (CurrentAct > 1)
+					{
+					return CheckTailsAI();
+					}
+					break;
 				case LevelIDs_EggCarrierOutside:
 					if (EventFlagArray[EventFlags_Sonic_Chaos6Clear] == false && CurrentAct < 3)
 					{
@@ -95,6 +101,14 @@ int CheckTailsAI_R(void) {
 				if (EventFlagArray[EventFlags_Knuckles_Chaos4Clear] == false && CurrentLevel == LevelIDs_MysticRuins)
 				{
 					return CheckTailsAI(); //fix Sonic AI fight
+				}
+			}
+
+			if (SelectedCharacter == 6) //if Super Sonic Story
+			{
+				if (CurrentLevel == 33)
+				{
+					return CheckTailsAI(); //fix Super Sonic cutscene crash.
 				}
 			}
 
