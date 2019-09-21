@@ -36,6 +36,9 @@ extern "C" {
 		WriteCall((void*)0x4ea091, LoadAISnowBoard_R);  //Load AI Snowboard when playing Ice Cap.
 		WriteCall((void*)0x4e9664, LoadAISnowBoard_R);
 
+		//Tails AI Fixes and small optimization/improvement.
+		WriteCall((void*)0x4151ba, FixAIHubStartPosition); //Fix AI start position in hub world
+		
 
 	
 		//Prevent Character Select Mod 
@@ -46,6 +49,7 @@ extern "C" {
 		}
 
 	}
+
 
 
 

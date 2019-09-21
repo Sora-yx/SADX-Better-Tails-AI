@@ -19,7 +19,7 @@ int CheckTailsAI_R(void) {
 	{
 		if (CurrentLevel == LevelIDs_SkyChase1 || CurrentLevel == LevelIDs_SkyChase2 || CurrentLevel == LevelIDs_ChaoRace)
 		{
-			return 0; //don't load Tails AI 
+			return CheckTailsAI(); //don't load Tails AI 
 		}
 		else
 		{
@@ -30,7 +30,7 @@ int CheckTailsAI_R(void) {
 				return 0; //don't load Tails AI if the player banned Chao Garden.
 			}
 
-			if (IsHubBanned && CurrentLevel > 25 && CurrentLevel < 35)
+			if (IsHubBanned && CurrentLevel > LevelIDs_E101R && CurrentLevel < LevelIDs_TwinkleCircuit)
 			{
 				return 0;  //don't load Tails AI if the player banned Hub World.
 			}
@@ -42,12 +42,6 @@ int CheckTailsAI_R(void) {
 
 			//Bug fixes
 
-			if (CurrentLevel == LevelIDs_EggCarrierInside && CurrentAct == 5)
-			{
-				return 0; //avoid loading Tails in the Egg Carrier Chao Garden entrance room to avoid crazy shit.
-			}
-
-			
 
 			if (CurrentCharacter == Characters_Sonic)
 			{
@@ -77,13 +71,13 @@ int CheckTailsAI_R(void) {
 				case LevelIDs_Casinopolis:
 					if (CurrentAct > 1)
 					{
-					return CheckTailsAI();
+						return CheckTailsAI(); //don't load tails if we are in the casino pinball.
 					}
 					break;
 				case LevelIDs_EggCarrierOutside:
 					if (EventFlagArray[EventFlags_Sonic_Chaos6Clear] == false && CurrentAct < 3)
 					{
-						return CheckTailsAI(); //pre Gamma & post gamma cutscene fix
+						return CheckTailsAI(); //pre Gamma & post Gamma cutscene fix
 					}
 					break;
 				case LevelIDs_EggCarrierInside:
@@ -106,16 +100,36 @@ int CheckTailsAI_R(void) {
 
 			if (SelectedCharacter == 6) //if Super Sonic Story
 			{
-				if (CurrentLevel == 33)
+				if (CurrentLevel == LevelIDs_MysticRuins)
 				{
 					return CheckTailsAI(); //fix Super Sonic cutscene crash.
 				}
 			}
 
 				return 1; //Load Tails AI
+		
+
 		}
 
 	}
+}
+
+//teleport AI to Player 
+
+void moveAItoPlayer() {
+
+	if (IsInCutscene == 0)
+	
+	{
+		ObjectMaster* play1 = GetCharacterObject(0);
+		ObjectMaster* play2 = GetCharacterObject(1);
+
+		play2->Data1->Position.x = play1->Data1->Position.x - 7;
+		play2->Data1->Position.y = play1->Data1->Position.y;
+		play2->Data1->Position.z = play1->Data1->Position.z + 5;
+		play2->Data1->Rotation.y = play1->Data1->Rotation.y;
+	}
+
 }
 
 
@@ -130,6 +144,7 @@ void LoadAISnowBoard_R() {
 	{
 			ForcePlayerAction(1, 44); //Force AI to use Snowboard
 			ObjectMaster* v1 = LoadObject((LoadObj)(LoadObj_Data1 | LoadObj_Data2), 2, Snowboard_Tails_Load);
+			return;
 			if (v1)
 			{
 				v1->Data1->CharID = 1;
@@ -140,7 +155,8 @@ void LoadAISnowBoard_R() {
 }
 
 
-//While load result: Force Tails AI to Victory Pose.
+//While load result: Teleport AI close to the player and Force Victory Pose.
+DataPointer(int, dword_3B2A304, 0x3B2A304);
 
 void DisableTime_R() {
 
@@ -148,9 +164,22 @@ void DisableTime_R() {
 
 	if (CurrentCharacter != Characters_Tails) 
 	{
-		SetTailsRaceVictory(); //Fix Tails AI victory animation
-		ForcePlayerAction(1, 19); //Force AI to Victory pose
-		
+		ObjectMaster* play1 = GetCharacterObject(0);
+		ObjectMaster* play2 = GetCharacterObject(1);
+
+		play2->Data1->Position.x = play1->Data1->Position.x - 7;
+		play2->Data1->Position.y = play1->Data1->Position.y;
+		play2->Data1->Position.z = play1->Data1->Position.z + 5;
+
+		play2->Data1->Rotation.y = play1->Data1->Rotation.y;
+
+		if (play2->Data1->Position.z = play1->Data1->Position.z + 5)
+		{
+			SetTailsRaceVictory(); //Fix Tails AI victory animation
+			ForcePlayerAction(1, 19); //Force AI to Victory pose
+			dword_3B2A304 = 0;
+		}
+
 	}
 }
 
@@ -160,6 +189,11 @@ void DisableTime_R() {
 void LoadTails_AI_R() {
 
 	SetFrameRateMode(1, 1);
+
+	if (IsInCutscene != 0)
+	{
+		return;
+	}
 
 	if (CurrentCharacter == Characters_Sonic || CurrentCharacter == Characters_Tails)
 	{
@@ -178,12 +212,26 @@ void LoadTails_AI_R() {
 				}
 			}
 
-			LoadObject(LoadObj_Data1, 0, Load2PTails);
-			return;
+				LoadObject(LoadObj_Data1, 0, Load2PTails);
+				return;
 		}
 
 	}
 
 }
 
+//Fix AI Start Position in hub world
+
+void FixAIHubStartPosition() {
+
+	ForcePlayerAction(0, 0x18);
+	
+	if (!IsHubBanned && IsInCutscene == 0)
+	{
+		if (CurrentLevel > 25 && CurrentLevel < 35)
+		{
+				moveAItoPlayer();
+		}
+	}
+}
 
