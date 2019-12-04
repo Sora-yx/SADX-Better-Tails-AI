@@ -17,7 +17,7 @@ Installation
 
 1) If you are using the PC Disc version: Make sure you have the latest version of SADX Mod Manager downloaded and installed from [this link](http://mm.reimuhakurei.net/sadxmods/SADXModLoader.7z).
 
-- If you are using the Steam version: You must install better PKR's SADX Mod Installer from [this link](https://www.moddb.com/mods/sadx-dreamcast-conversion/news/new-mod-installer-now-available1).
+- If you are using the Steam version: You must install PKR's SADX Mod Installer from [this link](https://www.moddb.com/mods/sadx-dreamcast-conversion/news/new-mod-installer-now-available1).
 
 2) Make sure to extract the Mod Loader's contents into your main SADX folder.
  - Once all Mod Loader's files and folders are there, run ModManager and click on 'Install Loader'
