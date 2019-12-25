@@ -16,6 +16,7 @@ void AI_Init();
 
 void moveAItoPlayer();
 DataPointer(int, dword_3B2A304, 0x3B2A304);
+FunctionPointer(int, GetCutsceneFlagArray, (int cutscene), 0x42fb10);
 
 DataPointer(char, IceCapFlag, 0x3B188B4);
 DataPointer(char, AmyTPFieldOpen, 0x3B1894C);
@@ -34,6 +35,7 @@ DataPointer(char, Init_Cutscene, 0x3b2c4e4);
 DataPointer(char, TailsHotelOpen, 0x3B188C9);
 
 VoidFunc(FunnyCutsceneThing, 0x4303e0);
+VoidFunc(LoadChaoStage, 0x715350);
 void FixAIPosition();
 
-void DeleteAI();
+void DeleteAI(int cutscene);

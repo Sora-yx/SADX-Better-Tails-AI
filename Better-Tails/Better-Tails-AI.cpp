@@ -42,10 +42,9 @@ extern "C" {
 
 		HMODULE Rando = GetModuleHandle(L"SADX-Randomizer");
 
-		if (!Rando) //do not call better tails AI if rando is activated
+		if (!Rando) //do not call better tails AI if rando mod is activated
 		{
 			WriteCall((void*)0x415a25, LoadCharacter_r); //Hook Load Character
-
 			//Allow Tails AI to spawn in acton stages, hub world, bosses and chao garden + fixes
 			AI_Init();
 

@@ -43,30 +43,25 @@ int CheckTailsAI_R(void) {
 			//Player Settings
 
 			if (IsChaoGardenBanned && CurrentLevel > LevelIDs_SandHill && CurrentLevel < LevelIDs_ChaoRace)
-			{
 				return 0; //don't load AI if the player banned Chao Garden.
-			}
-
+			
 			if (IsHubBanned && CurrentLevel > LevelIDs_E101R && CurrentLevel < LevelIDs_TwinkleCircuit)
-			{
 				return 0;  //don't load AI if the player banned Hub World.
-			}
 
 			if (IsBossBanned && CurrentLevel > 14 && CurrentLevel < 26)
-			{
 				return 0;  //don't load AI if the player banned boss fight.
-			}
 
 			if (IsTCBanned && CurrentLevel == LevelIDs_TwinkleCircuit)
-			{
 				return 0;  //don't load AI if the player banned TC.
-			}
 
 			if (CurrentCharacter == Characters_Tails)
-			{
 				return CheckTailsAI(); //Restore original function, don't load Tails AI 
-			}
 
+			if (CurrentChaoStage == 1) 
+				return 0; //don't load AI during Chao Race
+
+			if (CurrentLevel == LevelIDs_EggCarrierInside && CurrentAct == 5)
+				return 0;
 
 			//Story plot check for coherent AI character spawn (if setting enabled)
 
@@ -76,23 +71,19 @@ int CheckTailsAI_R(void) {
 				{
 				case Characters_Sonic:
 					if (EventFlagArray[EventFlags_Sonic_EmeraldCoastClear] == false)
-					{
 						return CheckTailsAI(); //don't load Tails until we rescue him.
-					}
+
 					if (SonicSkyChaseAct1Clear == 1 && CurrentLevel != LevelIDs_TwinklePark && SonicTPClear == 0)
-					{
 						return CheckTailsAI(); //don't load Tails after SKy Chase Crash
-					}
 
 					if (SonicTPClear == 1 && EventFlagArray[EventFlags_Sonic_Chaos6Clear] == false)
-					{
 						return CheckTailsAI(); //Don't load any AI after Sonic lost Amy until Post SC2.
-					}
+
 					if (EventFlagArray[EventFlags_Sonic_Chaos6Clear] == true && EventFlagArray[EventFlags_SonicAdventureComplete] == false)
-					{
 						return CheckTailsAI();
-					}
 					break;
+				Default:
+					return CheckTailsAI();
 				}
 			}
 
@@ -105,42 +96,37 @@ int CheckTailsAI_R(void) {
 				{
 				case LevelIDs_StationSquare:
 					if (EventFlagArray[EventFlags_TailsUnlockedAdventure] == false && CurrentSong != 76)
-					{
 						return CheckTailsAI(); //Avoid loading AI during Sonic emerald coast post cutscene. (crash) There is 100% a better way to do this, but I don't have any better flag after tails cutscene for now. :(
 
-					}
 					if (EventFlagArray[EventFlags_Sonic_IceCapOpen] == false && EventFlagArray[EventFlags_Sonic_CasinopolisClear] == true)
-					{
 						return CheckTailsAI(); //Avoid loading AI during Sonic Casino post cutscene. (funny crash)
-					}
+
 					break;
 				case LevelIDs_MysticRuins:
 					if (IceCapFlag == 1 && EventFlagArray[EventFlags_Sonic_Chaos4Clear] == false)
-					{
 						return CheckTailsAI(); //Fix Knuckles AI behavior.
-					}
+
 					if (EventFlagArray[EventFlags_Sonic_EggViperClear] == true && EventFlagArray[EventFlags_SonicAdventureComplete] == false)
-					{
 						return CheckTailsAI(); //fix funny ending crash
-					}
+					
 					break;
 				case LevelIDs_Casinopolis:
 					if (CurrentAct > 1)
-					{
 						return CheckTailsAI(); //don't load AI if we are in the casino pinball.
-					}
+
+					break;
+				case LevelIDs_RedMountain:
+					if (EventFlagArray[EventFlags_Sonic_RedMountainClear] == false && CurrentAct >= 1)
+						return CheckTailsAI(); //Tornado cutscene
+		
 					break;
 				case LevelIDs_EggCarrierOutside:
 					if (EventFlagArray[EventFlags_Sonic_Chaos6Clear] == false && CurrentAct < 3)
-					{
 						return CheckTailsAI(); //pre Gamma & post Gamma cutscene fix
-					}
 					break;
 				case LevelIDs_EggCarrierInside:
 					if (EventFlagArray[EventFlags_Sonic_GammaDefeated] == false)
-					{
 						return CheckTailsAI(); //Post Sky Deck cutscene crash fix
-					}
 					break;
 				}
 			}
@@ -149,9 +135,46 @@ int CheckTailsAI_R(void) {
 			{
 				if (EventFlagArray[EventFlags_Knuckles_Chaos4Clear] == false && CurrentLevel == LevelIDs_MysticRuins)
 					return CheckTailsAI(); //fix Sonic AI fight
-
 			}
 
+			if (CurrentCharacter == Characters_Amy)
+			{
+				if (CurrentLevel == LevelIDs_StationSquare || CurrentLevel == LevelIDs_EggCarrierOutside)
+					if (EventFlagArray[EventFlags_Amy_FinalEggClear] == false && EventFlagArray[EventFlags_Amy_HotShelterClear] == true)
+						return CheckTailsAI(); //fix Sonic AI fight
+			}
+
+			if (CurrentCharacter == Characters_Big)
+			{
+				switch (CurrentLevel)
+				{
+				case LevelIDs_MysticRuins:
+					if (CurrentAct == 0)
+						if (EventFlagArray[EventFlags_Big_EmeraldCoastClear] == false)
+							return CheckTailsAI(); //fix Sonic AI fight
+					break;
+				case LevelIDs_StationSquare:
+					if (CurrentAct == 2)
+						if (EventFlagArray[EventFlags_Big_TwinkleParkClear] == false)
+							return CheckTailsAI(); //fix Sonic AI fight
+					break;
+				case LevelIDs_EmeraldCoast:
+						if (EventFlagArray[EventFlags_Big_HotShelterClear] == false)
+							return CheckTailsAI(); //fix Sonic AI fight
+					break;
+				}
+			}
+
+			if (CurrentCharacter == Characters_Gamma)
+			{
+				switch (CurrentLevel)
+				{
+				case LevelIDs_EggCarrierOutside:
+						if (EventFlagArray[EventFlags_Gamma_E101mkIIClear] == false)
+							return CheckTailsAI(); //fix Sonic AI fight
+					break;
+				}
+			}
 
 			if (SelectedCharacter == 6) //if Super Sonic Story
 			{
@@ -212,7 +235,7 @@ ObjectMaster* Load2PTails_r(ObjectMaster* player1) //Custom AI
 	}
 
 	isAIActive = false;
-	return (ObjectMaster*)0x0;
+	return nullptr;
 }
 
 void LoadTails_AI_R() {
@@ -227,20 +250,19 @@ void LoadTails_AI_R() {
 }
 
 
-void DeleteAI() {
+void DeleteAI(int cutscene) {
 
-	ControlEnabled = 0;
-
-	if (!isIADeleted)
+	if (isAIActive)
 	{
 		ObjectMaster* obj = GetCharacterObject(1);
-
-		if (obj)
-			DeleteObject_(obj);
-		isIADeleted = true;
-		return;
+		if (obj != nullptr)
+		{
+			DeleteObject(obj);
+			TailsAI_ptr = 0;
+		}
 	}
 
+	GetCutsceneFlagArray(cutscene);
 }
 
 //teleport AI to Player 
@@ -254,10 +276,21 @@ void moveAItoPlayer() {
 
 		if (play2 != nullptr && play1 != nullptr)
 		{
-			play2->Data1->Position.x = play1->Data1->Position.x - 7;
-			play2->Data1->Position.y = play1->Data1->Position.y;
-			play2->Data1->Position.z = play1->Data1->Position.z + 5;
-			play2->Data1->Rotation.y = play1->Data1->Rotation.y;
+			if (CurrentCharacter != Characters_Big && CurrentCharacter != Characters_Gamma)
+			{
+				play2->Data1->Position.x = play1->Data1->Position.x - 7;
+				play2->Data1->Position.y = play1->Data1->Position.y;
+				play2->Data1->Position.z = play1->Data1->Position.z + 5;
+				play2->Data1->Rotation.y = play1->Data1->Rotation.y;
+			}
+			else
+			{
+				play2->Data1->Position.x = play1->Data1->Position.x - 10;
+				play2->Data1->Position.y = play1->Data1->Position.y;
+				play2->Data1->Position.z = play1->Data1->Position.z + 8;
+				play2->Data1->Rotation.y = play1->Data1->Rotation.y;
+
+			}
 		}
 	
 	}
@@ -325,7 +358,7 @@ void FixAIHubTransition() {
 
 	if (!IsHubBanned && isAIActive)
 	{
-		if (CurrentLevel == LevelIDs_StationSquare && CurrentAct == 3)
+		if (CurrentLevel == LevelIDs_StationSquare && (CurrentAct == 3 || CurrentAct == 1))
 			return;
 
 	//Check if AI is not deleted or banned.
@@ -344,13 +377,20 @@ void FixAIHubTransition2() {
 
 	if (!IsHubBanned && isAIActive)
 	{
-		
-		if (CurrentLevel == LevelIDs_StationSquare && (CurrentAct == 3 || CurrentAct == 1))
+		if (CurrentCharacter != Characters_Big)
 		{
-			moveAItoPlayer(); //teleport AI
+			if (CurrentLevel == LevelIDs_StationSquare && (CurrentAct == 3 || CurrentAct == 1) || CurrentLevel >= LevelIDs_ECGarden && CurrentLevel < LevelIDs_ChaoRace)
+				moveAItoPlayer(); //teleport AI
 		}
+		else
+		{
+			if (CurrentLevel == LevelIDs_StationSquare && CurrentAct == 1 || CurrentLevel >= LevelIDs_ECGarden && CurrentLevel < LevelIDs_ChaoRace)
+				moveAItoPlayer(); //teleport AI
+		}
+
 	}
 
+	return;
 }
 
 void LoadCharacter_r()
