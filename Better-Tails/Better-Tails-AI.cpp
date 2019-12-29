@@ -16,6 +16,8 @@ bool Gamma = false;
 bool banCharacter[8] = { -1 };
 
 extern bool isAIActive;
+extern bool ForceAI;
+extern int AICutsceneOk;
 
 
 extern "C" {
@@ -40,30 +42,33 @@ extern "C" {
 
 		delete config;
 
+		//Prevent Character Select Mod 
+		HMODULE CharSel = GetModuleHandle(L"SADXCharSel");
+
+		if (CharSel)
+			MessageBoxA(WindowHandle, "Warning, you are using the Character Select Mod, this mod is not compatible with Better Tails AI.", "Better Tails AI Mod", MB_ICONWARNING);
+
 		HMODULE Rando = GetModuleHandle(L"SADX-Randomizer");
 
 		if (!Rando) //do not call better tails AI if rando mod is activated
 		{
-			WriteCall((void*)0x415a25, LoadCharacter_r); //Hook Load Character
-			//Allow Tails AI to spawn in acton stages, hub world, bosses and chao garden + fixes
+			WriteCall((void*)0x415a25, LoadCharacter_r); //Call Tails AI when Load Character.
+
+			// Tails AI Reset Values 
+			WriteCall((void*)0x42ca4f, SoftReset_R); //Reset value and stuff properly when you Soft Reset and quit.
+			WriteJump((void*)0x47db1a, TailsAI_ResetValue); //Reset value and stuff properly when Tails AI is deleted by the game.
+
+			//Tails AI Stuff (Load, Fixes...)
 			AI_Init();
 
 			WriteCall((void*)0x415556, DisableTime_R); //While result screen, force Tails AI to victory pose.
 		}
-
-		//Prevent Character Select Mod 
-		HMODULE CharSel = GetModuleHandle(L"SADXCharSel");
-		
-		if (CharSel)
-			MessageBoxA(WindowHandle, "Warning, you are using the Character Select Mod, this mod is not compatible with Better Tails AI.", "Better Tails AI Mod", MB_ICONWARNING);
-
 	}
 
 	__declspec(dllexport) void __cdecl OnFrame()
 	{
 
 		//DisplayDebugStringFormatted(NJM_LOCATION(2, 1), "Is AI Active: %d", isAIActive);
-
 	}
 
 	__declspec(dllexport) ModInfo SADXModInfo = { ModLoaderVer };
