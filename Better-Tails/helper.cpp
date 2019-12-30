@@ -560,28 +560,21 @@ void AI_Init() {
 
 	WriteData<5>((void*)0x415948, 0x90); //remove the original load2PTails in LoadCharacter as we use a custom one.
 
-
 	//Tails AI Fixes and small optimization/improvement.
 	WriteCall((void*)0x4151ba, FixAIHubTransition); //Fix AI position when you change act in hub world.
 	WriteCall((void*)0x417588, FixAIHubTransition2);
 
 	WriteCall((void*)0x42f72d, CallTailsAI_R); //Manually Call Tails AI After few early Cutscene to avoid crash.
-
 	WriteCall((void*)0x6cd3de, AllowTailsAI_R); //Allow Tails AI to spawn after the cutscene SonicAndTails_WakeUP
-	
 	WriteCall((void*)0x42f78c, CallTailsAI_R2);  //Move Tails to Sonic Position after Chaos 4 fight. Also call Tails AI in Super Sonic Story
-
-
 	WriteJump((void*)0x657c4a, AllowTailsAI_R); //Allow Tails AI to spawn after the cutscene SonicAndTails_LandEggCarrier
 	WriteCall((void*)0x42f747, CallTailsAI_R3); //Manually Call Tails AI After the cutscene SonicAndTails_LandEggCarrier
-
 	WriteCall((void*)0x664f68, AllowTailsAI_R); //Allow Tails AI to spawn after the cutscene Tails Find Sonic (Super Sonic cutscene)
 	
 	WriteCall((void*)0x65f82f, DeleteAI); //Remove Tails before "Sonic finds Knuckles cutscene" (super sonic)
 	WriteCall((void*)0x663d4a, DeleteAI); //Remove Tails before "Sonic and Tails find tornado 2 cutscene" (super sonic)
 	WriteCall((void*)0x6601ab, AllowTailsAI_R); //Allow Tails AI to spawn after the cutscene Sonic_WakeUP (super sonic cutscene)
 	
-
 	WriteCall((void*)0x597b14, LoadAISnowBoard_R);  //Load AI Snowboard when playing Sand Hill 
 	WriteCall((void*)0x4ea091, LoadAISnowBoard_R);  //Load AI Snowboard when playing Ice Cap.
 	WriteCall((void*)0x4e9664, LoadAISnowBoard_R);
