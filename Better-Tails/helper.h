@@ -1,5 +1,6 @@
 #pragma once
-#include <SADXModLoader.h>
+
+#define MaxPlayers 8
 
 int CheckTailsAI_R(void); //Tails flag spawn allowed
 
@@ -8,7 +9,7 @@ void DisableTime_R(); //result screen Stuff
 void LoadAISnowBoard_R(); //Load Snowboard for Tails AI
 
 void LoadTails_AI_R(); //Load Tails AI 
-
+float GetDistance(NJS_VECTOR* orig, NJS_VECTOR* dest);
 void FixAIHubTransition();
 void FixAIHubTransition2();
 void LoadCharacter_r();
@@ -18,6 +19,12 @@ void moveAItoPlayer();
 void TailsAI_ResetValue();
 void AllowTailsAI_R();
 void DeleteAI();
+void AI_Fixes();
+
+void OTaraiChild_Main_r(ObjectMaster* obj);
+VoidFunc(OTaraiChild_Main, 0x52c8f0);
+
+
 
 VoidFunc(FUN_0042ce20, 0x42ce20); //Called with Delete Tails AI
 DataPointer(int, dword_3B2A304, 0x3B2A304);
@@ -27,7 +34,6 @@ FunctionPointer(void, Start_Cutscene, (int cutscene), 0x4136e0);
 
 DataPointer(char, IceCapFlag, 0x3B188B4);
 DataPointer(char, AmyTPFieldOpen, 0x3B1894C);
-void MoveTailsAI_Upgrade();
 DataPointer(unsigned char, SelectedCharacter, 0x3B2A2FD);
 DataPointer(char, IsInCutscene, 0x3B2C55C);
 
@@ -48,4 +54,13 @@ void CallTailsAI_R3();
 VoidFunc(FUN_00412ad0, 0x412ad0); //called when you soft reset / quit
 
 void SoftReset_R();
-void FixAIHurt();
+
+
+extern bool IsChaoGardenBanned;
+extern bool IsHubBanned;
+extern bool IsBossBanned;
+extern bool IsTCBanned;
+extern bool isAIActive;
+extern bool ForceAI;
+extern int AICutsceneOk;
+extern bool IsStoryIA;

@@ -1,15 +1,10 @@
 #include "stdafx.h"
 #include <SADXModLoader.h>
-#include "helper.h"
 #include <fstream>
 
-extern bool IsChaoGardenBanned;
-extern bool IsHubBanned;
-extern bool IsBossBanned;
-extern bool IsTCBanned;
+
 bool isAIActive = false;
 int FlagAI = 0;
-extern bool IsStoryIA;
 bool banCharacter[];
 bool ForceAI = false;
 int AICutsceneOk = 0;
@@ -32,8 +27,9 @@ ObjectMaster* LoadCharObj(int i)
 int CheckTailsAI_R(void) {
 
 	isAIActive = false;
+	HMODULE isSA2Mod = GetModuleHandle(L"sadx-sa2-mod");
 
-	if (CurrentLevel == LevelIDs_SkyChase1 || CurrentLevel == LevelIDs_SkyChase2 || CurrentLevel == LevelIDs_ChaoRace)
+	if (CurrentLevel == LevelIDs_SkyChase1 || CurrentLevel == LevelIDs_SkyChase2 || !isSA2Mod && CurrentLevel == LevelIDs_ChaoRace)
 		{
 			return CheckTailsAI(); //don't load AI
 		}
@@ -41,13 +37,13 @@ int CheckTailsAI_R(void) {
 		{
 			//Player Settings
 
-			if (IsChaoGardenBanned && CurrentLevel > LevelIDs_SandHill && CurrentLevel < LevelIDs_ChaoRace)
+			if (IsChaoGardenBanned && CurrentLevel >= LevelIDs_SSGarden && CurrentLevel <= LevelIDs_MRGarden)
 				return 0; //don't load AI if the player banned Chao Garden.
 			
-			if (IsHubBanned && CurrentLevel > LevelIDs_E101R && CurrentLevel < LevelIDs_TwinkleCircuit)
+			if (IsHubBanned && CurrentLevel >= LevelIDs_StationSquare && CurrentLevel <= LevelIDs_Past)
 				return 0;  //don't load AI if the player banned Hub World.
 
-			if (IsBossBanned && CurrentLevel > 14 && CurrentLevel < 26)
+			if (IsBossBanned && CurrentLevel >= LevelIDs_Chaos0 && CurrentLevel <= LevelIDs_E101R)
 				return 0;  //don't load AI if the player banned boss fight.
 
 			if (IsTCBanned && CurrentLevel == LevelIDs_TwinkleCircuit)
@@ -198,7 +194,8 @@ int CheckTailsAI_R(void) {
 }
 
 
-ObjectMaster* Load2PTails_r(ObjectMaster* player1) //Custom AI
+//Load Tails AI
+ObjectMaster* Load2PTails_r(ObjectMaster* player1) 
 {
 	if (!ForceAI)
 		FlagAI = CheckTailsAI_R();
@@ -213,7 +210,7 @@ ObjectMaster* Load2PTails_r(ObjectMaster* player1) //Custom AI
 	}
 	else
 	{
-		ObjectMaster* v1 = LoadObject(LoadObj_Data1, 0, TailsAI_Main); //load AI moveset (basically?) 
+		ObjectMaster* v1 = LoadObject(LoadObj_Data1, 0, TailsAI_Main);
 		TailsAI_ptr = v1;
 
 		if (v1)
@@ -250,151 +247,6 @@ void LoadTails_AI_R() {
 	return;
 }
 
-//Reset value when Tails AI is deleted
-void TailsAI_ResetValue() {
-
-	isAIActive = false;
-	ForceAI = false;
-	return FUN_0042ce20();
-}
-
-//Reset value when the player quit or soft reset
-void SoftReset_R() {
-
-	ForceAI = false;
-	isAIActive = false;
-	AICutsceneOk = 0;
-	FUN_00412ad0();
-}
-
-
-
-//Manually Call Tails Ai when necessary.
-void CallTailsAI_R() {
-
-	//Tails Crash Cutscene
-	if (CurrentCharacter == 0 && EventFlagArray[EventFlags_Sonic_EmeraldCoastClear] == false)
-	{
-		if (!IsStoryIA && !isAIActive)
-		{
-			ForceAI = true;
-			LoadTails_AI_R();
-			return PlayMusic(MusicIDs_s_square);
-		}
-	}
-
-	//Tails Rescued Cutscene
-	if (CurrentCharacter == 0 && EventFlagArray[EventFlags_Sonic_EmeraldCoastClear] == true && EventFlagArray[EventFlags_Sonic_EggHornetClear] == false)
-	{
-		if (!isAIActive)
-		{
-			ForceAI = true;
-			LoadTails_AI_R();
-			return PlayMusic(MusicIDs_s_square);
-		}
-	}
-
-	//Sonic Tails Post Casino Cutscene
-	if (CurrentCharacter == 0 && AICutsceneOk && EventFlagArray[EventFlags_Sonic_CasinopolisClear] == true && EventFlagArray[EventFlags_Sonic_IceCapOpen] == false)
-	{
-		if (!isAIActive)
-		{
-			ForceAI = true;
-			LoadTails_AI_R();
-			return PlayMusic(MusicIDs_s_square);
-		}
-	}
-
-	//Sonic Amy cutscenes 
-	if (CurrentCharacter == 0 && (SonicSkyChaseAct1Clear == 1 && SonicTPClear == 0) || (SonicTPClear == 1 && EventFlagArray[EventFlags_Sonic_RedMountainClear] == false))
-	{
-		if (isAIActive && !IsStoryIA && TailsAI_ptr != 0)
-		{
-			AICutsceneOk = 0;
-			moveAItoPlayer();
-			return PlayMusic(MusicIDs_s_square);
-		}
-	}
-
-	return PlayMusic(MusicIDs_s_square);
-}
-
-void CallTailsAI_R2() {
-
-	//Sonic Tails Post Chaos 4 Cutscene
-	if (CurrentCharacter == 0 && EventFlagArray[EventFlags_Sonic_Chaos4Clear] == true && SonicSkyChaseAct1Clear == 0)
-	{
-		if (isAIActive && TailsAI_ptr != 0)
-		{
-			AICutsceneOk = 0;
-			moveAItoPlayer();
-			return PlayMusic(MusicIDs_mstcln);
-		}
-	}	
-
-	//Sonic loses Amy Cutscene
-	if (CurrentCharacter == 0 && EventFlagArray[EventFlags_Sonic_SpeedHighwayClear] == true && EventFlagArray[EventFlags_Sonic_RedMountainClear] == false)
-	{
-		if (isAIActive && !IsStoryIA && TailsAI_ptr != 0)
-		{
-			AICutsceneOk = 0;
-			moveAItoPlayer();
-			return PlayMusic(MusicIDs_mstcln);
-		}
-	}
-
-	//post Chaos 6 scene && post lw cutscene
-	if (CurrentCharacter == 0 && (EventFlagArray[EventFlags_Sonic_Chaos6Clear] == true && EventFlagArray[EventFlags_Sonic_LostWorldClear] == false) || (EventFlagArray[EventFlags_Sonic_LostWorldClear] == true && EventFlagArray[EventFlags_Sonic_FinalEggClear] == false))
-	{
-		if (isAIActive && !IsStoryIA && TailsAI_ptr != 0)
-		{
-			moveAItoPlayer();
-			return PlayMusic(MusicIDs_mstcln);
-		}
-	}
-
-	//Super Sonic Story Cutscene
-	if (SelectedCharacter == 6 && AICutsceneOk && CurrentLevel == LevelIDs_MysticRuins)
-	{
-		if (!isAIActive)
-		{
-			ForceAI = true;
-			LoadTails_AI_R();
-			return PlayMusic(MusicIDs_mstcln);
-		}
-	}
-
-	return PlayMusic(MusicIDs_mstcln);
-}
-
-void CallTailsAI_R3() {
-
-
-	if (CurrentCharacter == 0 && EventFlagArray[EventFlags_Sonic_SkyDeckClear] == false && SonicSkyChaseAct2Clear == 1)
-	{
-		if (!isAIActive)
-		{
-			ForceAI = true;
-			LoadTails_AI_R();
-			return PlayMusic(MusicIDs_egcarer1);
-		}
-		else
-		{
-			moveAItoPlayer();
-			return PlayMusic(MusicIDs_egcarer1);
-		}
-	}
-
-	return PlayMusic(MusicIDs_egcarer1);
-}
-
-void AllowTailsAI_R()
-{
-	AICutsceneOk = 1;
-	return EnableControl();
-}
-
-
 
 //teleport AI to Player 
 
@@ -421,7 +273,6 @@ void moveAItoPlayer() {
 				play2->Data1->Position.y = play1->Data1->Position.y;
 				play2->Data1->Position.z = play1->Data1->Position.z + 8;
 				play2->Data1->Rotation.y = play1->Data1->Rotation.y;
-
 			}
 		}
 	}
@@ -472,18 +323,19 @@ void DisableTime_R() {
 
 		if (AI != nullptr && play1 != nullptr) //Move AI to player 1 
 		{
+			play1->Data1->Rotation.y = AI->Data1->Rotation.y;
 			AI->Data1->Position.x = play1->Data1->Position.x - 7;
 			AI->Data1->Position.y = play1->Data1->Position.y;
 			AI->Data1->Position.z = play1->Data1->Position.z + 5;
-			AI->Data1->Rotation.y = play1->Data1->Rotation.y;
+			//AI->Data1->Rotation.y = -play1->Data1->Rotation.y + 0x4000;
+			AI->Data1->Status &= ~(Status_Attack | Status_Ball | Status_LightDash | Status_Unknown3);
+			AI->Data1->Action = 1;
+			CharObj2Ptrs[1]->AnimationThing.Index = 1;
+	
+			if (AI->Data1->CharID == Characters_Tails)
+				SetTailsRaceVictory(); //Fix Tails AI victory animation
 
-			if (CurrentCharacter != Characters_Tails)
-				if (AI->Data1->CharID == Characters_Tails && isAIActive == true)
-				{
-					SetTailsRaceVictory(); //Fix Tails AI victory animation
-				}
-
-			ForcePlayerAction(1, 19); //Force AI to Victory pose
+				ForcePlayerAction(1, 19); //Force AI to Victory pose
 
 			dword_3B2A304 = 0;
 		}
@@ -491,63 +343,6 @@ void DisableTime_R() {
 	}
 }
 
-
-//Fix AI Start Position in hub world
-
-void FixAIHubTransition() {
-
-	ForcePlayerAction(0, 0x18);
-
-	if (!IsHubBanned && isAIActive)
-	{
-		if (CurrentLevel == LevelIDs_StationSquare && (CurrentAct == 3 || CurrentAct == 1))
-			return;
-
-		if (CurrentLevel > LevelIDs_E101R && CurrentLevel < LevelIDs_TwinkleCircuit)
-			moveAItoPlayer(); //teleport AI
-	}
-
-	return;
-}
-
-void FixAIHubTransition2() {
-
-	HudDisplayRingTimeLife_Check();
-
-	if (!IsHubBanned && isAIActive) 
-	{
-		if (CurrentCharacter != Characters_Big)
-		{
-			if (CurrentLevel == LevelIDs_StationSquare && (CurrentAct == 3 || CurrentAct == 1) || CurrentLevel >= LevelIDs_ECGarden && CurrentLevel < LevelIDs_ChaoRace)
-				moveAItoPlayer(); //teleport AI
-		}
-		else
-		{
-			if (CurrentLevel == LevelIDs_StationSquare && CurrentAct == 1 || CurrentLevel >= LevelIDs_ECGarden && CurrentLevel < LevelIDs_ChaoRace)
-				moveAItoPlayer(); //teleport AI
-		}
-
-	}
-
-	return;
-}
-
-void DeleteAI() {
-
-	if (isAIActive && TailsAI_ptr != 0)
-	{
-		AICutsceneOk = 0;
-		ObjectMaster* AI = GetCharacterObject(1);
-		if (AI != nullptr)
-		{
-			TailsAI_Delete(AI); //delete ptr
-			DeleteObjectMaster(AI); //delete AI completely
-		}
-	}
-
-	isAIActive = false;
-	return DisableControl();
-}
 
 
 void AI_Init() {
@@ -559,21 +354,6 @@ void AI_Init() {
 	WriteCall((void*)0x47ec62, CheckTailsAI_R);
 
 	WriteData<5>((void*)0x415948, 0x90); //remove the original load2PTails in LoadCharacter as we use a custom one.
-
-	//Tails AI Fixes and small optimization/improvement.
-	WriteCall((void*)0x4151ba, FixAIHubTransition); //Fix AI position when you change act in hub world.
-	WriteCall((void*)0x417588, FixAIHubTransition2);
-
-	WriteCall((void*)0x42f72d, CallTailsAI_R); //Manually Call Tails AI After few early Cutscene to avoid crash.
-	WriteCall((void*)0x6cd3de, AllowTailsAI_R); //Allow Tails AI to spawn after the cutscene SonicAndTails_WakeUP
-	WriteCall((void*)0x42f78c, CallTailsAI_R2);  //Move Tails to Sonic Position after Chaos 4 fight. Also call Tails AI in Super Sonic Story
-	WriteJump((void*)0x657c4a, AllowTailsAI_R); //Allow Tails AI to spawn after the cutscene SonicAndTails_LandEggCarrier
-	WriteCall((void*)0x42f747, CallTailsAI_R3); //Manually Call Tails AI After the cutscene SonicAndTails_LandEggCarrier
-	WriteCall((void*)0x664f68, AllowTailsAI_R); //Allow Tails AI to spawn after the cutscene Tails Find Sonic (Super Sonic cutscene)
-	
-	WriteCall((void*)0x65f82f, DeleteAI); //Remove Tails before "Sonic finds Knuckles cutscene" (super sonic)
-	WriteCall((void*)0x663d4a, DeleteAI); //Remove Tails before "Sonic and Tails find tornado 2 cutscene" (super sonic)
-	WriteCall((void*)0x6601ab, AllowTailsAI_R); //Allow Tails AI to spawn after the cutscene Sonic_WakeUP (super sonic cutscene)
 	
 	WriteCall((void*)0x597b14, LoadAISnowBoard_R);  //Load AI Snowboard when playing Sand Hill 
 	WriteCall((void*)0x4ea091, LoadAISnowBoard_R);  //Load AI Snowboard when playing Ice Cap.

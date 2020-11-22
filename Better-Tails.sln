@@ -3,7 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29215.179
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Better-Tails", "Better-Tails\Better-Tails.vcxproj", "{DE6EB6F1-11E0-4864-A6F4-521BB1D330A2}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Better-Tails-AI", "Better-Tails\Better-Tails.vcxproj", "{DE6EB6F1-11E0-4864-A6F4-521BB1D330A2}"
+	ProjectSection(ProjectDependencies) = postProject
+		{90CF4AD9-6603-458F-8E3F-E99C0818E43D} = {90CF4AD9-6603-458F-8E3F-E99C0818E43D}
+		{EC0293F5-4BCF-46B2-8133-18CAEA141C5B} = {EC0293F5-4BCF-46B2-8133-18CAEA141C5B}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libmodutils", "sadx-mod-loader\libmodutils\libmodutils.vcxproj", "{90CF4AD9-6603-458F-8E3F-E99C0818E43D}"
 EndProject
