@@ -11,6 +11,7 @@ bool Amy = false;
 bool Big = false;
 bool Gamma = false;
 bool banCharacter[8] = { -1 };
+bool flySound = true;
 
 
 
@@ -33,17 +34,12 @@ extern "C" {
 		banCharacter[6] = config->getBool("Roster", "Gamma", false);
 
 		IsStoryIA = config->getBool("AI", "IsStoryIA", false);
+		flySound = config->getBool("AI", "flySound", true);
 
 		delete config;
 
-		//Prevent Character Select Mod 
-		HMODULE CharSel = GetModuleHandle(L"SADXCharSel");
-
-		if (CharSel)
-			MessageBoxA(WindowHandle, "Warning, you are using the Character Select Mod, this mod is not compatible with Better Tails AI.", "Better Tails AI Mod", MB_ICONWARNING);
 
 		HMODULE Rando = GetModuleHandle(L"SADX-Randomizer");
-		
 
 		if (!Rando) //do not call better tails AI if rando mod is activated
 		{
@@ -54,7 +50,7 @@ extern "C" {
 			WriteJump((void*)0x47db1a, TailsAI_ResetValue); //Reset value and stuff properly when Tails AI is deleted by the game.
 
 			//Tails AI Stuff (Load, Fixes...)
-			AI_Init();
+			AI_Init(helperFunctions);
 			AI_Fixes();
 
 			WriteCall((void*)0x415556, DisableTime_R); //While result screen, force Tails AI to victory pose.
@@ -63,6 +59,9 @@ extern "C" {
 
 	__declspec(dllexport) void __cdecl OnFrame()
 	{
+
+		
+		MilesAI_OnFrames();
 
 		//DisplayDebugStringFormatted(NJM_LOCATION(2, 1), "Is AI Active: %d", isAIActive);
 	}

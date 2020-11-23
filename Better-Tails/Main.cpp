@@ -2,6 +2,7 @@
 #include <SADXModLoader.h>
 #include <fstream>
 
+#define ReplaceSound(C, D) helperFunctions.ReplaceFile("system\\sounddata\\se\\" C ".dat", "system\\" D ".dat")
 
 bool isAIActive = false;
 int FlagAI = 0;
@@ -344,8 +345,49 @@ void DisableTime_R() {
 }
 
 
+void FlySoundOnFrames() {
 
-void AI_Init() {
+	if (!flySound || GameState != 15 || !EntityData1Ptrs[1] || !TailsAI_ptr)
+		return;
+
+	if (EntityData1Ptrs[1]->Action == 15 && EntityData1Ptrs[1]->CharID == Characters_Tails) {
+
+		if (EntityData1Ptrs[1]->Unknown == 0) 
+			PlaySound(0x302, NULL, 0, NULL);
+
+		if (++EntityData1Ptrs[1]->Unknown == 31) {
+			PlaySound(0x302, NULL, 0, NULL);
+			EntityData1Ptrs[1]->Unknown = 1;
+		}
+	}
+}
+
+void PreventTailsAIDamage() {
+	
+	EntityData1* data = EntityData1Ptrs[0];
+
+	if (GetCollidingEntityA(data)) {
+		CharObj2Ptrs[1]->Powerups |= Powerups_Invincibility;
+	}
+	else {
+		if ((CharObj2Ptrs[1]->Powerups & Powerups_Invincibility) == Powerups_Invincibility) {
+			CharObj2Ptrs[1]->Powerups &= 0x100u; //Remove invincibility
+		}
+	}
+}
+
+
+void MilesAI_OnFrames() {
+	if (GameState != 15 || !EntityData1Ptrs[0] || !EntityData1Ptrs[1] || EntityData1Ptrs[1]->CharID != Characters_Tails || !TailsAI_ptr)
+		return;
+
+	PreventTailsAIDamage();
+	FlySoundOnFrames();
+}
+
+
+
+void AI_Init(const HelperFunctions& helperFunctions) {
 
 	//Allow Tails AI to spawn in acton stages, hub world, bosses and chao garden + fixes
 	WriteCall((void*)0x47ed8e, CheckTailsAI_R);
@@ -358,5 +400,8 @@ void AI_Init() {
 	WriteCall((void*)0x597b14, LoadAISnowBoard_R);  //Load AI Snowboard when playing Sand Hill 
 	WriteCall((void*)0x4ea091, LoadAISnowBoard_R);  //Load AI Snowboard when playing Ice Cap.
 	WriteCall((void*)0x4e9664, LoadAISnowBoard_R);
+
+	if (flySound)
+		ReplaceSound("P_SONICTAILS_BANK03", "P_SONICTAILS_BANK03");
 }
 

@@ -13,7 +13,7 @@ float GetDistance(NJS_VECTOR* orig, NJS_VECTOR* dest);
 void FixAIHubTransition();
 void FixAIHubTransition2();
 void LoadCharacter_r();
-void AI_Init();
+void AI_Init(const HelperFunctions& helperFunctions);
 
 void moveAItoPlayer();
 void TailsAI_ResetValue();
@@ -23,7 +23,7 @@ void AI_Fixes();
 
 void OTaraiChild_Main_r(ObjectMaster* obj);
 VoidFunc(OTaraiChild_Main, 0x52c8f0);
-
+void MilesAI_OnFrames();
 
 
 VoidFunc(FUN_0042ce20, 0x42ce20); //Called with Delete Tails AI
@@ -64,3 +64,4 @@ extern bool isAIActive;
 extern bool ForceAI;
 extern int AICutsceneOk;
 extern bool IsStoryIA;
+extern bool flySound;
