@@ -386,6 +386,69 @@ void MilesAI_OnFrames() {
 }
 
 
+FunctionPointer(void, GetPlayerSidePos, (NJS_VECTOR* a1, EntityData1* a2, float m), 0x47dd50);
+FunctionPointer(signed int, SetPlayerPosition, (unsigned __int8 playerNum, char a2, NJS_POINT3* a3, long* a4), 0x441a40);
+FunctionPointer(bool, sub_42FB00, (), 0x42FB00);
+FunctionPointer(signed int, sub_47DC20, (EntityData1* a1, EntityData1* a2, ObjectMaster* a3), 0x47DC20);
+DataPointer(int, NpcMilesStandByFlag, 0x3b2a304); //I have no idea, ask sonic team
+FunctionPointer(void, sub_47DBE0, (unsigned int a1), 0x47DBE0);
+
+
+
+static void __declspec(naked) GetPlayerSidePos_asm(NJS_VECTOR* a1, EntityData1* a2, float m)
+{
+	__asm
+	{
+		push[esp + 04h] // m
+		push esi // e
+		push edi // v
+
+		// Call your __cdecl function here:
+		call GetPlayerSidePos
+
+		pop edi // v
+		pop esi // e
+		add esp, 4 // m
+		retn
+	}
+}
+
+
+static void __declspec(naked) sub_47DBE0_asm(unsigned __int8 a1)
+{
+	__asm
+	{
+		push bl // __int8 a1
+
+		// Call your __cdecl function here:
+		call sub_47DBE0
+
+		pop bl // __int8 a1
+		retn
+	}
+}
+
+
+static signed int __declspec(naked) sub_47DC20_asm(EntityData1* a1, EntityData1* a2, ObjectMaster* a3)
+{
+	__asm
+	{
+		push edi // a3
+		push ecx // a2
+		push eax // a1
+
+		// Call your __cdecl function here:
+		call sub_47DC20
+
+		add esp, 4 // a1<eax> is also used for return value
+		pop ecx // a2
+		pop edi // a3
+		retn
+	}
+}
+
+
+
 
 void AI_Init(const HelperFunctions& helperFunctions) {
 
@@ -395,11 +458,14 @@ void AI_Init(const HelperFunctions& helperFunctions) {
 	WriteCall((void*)0x47ea46, CheckTailsAI_R);
 	WriteCall((void*)0x47ec62, CheckTailsAI_R);
 
-	WriteData<5>((void*)0x415948, 0x90); //remove the original load2PTails in LoadCharacter as we use a custom one.
+	WriteData<5>((void*)0x415948, 0x90); //remove the original load2PTails in LoadCharacter as we use a custom one
 	
+	//Miles General Improvement
 	WriteCall((void*)0x597b14, LoadAISnowBoard_R);  //Load AI Snowboard when playing Sand Hill 
 	WriteCall((void*)0x4ea091, LoadAISnowBoard_R);  //Load AI Snowboard when playing Ice Cap.
 	WriteCall((void*)0x4e9664, LoadAISnowBoard_R);
+
+	WriteData<6>((int*)0x47ea72, 0x90); //remove the unnecessary high altitude when Tails AI respawn, so he can catch you faster
 
 	if (flySound)
 		ReplaceSound("P_SONICTAILS_BANK03", "P_SONICTAILS_BANK03");

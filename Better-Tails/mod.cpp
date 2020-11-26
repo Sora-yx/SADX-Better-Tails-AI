@@ -63,7 +63,10 @@ extern "C" {
 		
 		MilesAI_OnFrames();
 
-		//DisplayDebugStringFormatted(NJM_LOCATION(2, 1), "Is AI Active: %d", isAIActive);
+		if (!EntityData1Ptrs[1])
+			return;
+
+		//DisplayDebugStringFormatted(NJM_LOCATION(2, 1), "Is AI Active: %f", EntityData1Ptrs[1]->Position.y);
 	}
 
 	__declspec(dllexport) ModInfo SADXModInfo = { ModLoaderVer };
