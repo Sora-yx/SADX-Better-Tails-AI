@@ -25,7 +25,6 @@ void FixAIHubTransition2() {
 
 	HudDisplayRingTimeLife_Check();
 
-
 	if (!IsHubBanned && isAIActive)
 	{
 		if (CurrentCharacter != Characters_Big)
@@ -273,11 +272,11 @@ void DeleteTailsAI() {
 
 void AI_Fixes() {
 
-	//Tails AI Fixes and small optimization/improvement.
-	WriteCall((void*)0x4151ba, FixAIHubTransition); //Fix AI position when you change act in hub world.
-	WriteCall((void*)0x417588, FixAIHubTransition2);
-
 	if (!IsHubBanned) {
+		//Tails AI Fixes and small optimization/improvement.
+		WriteCall((void*)0x4151ba, FixAIHubTransition); //Fix AI position when you change act in hub world.
+		WriteCall((void*)0x417588, FixAIHubTransition2);
+
 		WriteCall((void*)0x42f72d, CallTailsAI_R); //Manually Call Tails AI After few early Cutscene to avoid crash.
 		WriteCall((void*)0x6cd3de, AllowTailsAI_R); //Allow Tails AI to spawn after the cutscene SonicAndTails_WakeUP
 		WriteCall((void*)0x42f78c, CallTailsAI_R2);  //Move Tails to Sonic Position after Chaos 4 fight. Also call Tails AI in Super Sonic Story

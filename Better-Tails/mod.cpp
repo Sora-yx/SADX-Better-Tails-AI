@@ -5,13 +5,7 @@ bool IsHubBanned = false;
 bool IsBossBanned = false;
 bool IsTCBanned = false;
 bool IsStoryIA = false;
-bool Sonic = false;
-bool Knuckles = false;
-bool Amy = false;
-bool Big = false;
-bool Gamma = false;
 bool banCharacter[8] = { -1 };
-bool flySound = true;
 
 
 
@@ -34,7 +28,6 @@ extern "C" {
 		banCharacter[6] = config->getBool("Roster", "Gamma", false);
 
 		IsStoryIA = config->getBool("AI", "IsStoryIA", false);
-		flySound = config->getBool("AI", "flySound", true);
 
 		delete config;
 
@@ -62,7 +55,7 @@ extern "C" {
 	
 		MilesAI_OnFrames();
 
-		DisplayDebugStringFormatted(NJM_LOCATION(2, 1), "Is AI Active: %d", EV_MainThread_ptr);
+		//DisplayDebugStringFormatted(NJM_LOCATION(2, 1), "Is AI Active: %d", isAIActive);
 	}
 
 	__declspec(dllexport) ModInfo SADXModInfo = { ModLoaderVer };

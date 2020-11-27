@@ -10,26 +10,7 @@ bool banCharacter[];
 bool ForceAI = false;
 int AICutsceneOk = 0;
 
-//If you are reading this, I apologize for this mess, LOL.
 
-
-static void __declspec(naked) GetPlayerSidePos_asm(NJS_VECTOR* a1, EntityData1* a2, float m)
-{
-	__asm
-	{
-		push[esp + 04h] // m
-		push esi // e
-		push edi // v
-
-		// Call your __cdecl function here:
-		call GetPlayerSidePos
-
-		pop edi // v
-		pop esi // e
-		add esp, 4 // m
-		retn
-	}
-}
 
 ObjectMaster* LoadCharObj(int i)
 {
@@ -58,28 +39,17 @@ int CheckTailsAI_R(void) {
 			//Player Settings
 
 			if (IsChaoGardenBanned && CurrentLevel >= LevelIDs_SSGarden && CurrentLevel <= LevelIDs_MRGarden)
-				return 0; //don't load AI if the player banned Chao Garden.
+				return 0; 
 			
-			if (IsHubBanned && CurrentLevel >= LevelIDs_StationSquare && CurrentLevel <= LevelIDs_Past)
-				return 0;  //don't load AI if the player banned Hub World.
+			if (IsHubBanned && CurrentLevel >= LevelIDs_StationSquare && CurrentLevel <= LevelIDs_Past || IsBossBanned && CurrentLevel >= LevelIDs_Chaos0 && CurrentLevel <= LevelIDs_E101R)
+				return 0;  
 
-			if (IsBossBanned && CurrentLevel >= LevelIDs_Chaos0 && CurrentLevel <= LevelIDs_E101R)
-				return 0;  //don't load AI if the player banned boss fight.
+			if (IsTCBanned && CurrentLevel == LevelIDs_TwinkleCircuit || CurrentCharacter == Characters_Tails || CurrentChaoStage == 1)
+				return 0;  
 
-			if (IsTCBanned && CurrentLevel == LevelIDs_TwinkleCircuit)
-				return 0;  //don't load AI if the player banned TC.
-
-			if (CurrentCharacter == Characters_Tails)
-				return CheckTailsAI(); //Restore original function, don't load Tails AI 
-
-			if (CurrentChaoStage == 1) 
-				return 0; //don't load AI during Chao Race
-
-			if (CurrentLevel == LevelIDs_EggCarrierInside && CurrentAct == 5)
+			if (CurrentLevel == LevelIDs_EggCarrierInside && CurrentAct == 5 || CurrentLevel == LevelIDs_Casinopolis && CurrentAct > 1)
 				return 0;
 
-			if (CurrentLevel == LevelIDs_Casinopolis && CurrentAct > 1)
-				return CheckTailsAI(); //don't load AI if we are in the casino pinball.
 
 			//Story plot check for coherent Tails AI spawn (if setting enabled)
 
@@ -115,7 +85,7 @@ int CheckTailsAI_R(void) {
 				{
 				case LevelIDs_StationSquare:
 					if (EventFlagArray[EventFlags_TailsUnlockedAdventure] == false && CurrentSong != 76)
-						return CheckTailsAI(); //Avoid loading AI during Sonic emerald coast post cutscene. (crash) There is 100% a better way to do this, but I don't have any better flag after tails cutscene for now. :(
+						return CheckTailsAI(); //Avoid loading AI during Sonic emerald coast post cutscene. (crash) There is 100% a better way to do this, but I don't have any better flag after tails cutscene for now. :(*/
 
 					if (!AICutsceneOk && EventFlagArray[EventFlags_Sonic_CasinopolisClear] == true && EventFlagArray[EventFlags_Sonic_IceCapOpen] == false && EventFlagArray[EventFlags_Sonic_WindyValleyClear] == true)
 						return CheckTailsAI(); //Avoid loading AI during Sonic Casino post cutscene. (funny crash)
@@ -258,6 +228,9 @@ ObjectMaster* Load2PTails_r(ObjectMaster* player1)
 
 void LoadTails_AI_R() {
 
+	if (banCharacter[CurrentCharacter] == true)
+		return;
+
 	ObjectMaster* obj;
 	obj = GetCharacterObject(0);
 	ObjectMaster* lastobj = obj;
@@ -325,7 +298,7 @@ void LoadAISnowBoard_R() {
 void LoadCharacter_r()
 {
 
-	if (banCharacter[CurrentCharacter] != true && !EV_MainThread_ptr)
+	if (banCharacter[CurrentCharacter] != true && !EV_MainThread_ptr && !EntityData1Ptrs[1])
 		LoadTails_AI_R();
 
 	LoadCharacter(); //call original function
@@ -348,8 +321,7 @@ void DisableTime_R() {
 			p2->Status &= ~(Status_Attack | Status_Ball | Status_LightDash | Status_Unknown3);
 			p2->Action = 1;
 			CharObj2Ptrs[1]->AnimationThing.Index = 1;
-			SetToCameraPosition(&p2->Position);
-			SetPlayerPosition(1u, 0, &EntityData1Ptrs[1]->Position, 0);
+
 			p2->Position = UnitMatrix_GetPoint(&p1->Position, &p1->Rotation, -8.0f, 0.0f, 5.0f);
 
 			if (p2->CharID == Characters_Tails) {
@@ -366,7 +338,7 @@ void DisableTime_R() {
 
 void FlySoundOnFrames() {
 
-	if (!flySound || GameState != 15 || !EntityData1Ptrs[1] || !TailsAI_ptr)
+	if (GameState != 15 || !EntityData1Ptrs[1] || !TailsAI_ptr)
 		return;
 
 	if (EntityData1Ptrs[1]->Action == 15 && EntityData1Ptrs[1]->CharID == Characters_Tails) {
@@ -399,6 +371,22 @@ void PreventTailsAIDamage() {
 }
 
 
+void SnowboardRespawn() { //if Sonic is using snowboard
+
+
+	EntityData1* data = EntityData1Ptrs[1];
+
+	if (data->Action == 15) {
+		if (EntityData1Ptrs[0]->Action >= 62 && EntityData1Ptrs[0]->Action <= 68 && CurrentCharacter == Characters_Sonic) { //Make Tails using snowboard again when trying to catch Sonic
+			EntityData1Ptrs[1]->Status &= ~(Status_Attack | Status_Ball | Status_LightDash);
+			CharObj2Ptrs[1]->PhysicsData.CollisionSize = PhysicsArray[Characters_Tails].CollisionSize; //Reset Miles physic properly
+			CharObj2Ptrs[1]->PhysicsData.YOff = PhysicsArray[Characters_Tails].YOff;
+			CharObj2Ptrs[1]->PhysicsData.JumpSpeed = PhysicsArray[Characters_Tails].JumpSpeed;
+			ForcePlayerAction(1, 44);
+		}
+	}
+}
+
 
 void MilesAI_OnFrames() {
 
@@ -406,9 +394,9 @@ void MilesAI_OnFrames() {
 		return;
 
 	PreventTailsAIDamage();
+	SnowboardRespawn();
 	//FlySoundOnFrames();
 }
-
 
 
 
@@ -430,9 +418,7 @@ void AI_Init(const HelperFunctions& helperFunctions) {
 	WriteData<6>((int*)0x47ea72, 0x90); //remove the unnecessary high altitude when Tails AI respawn, so he can catch you faster
 	WriteData<1>((int*)0x47DC5D, 0xF2); //Reduce the Tails "Range out" check so he can catch faster. (changing the float value from 1000 to 352)
 	WriteData<1>((int*)0x47DC5C, 0xF0);
-
-
-	if (flySound)
-		ReplaceSound("P_SONICTAILS_BANK03", "P_SONICTAILS_BANK03");
+	
+	ReplaceSound("P_SONICTAILS_BANK03", "P_SONICTAILS_BANK03");
 }
 

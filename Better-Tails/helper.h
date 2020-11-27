@@ -75,4 +75,3 @@ extern bool isAIActive;
 extern bool ForceAI;
 extern int AICutsceneOk;
 extern bool IsStoryIA;
-extern bool flySound;
