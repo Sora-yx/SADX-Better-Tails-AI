@@ -8,7 +8,6 @@ bool IsStoryIA = false;
 bool banCharacter[8] = { -1 };
 
 
-
 extern "C" {
 
 
@@ -55,7 +54,7 @@ extern "C" {
 	
 		MilesAI_OnFrames();
 
-		//DisplayDebugStringFormatted(NJM_LOCATION(2, 1), "Is AI Active: %d", isAIActive);
+		DisplayDebugStringFormatted(NJM_LOCATION(2, 1), "Is AI Active: %d", isAIActive);
 	}
 
 	__declspec(dllexport) ModInfo SADXModInfo = { ModLoaderVer };

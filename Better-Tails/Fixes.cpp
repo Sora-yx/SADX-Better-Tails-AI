@@ -1,8 +1,6 @@
 #include "stdafx.h"
 
 
-
-
 //Fix AI Start Position in hub world
 
 void FixAIHubTransition() {

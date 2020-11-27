@@ -75,3 +75,10 @@ extern bool isAIActive;
 extern bool ForceAI;
 extern int AICutsceneOk;
 extern bool IsStoryIA;
+
+struct MilesAI_Spawn {
+	int curCharacter;
+	int curLevel;
+	int eventFlag;
+	int cutsceneFlag;
+};

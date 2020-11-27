@@ -1,6 +1,4 @@
 #include "stdafx.h"
-#include <SADXModLoader.h>
-#include <fstream>
 
 #define ReplaceSound(C, D) helperFunctions.ReplaceFile("system\\sounddata\\se\\" C ".dat", "system\\" D ".dat")
 
@@ -23,6 +21,35 @@ ObjectMaster* LoadCharObj(int i)
 	return obj;
 }
 
+
+MilesAI_Spawn TailsArray[] {
+	{ Characters_Sonic, LevelIDs_StationSquare, EventFlags_Sonic_EmeraldCoastClear, 0x006 },
+	{ Characters_Sonic, LevelIDs_StationSquare, EventFlags_Sonic_CasinopolisClear, 0x009 },
+	{ Characters_Sonic, LevelIDs_EggCarrierOutside, EventFlags_Sonic_RedMountainClear, 0x100},
+	{ Characters_Sonic, LevelIDs_EggCarrierInside, EventFlags_Sonic_SkyDeckClear, 0x01B},
+	{ Characters_Sonic, LevelIDs_EggCarrierOutside, EventFlags_Sonic_SkyDeckClear, 0x01B},
+	{ Characters_Knuckles, LevelIDs_MysticRuins, EventFlags_Knuckles_RedMountainClear, 0x08B },
+	{ Characters_Amy, LevelIDs_StationSquare,  EventFlags_Amy_HotShelterClear, 0x06D},
+	{ Characters_Amy, LevelIDs_EggCarrierOutside,  EventFlags_Amy_HotShelterClear, 0x06D},
+	{ Characters_Big, LevelIDs_MysticRuins, EventFlags_Big_IceCapClear, 0x0D3 },
+	{ Characters_Big, LevelIDs_EmeraldCoast, EventFlags_Big_IceCapClear, 0x0D4},
+	{ Characters_Gamma, LevelIDs_EggCarrierOutside, EventFlags_Gamma_EmeraldCoastClear, 0x0C2},
+};
+
+
+bool isTailsAIAllowed() {
+
+	for (uint8_t i = 0; i < LengthOfArray(TailsArray); i++) {
+
+		if (CurrentCharacter == TailsArray[i].curCharacter && CurrentLevel == TailsArray[i].curLevel && !GetCutsceneFlagArray(TailsArray[i].cutsceneFlag))
+		{
+			if (EventFlagArray[TailsArray[i].eventFlag] == 1)
+				return false;
+		}
+	}
+
+	return true;
+}
 //Tails AI Flag Check
 
 int CheckTailsAI_R(void) {
@@ -30,12 +57,11 @@ int CheckTailsAI_R(void) {
 	isAIActive = false;
 	HMODULE isSA2Mod = GetModuleHandle(L"sadx-sa2-mod");
 
-	if (CurrentLevel == LevelIDs_SkyChase1 || CurrentLevel == LevelIDs_SkyChase2 || !isSA2Mod && CurrentLevel == LevelIDs_ChaoRace || EV_MainThread_ptr)
-		{
-			return CheckTailsAI(); //don't load AI
-		}
-		else
-		{
+	if (CurrentLevel == LevelIDs_SkyChase1 || CurrentLevel == LevelIDs_SkyChase2 || !isSA2Mod && CurrentLevel == LevelIDs_ChaoRace || EV_MainThread_ptr) {
+		
+		return 0x0; //don't load AI
+	}
+	else {
 			//Player Settings
 
 			if (IsChaoGardenBanned && CurrentLevel >= LevelIDs_SSGarden && CurrentLevel <= LevelIDs_MRGarden)
@@ -59,7 +85,7 @@ int CheckTailsAI_R(void) {
 				{
 				case Characters_Sonic:
 					if (EventFlagArray[EventFlags_Sonic_EmeraldCoastClear] == false)
-						return CheckTailsAI(); //don't load Tails until we rescue him.
+						return 0x0; //don't load Tails until we rescue him.
 
 					if (SonicSkyChaseAct1Clear == 1 && EventFlagArray[EventFlags_Sonic_RedMountainClear] == false)
 					{
@@ -68,114 +94,59 @@ int CheckTailsAI_R(void) {
 					}
 
 					if (EventFlagArray[EventFlags_Sonic_GammaDefeated] == true && EventFlagArray[EventFlags_SonicAdventureComplete] == false)
-						return CheckTailsAI(); //Don't load Tails after Gamma Defeated until we beat the game.
+						return 0x0; //Don't load Tails after Gamma Defeated until we beat the game.
 
 					break;
 				default:
-					return CheckTailsAI();
+					return 0x0;
 				}
 			}
 
 			
-			//bug fixes (Disable AI if necessary to avoid crash until I find a better way to do this)
+			//bug fixes (Disable AI if necessary to avoid crash
+
+			if (!isTailsAIAllowed())
+				return 0x0;
 
 			if (CurrentCharacter == Characters_Sonic)
 			{
 				switch (CurrentLevel)
 				{
-				case LevelIDs_StationSquare:
-					if (EventFlagArray[EventFlags_TailsUnlockedAdventure] == false && CurrentSong != 76)
-						return CheckTailsAI(); //Avoid loading AI during Sonic emerald coast post cutscene. (crash) There is 100% a better way to do this, but I don't have any better flag after tails cutscene for now. :(*/
-
-					if (!AICutsceneOk && EventFlagArray[EventFlags_Sonic_CasinopolisClear] == true && EventFlagArray[EventFlags_Sonic_IceCapOpen] == false && EventFlagArray[EventFlags_Sonic_WindyValleyClear] == true)
-						return CheckTailsAI(); //Avoid loading AI during Sonic Casino post cutscene. (funny crash)
-
-					break;
 				case LevelIDs_MysticRuins:
-					if (IceCapFlag == 1 && EventFlagArray[EventFlags_Sonic_Chaos4Clear] == false)
-						return CheckTailsAI(); //Fix Knuckles AI behavior.
+					if (!GetCutsceneFlagArray(0x00B) && IceCapFlag)
+						return 0x0; //Fix Knuckles AI behavior.
 
 					if (EventFlagArray[EventFlags_Sonic_EggViperClear] == true && EventFlagArray[EventFlags_SonicAdventureComplete] == false)
-						return CheckTailsAI(); //fix funny ending crash
+						return 0x0; //fix funny ending crash
 					
 					break;
 				case LevelIDs_RedMountain:
 					if (EventFlagArray[EventFlags_Sonic_RedMountainClear] == false && CurrentAct >= 1)
-						return CheckTailsAI(); //Tornado cutscene
+						return 0x0; //Tornado cutscene
 		
 					break;
-				case LevelIDs_EggCarrierOutside:
-					if (!AICutsceneOk && EventFlagArray[EventFlags_Sonic_Chaos6Clear] == false)
-						return CheckTailsAI(); //pre Gamma & post Gamma cutscene fix
-
-					if (EventFlagArray[EventFlags_Sonic_GammaDefeated] == false && EventFlagArray[EventFlags_Sonic_SkyDeckClear] == true)
-						return CheckTailsAI(); //pre Gamma & post Gamma cutscene fix
-					break;
-				case LevelIDs_EggCarrierInside:
-					if (EventFlagArray[EventFlags_Sonic_GammaDefeated] == false)
-					{
-						AICutsceneOk = 0;
-						return CheckTailsAI(); //Post Sky Deck cutscene crash fix
-					}
-					break;
 				}
 			}
 
-			if (CurrentCharacter == Characters_Knuckles)
-			{
-				if (EventFlagArray[EventFlags_Knuckles_Chaos4Clear] == false && CurrentLevel == LevelIDs_MysticRuins)
-					return CheckTailsAI(); //fix Sonic AI fight
+
+
+			if (CurrentCharacter == Characters_Big && CurrentAct == 2 && CurrentLevel == LevelIDs_StationSquare) {
+
+				if (EventFlagArray[EventFlags_Big_TwinkleParkClear] == false)
+					return 0x0; //fix Sonic AI fight
 			}
 
-			if (CurrentCharacter == Characters_Amy)
-			{
-				if (CurrentLevel == LevelIDs_StationSquare || CurrentLevel == LevelIDs_EggCarrierOutside)
-					if (EventFlagArray[EventFlags_Amy_FinalEggClear] == false && EventFlagArray[EventFlags_Amy_HotShelterClear] == true)
-						return CheckTailsAI(); //fix Sonic AI fight
-			}
-
-			if (CurrentCharacter == Characters_Big)
-			{
-				switch (CurrentLevel)
-				{
-				case LevelIDs_MysticRuins:
-					if (CurrentAct == 0)
-						if (EventFlagArray[EventFlags_Big_EmeraldCoastClear] == false)
-							return CheckTailsAI(); //fix Sonic AI fight
-					break;
-				case LevelIDs_StationSquare:
-					if (CurrentAct == 2)
-						if (EventFlagArray[EventFlags_Big_TwinkleParkClear] == false)
-							return CheckTailsAI(); //fix Sonic AI fight
-					break;
-				case LevelIDs_EmeraldCoast:
-						if (EventFlagArray[EventFlags_Big_HotShelterClear] == false)
-							return CheckTailsAI(); //fix Sonic AI fight
-					break;
-				}
-			}
-
-			if (CurrentCharacter == Characters_Gamma)
-			{
-				switch (CurrentLevel)
-				{
-				case LevelIDs_EggCarrierOutside:
-						if (EventFlagArray[EventFlags_Gamma_E101mkIIClear] == false)
-							return CheckTailsAI(); //fix Sonic AI fight
-					break;
-				}
-			}
 
 			if (SelectedCharacter == 6) //if Super Sonic Story
 			{
 				if (!AICutsceneOk && CurrentLevel == LevelIDs_MysticRuins)
-					return CheckTailsAI(); //fix Super Sonic cutscene crash.
+					return 0x0; //fix Super Sonic cutscene crash.
 
 				if (IsStoryIA && CurrentLevel == LevelIDs_Past)
-					return CheckTailsAI(); //Don't load Tails in the past if story option is enabled.
+					return 0x0; //Don't load Tails in the past if story option is enabled.
 				
 				if (CurrentLevel == LevelIDs_PerfectChaos)
-					return CheckTailsAI(); //Fight harder, for no reason.
+					return 0x0;  //Fight harder, for no reason.
 			}
 
 			isAIActive = true;
@@ -323,6 +294,7 @@ void DisableTime_R() {
 			CharObj2Ptrs[1]->AnimationThing.Index = 1;
 
 			p2->Position = UnitMatrix_GetPoint(&p1->Position, &p1->Rotation, -8.0f, 0.0f, 5.0f);
+			p2->Rotation = p1->Rotation;
 
 			if (p2->CharID == Characters_Tails) {
 				SetTailsRaceVictory(); //Fix Tails AI victory animation
@@ -371,12 +343,11 @@ void PreventTailsAIDamage() {
 }
 
 
-void SnowboardRespawn() { //if Sonic is using snowboard
-
+void SnowboardRespawn() { 
 
 	EntityData1* data = EntityData1Ptrs[1];
 
-	if (data->Action == 15) {
+	if (data->Action == 15) { 
 		if (EntityData1Ptrs[0]->Action >= 62 && EntityData1Ptrs[0]->Action <= 68 && CurrentCharacter == Characters_Sonic) { //Make Tails using snowboard again when trying to catch Sonic
 			EntityData1Ptrs[1]->Status &= ~(Status_Attack | Status_Ball | Status_LightDash);
 			CharObj2Ptrs[1]->PhysicsData.CollisionSize = PhysicsArray[Characters_Tails].CollisionSize; //Reset Miles physic properly
