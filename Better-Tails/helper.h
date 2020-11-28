@@ -8,7 +8,7 @@ void DisableTime_R(); //result screen Stuff
 
 void LoadAISnowBoard_R(); //Load Snowboard for Tails AI
 
-void LoadTails_AI_R(); //Load Tails AI 
+ObjectMaster* Load2PTails_r(); //Load Tails AI 
 float GetDistance(NJS_VECTOR* orig, NJS_VECTOR* dest);
 void FixAIHubTransition();
 void FixAIHubTransition2();
@@ -75,6 +75,7 @@ extern bool isAIActive;
 extern bool ForceAI;
 extern int AICutsceneOk;
 extern bool IsStoryIA;
+extern bool banCharacter[8];
 
 struct MilesAI_Spawn {
 	int curCharacter;

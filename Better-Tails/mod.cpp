@@ -10,10 +10,8 @@ bool banCharacter[8] = { -1 };
 
 extern "C" {
 
-
 	__declspec(dllexport) void __cdecl Init(const char* path, const HelperFunctions& helperFunctions)
 	{
-
 		const IniFile* config = new IniFile(std::string(path) + "\\config.ini");
 		IsChaoGardenBanned = config->getBool("Stage", "IsChaoGardenBanned", false);
 		IsHubBanned = config->getBool("Stage", "IsHubBanned", false);
@@ -29,7 +27,6 @@ extern "C" {
 		IsStoryIA = config->getBool("AI", "IsStoryIA", false);
 
 		delete config;
-
 
 		HMODULE Rando = GetModuleHandle(L"SADX-Randomizer");
 
@@ -51,10 +48,8 @@ extern "C" {
 
 	__declspec(dllexport) void __cdecl OnFrame()
 	{
-	
 		MilesAI_OnFrames();
-
-		DisplayDebugStringFormatted(NJM_LOCATION(2, 1), "Is AI Active: %d", isAIActive);
+		//DisplayDebugStringFormatted(NJM_LOCATION(2, 1), "Is AI Active: %d", isAIActive);
 	}
 
 	__declspec(dllexport) ModInfo SADXModInfo = { ModLoaderVer };

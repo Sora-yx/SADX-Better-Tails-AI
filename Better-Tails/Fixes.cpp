@@ -62,40 +62,40 @@ void SoftReset_R() {
 void CallTailsAI_R() {
 
 	//Tails Crash Cutscene
-	if (CurrentCharacter == Characters_Sonic && EventFlagArray[EventFlags_Sonic_EmeraldCoastClear] == false)
+	if (CurrentCharacter == Characters_Sonic && !EventFlagArray[EventFlags_Sonic_EmeraldCoastClear])
 	{
 		if (!IsStoryIA && !isAIActive)
 		{
 			ForceAI = true;
-			LoadTails_AI_R();
+			Load2PTails_r();
 			return PlayMusic(MusicIDs_s_square);
 		}
 	}
 
 	//Tails Rescued Cutscene
-	if (CurrentCharacter == Characters_Sonic && EventFlagArray[EventFlags_Sonic_EmeraldCoastClear] == true && EventFlagArray[EventFlags_Sonic_EggHornetClear] == false)
+	if (CurrentCharacter == Characters_Sonic && EventFlagArray[EventFlags_Sonic_EmeraldCoastClear] == 1 && !EventFlagArray[EventFlags_Sonic_EggHornetClear])
 	{
 		if (!isAIActive)
 		{
 			ForceAI = true;
-			LoadTails_AI_R();
+			Load2PTails_r();
 			return PlayMusic(MusicIDs_s_square);
 		}
 	}
 
 	//Sonic Tails Post Casino Cutscene
-	if (CurrentCharacter == Characters_Sonic && AICutsceneOk && EventFlagArray[EventFlags_Sonic_CasinopolisClear] == true && EventFlagArray[EventFlags_Sonic_IceCapOpen] == false)
+	if (CurrentCharacter == Characters_Sonic && AICutsceneOk && EventFlagArray[EventFlags_Sonic_CasinopolisClear] == 1 && !EventFlagArray[EventFlags_Sonic_IceCapOpen])
 	{
 		if (!isAIActive)
 		{
 			ForceAI = true;
-			LoadTails_AI_R();
+			Load2PTails_r();
 			return PlayMusic(MusicIDs_s_square);
 		}
 	}
 
 	//Sonic Amy cutscenes 
-	if (CurrentCharacter == Characters_Sonic && (SonicSkyChaseAct1Clear == 1 && SonicTPClear == 0) || (SonicTPClear == 1 && EventFlagArray[EventFlags_Sonic_RedMountainClear] == false))
+	if (CurrentCharacter == Characters_Sonic && (SonicSkyChaseAct1Clear == 1 && SonicTPClear == 0) || (SonicTPClear == 1 && !EventFlagArray[EventFlags_Sonic_RedMountainClear]))
 	{
 		if (isAIActive && !IsStoryIA && TailsAI_ptr != 0)
 		{
@@ -110,7 +110,7 @@ void CallTailsAI_R() {
 void CallTailsAI_R2() {
 
 	//Sonic Tails Post Chaos 4 Cutscene
-	if (CurrentCharacter == Characters_Sonic && EventFlagArray[EventFlags_Sonic_Chaos4Clear] == true && SonicSkyChaseAct1Clear == 0)
+	if (CurrentCharacter == Characters_Sonic && EventFlagArray[EventFlags_Sonic_Chaos4Clear] == 1 && SonicSkyChaseAct1Clear == 0)
 	{
 		if (isAIActive && TailsAI_ptr != 0)
 		{
@@ -121,7 +121,7 @@ void CallTailsAI_R2() {
 	}
 
 	//Sonic loses Amy Cutscene
-	if (CurrentCharacter == Characters_Sonic && EventFlagArray[EventFlags_Sonic_SpeedHighwayClear] == true && EventFlagArray[EventFlags_Sonic_RedMountainClear] == false)
+	if (CurrentCharacter == Characters_Sonic && EventFlagArray[EventFlags_Sonic_SpeedHighwayClear] == 1 && !EventFlagArray[EventFlags_Sonic_RedMountainClear])
 	{
 		if (isAIActive && !IsStoryIA && TailsAI_ptr != 0)
 		{
@@ -132,7 +132,7 @@ void CallTailsAI_R2() {
 	}
 
 	//post Chaos 6 scene && post lw cutscene
-	if (CurrentCharacter == Characters_Sonic && (EventFlagArray[EventFlags_Sonic_Chaos6Clear] == true && EventFlagArray[EventFlags_Sonic_LostWorldClear] == false) || (EventFlagArray[EventFlags_Sonic_LostWorldClear] == true && EventFlagArray[EventFlags_Sonic_FinalEggClear] == false))
+	if (CurrentCharacter == Characters_Sonic && (EventFlagArray[EventFlags_Sonic_Chaos6Clear] == 1 && !EventFlagArray[EventFlags_Sonic_LostWorldClear]) || (EventFlagArray[EventFlags_Sonic_LostWorldClear] == 1 && !EventFlagArray[EventFlags_Sonic_FinalEggClear]))
 	{
 		if (isAIActive && !IsStoryIA && TailsAI_ptr != 0)
 		{
@@ -147,7 +147,7 @@ void CallTailsAI_R2() {
 		if (!isAIActive)
 		{
 			ForceAI = true;
-			LoadTails_AI_R();
+			Load2PTails_r();
 			return PlayMusic(MusicIDs_mstcln);
 		}
 	}
@@ -157,12 +157,12 @@ void CallTailsAI_R2() {
 
 void CallTailsAI_R3() {
 
-	if (CurrentCharacter == Characters_Sonic && EventFlagArray[EventFlags_Sonic_SkyDeckClear] == false && SonicSkyChaseAct2Clear == 1)
+	if (CurrentCharacter == Characters_Sonic && !EventFlagArray[EventFlags_Sonic_SkyDeckClear] && SonicSkyChaseAct2Clear == 1)
 	{
 		if (!isAIActive)
 		{
 			ForceAI = true;
-			LoadTails_AI_R();
+			Load2PTails_r();
 			return PlayMusic(MusicIDs_egcarer1);
 		}
 		else
@@ -208,27 +208,7 @@ bool IsSpecificPlayerInSphere(NJS_VECTOR* center, float radius, uint8_t player) 
 }
 
 
-//Prevent Tails AI to accidentally activate trigger originally made for Player 1.
-void BlockTailsAI(ObjectMaster* obj) { 
 
-	ObjectMaster* P1 = GetCharacterObject(0);
-	ObjectMaster* P2 = GetCharacterObject(1);
-
-	if (P2 != nullptr)
-	{
-		if (IsSpecificPlayerInSphere, (&obj->Data1->Position, 10, 1) && IsSpecificPlayerInSphere, (&obj->Data1->Position, 10, 0))
-		{
-			P2->Data1->Action = 120; //Block Tails AI
-		}
-		else
-		{
-			P2->Data1->Action = 1;
-			return;
-		}
-	}
-
-	return;
-}
 
 static Trampoline OTaraiChild_Main_t((int)OTarai, (int)OTarai + 0x5, OTaraiChild_Main_r);
 
@@ -236,7 +216,9 @@ static Trampoline OTaraiChild_Main_t((int)OTarai, (int)OTarai + 0x5, OTaraiChild
 
 void OTaraiChild_Main_r(ObjectMaster* obj) {
 
-	BlockTailsAI(obj);
+
+	if (IsSpecificPlayerInSphere(&obj->Data1->Position, 20, 1))
+		EntityData1Ptrs[1]->Position.x += 20;
 
 	ObjectFunc(origin, OTaraiChild_Main_t.Target());
 	origin(obj);
@@ -249,7 +231,6 @@ void CheckAndDeleteAI() {
 	{
 		AICutsceneOk = 0;
 		DeleteTailsAI();
-
 	}
 
 	isAIActive = false;
@@ -270,20 +251,21 @@ void DeleteTailsAI() {
 
 void AI_Fixes() {
 
-	if (!IsHubBanned) {
-		//Tails AI Fixes and small optimization/improvement.
-		WriteCall((void*)0x4151ba, FixAIHubTransition); //Fix AI position when you change act in hub world.
-		WriteCall((void*)0x417588, FixAIHubTransition2);
+	if (IsHubBanned)
+		return;
 
-		WriteCall((void*)0x42f72d, CallTailsAI_R); //Manually Call Tails AI After few early Cutscene to avoid crash.
-		WriteCall((void*)0x6cd3de, AllowTailsAI_R); //Allow Tails AI to spawn after the cutscene SonicAndTails_WakeUP
-		WriteCall((void*)0x42f78c, CallTailsAI_R2);  //Move Tails to Sonic Position after Chaos 4 fight. Also call Tails AI in Super Sonic Story
-		WriteJump((void*)0x657c4a, AllowTailsAI_R); //Allow Tails AI to spawn after the cutscene SonicAndTails_LandEggCarrier
-		WriteCall((void*)0x42f747, CallTailsAI_R3); //Manually Call Tails AI After the cutscene SonicAndTails_LandEggCarrier
-		WriteCall((void*)0x664f68, AllowTailsAI_R); //Allow Tails AI to spawn after the cutscene Tails Find Sonic (Super Sonic cutscene)
+	//Tails AI Fixes and small optimization/improvement.
+	WriteCall((void*)0x4151ba, FixAIHubTransition); //Fix AI position when you change act in hub world.
+	WriteCall((void*)0x417588, FixAIHubTransition2);
 
-		WriteCall((void*)0x65f82f, CheckAndDeleteAI); //Remove Tails before "Sonic finds Knuckles cutscene" (super sonic)
-		WriteCall((void*)0x663d4a, CheckAndDeleteAI); //Remove Tails before "Sonic and Tails find tornado 2 cutscene" (super sonic)
-		WriteCall((void*)0x6601ab, AllowTailsAI_R); //Allow Tails AI to spawn after the cutscene Sonic_WakeUP (super sonic cutscene)
-	}
+	WriteCall((void*)0x42f72d, CallTailsAI_R); //Manually Call Tails AI After few early Cutscene to avoid crash.
+	WriteCall((void*)0x6cd3de, AllowTailsAI_R); //Allow Tails AI to spawn after the cutscene SonicAndTails_WakeUP
+	WriteCall((void*)0x42f78c, CallTailsAI_R2);  //Move Tails to Sonic Position after Chaos 4 fight. Also call Tails AI in Super Sonic Story
+	WriteJump((void*)0x657c4a, AllowTailsAI_R); //Allow Tails AI to spawn after the cutscene SonicAndTails_LandEggCarrier
+	WriteCall((void*)0x42f747, CallTailsAI_R3); //Manually Call Tails AI After the cutscene SonicAndTails_LandEggCarrier
+	WriteCall((void*)0x664f68, AllowTailsAI_R); //Allow Tails AI to spawn after the cutscene Tails Find Sonic (Super Sonic cutscene)
+
+	WriteCall((void*)0x65f82f, CheckAndDeleteAI); //Remove Tails before "Sonic finds Knuckles cutscene" (super sonic)
+	WriteCall((void*)0x663d4a, CheckAndDeleteAI); //Remove Tails before "Sonic and Tails find tornado 2 cutscene" (super sonic)
+	WriteCall((void*)0x6601ab, AllowTailsAI_R); //Allow Tails AI to spawn after the cutscene Sonic_WakeUP (super sonic cutscene)
 }

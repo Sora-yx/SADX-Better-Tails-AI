@@ -4,22 +4,8 @@
 
 bool isAIActive = false;
 int FlagAI = 0;
-bool banCharacter[];
 bool ForceAI = false;
 int AICutsceneOk = 0;
-
-
-
-ObjectMaster* LoadCharObj(int i)
-{
-	//setup AI correctly
-	ObjectMaster* obj = LoadObject((LoadObj)(LoadObj_UnknownA | LoadObj_Data1 | LoadObj_Data2), 1, Tails_Main);
-	obj->Data1->CharID = Characters_Tails;
-	obj->Data1->CharIndex = (char)1;
-	EntityData1Ptrs[1] = (EntityData1*)obj->Data1;
-	EntityData2Ptrs[1] = (EntityData2*)obj->Data2;
-	return obj;
-}
 
 
 MilesAI_Spawn TailsArray[] {
@@ -61,154 +47,84 @@ int CheckTailsAI_R(void) {
 		
 		return 0x0; //don't load AI
 	}
-	else {
-			//Player Settings
 
-			if (IsChaoGardenBanned && CurrentLevel >= LevelIDs_SSGarden && CurrentLevel <= LevelIDs_MRGarden)
-				return 0; 
-			
-			if (IsHubBanned && CurrentLevel >= LevelIDs_StationSquare && CurrentLevel <= LevelIDs_Past || IsBossBanned && CurrentLevel >= LevelIDs_Chaos0 && CurrentLevel <= LevelIDs_E101R)
-				return 0;  
+	//bug fixes (Disable AI if necessary to avoid crash
+	if (!isTailsAIAllowed())
+		return 0x0;
 
-			if (IsTCBanned && CurrentLevel == LevelIDs_TwinkleCircuit || CurrentCharacter == Characters_Tails || CurrentChaoStage == 1)
-				return 0;  
+	//Player Settings
+	if (IsChaoGardenBanned && CurrentLevel >= LevelIDs_SSGarden && CurrentLevel <= LevelIDs_MRGarden)
+		return 0; 
+	
+	if (IsHubBanned && CurrentLevel >= LevelIDs_StationSquare && CurrentLevel <= LevelIDs_Past || IsBossBanned && CurrentLevel >= LevelIDs_Chaos0 && CurrentLevel <= LevelIDs_E101R)
+		return 0;  
 
-			if (CurrentLevel == LevelIDs_EggCarrierInside && CurrentAct == 5 || CurrentLevel == LevelIDs_Casinopolis && CurrentAct > 1)
-				return 0;
+	if (IsTCBanned && CurrentLevel == LevelIDs_TwinkleCircuit || CurrentCharacter == Characters_Tails || CurrentChaoStage == 1)
+		return 0;  
 
+	//General Place where we don't want AI to spawn
+	if (CurrentLevel == LevelIDs_EggCarrierInside && CurrentAct == 5 || CurrentLevel == LevelIDs_Casinopolis && CurrentAct > 1)
+		return 0;
 
-			//Story plot check for coherent Tails AI spawn (if setting enabled)
+	//Story plot check for coherent Tails AI spawn (if setting enabled)
+	if (IsStoryIA)
+	{
+		if (CurrentCharacter == Characters_Sonic) {
+			if (EventFlagArray[EventFlags_Sonic_EmeraldCoastClear] == 0 || (EventFlagArray[EventFlags_Sonic_GammaDefeated] == 1 && EventFlagArray[EventFlags_SonicAdventureComplete] == 0))
+				return 0x0; //don't load Tails until we rescue him and don't load him after gamma's defeat
 
-			if (IsStoryIA)
+			if (SonicSkyChaseAct1Clear == 1 && EventFlagArray[EventFlags_Sonic_RedMountainClear] == 0)
 			{
-				switch (CurrentCharacter)
-				{
-				case Characters_Sonic:
-					if (EventFlagArray[EventFlags_Sonic_EmeraldCoastClear] == false)
-						return 0x0; //don't load Tails until we rescue him.
-
-					if (SonicSkyChaseAct1Clear == 1 && EventFlagArray[EventFlags_Sonic_RedMountainClear] == false)
-					{
-						AICutsceneOk = 0;  //don't load Tails after Sky Chase Crash until Sonic and Tails land on the Egg Carrier.
-						return 0x0;
-					}
-
-					if (EventFlagArray[EventFlags_Sonic_GammaDefeated] == true && EventFlagArray[EventFlags_SonicAdventureComplete] == false)
-						return 0x0; //Don't load Tails after Gamma Defeated until we beat the game.
-
-					break;
-				default:
-					return 0x0;
-				}
-			}
-
-			
-			//bug fixes (Disable AI if necessary to avoid crash
-
-			if (!isTailsAIAllowed())
+				AICutsceneOk = 0;  //don't load Tails after Sky Chase Crash until Sonic and Tails land on the Egg Carrier.
 				return 0x0;
-
-			if (CurrentCharacter == Characters_Sonic)
-			{
-				switch (CurrentLevel)
-				{
-				case LevelIDs_MysticRuins:
-					if (!GetCutsceneFlagArray(0x00B) && IceCapFlag)
-						return 0x0; //Fix Knuckles AI behavior.
-
-					if (EventFlagArray[EventFlags_Sonic_EggViperClear] == true && EventFlagArray[EventFlags_SonicAdventureComplete] == false)
-						return 0x0; //fix funny ending crash
-					
-					break;
-				case LevelIDs_RedMountain:
-					if (EventFlagArray[EventFlags_Sonic_RedMountainClear] == false && CurrentAct >= 1)
-						return 0x0; //Tornado cutscene
-		
-					break;
-				}
 			}
-
-
-
-			if (CurrentCharacter == Characters_Big && CurrentAct == 2 && CurrentLevel == LevelIDs_StationSquare) {
-
-				if (EventFlagArray[EventFlags_Big_TwinkleParkClear] == false)
-					return 0x0; //fix Sonic AI fight
-			}
-
-
-			if (SelectedCharacter == 6) //if Super Sonic Story
-			{
-				if (!AICutsceneOk && CurrentLevel == LevelIDs_MysticRuins)
-					return 0x0; //fix Super Sonic cutscene crash.
-
-				if (IsStoryIA && CurrentLevel == LevelIDs_Past)
-					return 0x0; //Don't load Tails in the past if story option is enabled.
-				
-				if (CurrentLevel == LevelIDs_PerfectChaos)
-					return 0x0;  //Fight harder, for no reason.
-			}
-
-			isAIActive = true;
-			return 1; //Return Load AI
 		}
-}
-
-
-//Load Tails AI
-ObjectMaster* Load2PTails_r(ObjectMaster* player1) 
-{
-	if (!ForceAI)
-		FlagAI = CheckTailsAI_R();
-	else
-		FlagAI = 1;
-
-
-	if (FlagAI != 1 || EV_MainThread_ptr)
-	{
-		isAIActive = false;
-		return (ObjectMaster*)0x0;
+		else {
+			return 0x0;
+		}
 	}
-	else
-	{
-		ObjectMaster* v1 = LoadObject(LoadObj_Data1, 0, TailsAI_Main);
-		TailsAI_ptr = v1;
+	
 
-		if (v1)
+	if (CurrentCharacter == Characters_Sonic)
+	{
+		switch (CurrentLevel)
 		{
-			v1->Data1->CharID = (char)Characters_Tails;
-			v1->Data1->CharIndex = 1;
-			v1->DeleteSub = TailsAI_Delete;
+		case LevelIDs_MysticRuins:
+			if (!GetCutsceneFlagArray(0x00B) && IceCapFlag)
+				return 0x0; //Fix Knuckles AI behavior.
 
-			ObjectMaster* v3 = LoadCharObj(1); //load AI 
-			isAIActive = true;
-			ForceAI = false;
-			v3->Data1->Position.x = v1->Data1->Position.x - njCos(v1->Data1->Rotation.y) * 30;
-			v3->Data1->Position.y = v1->Data1->Position.y;
-			v3->Data1->Position.z = v1->Data1->Position.z - njSin(v1->Data1->Rotation.y) * 30;
+			if (EventFlagArray[EventFlags_Sonic_EggViperClear] == 1 && !EventFlagArray[EventFlags_SonicAdventureComplete])
+				return 0x0; //fix funny ending crash
 			
-			v3->Data1->Action = 0;
-			dword_3B2A304 = 0;
-			return v3;
+			break;
+		case LevelIDs_RedMountain:
+			if (!EventFlagArray[EventFlags_Sonic_RedMountainClear] && CurrentAct >= 1)
+				return 0x0; //Tornado cutscene
+	
+			break;
 		}
 	}
 
-	isAIActive = false;
-	return nullptr;
-}
+	if (CurrentCharacter == Characters_Big && CurrentAct == 2 && CurrentLevel == LevelIDs_StationSquare) {
 
-void LoadTails_AI_R() {
+		if (EventFlagArray[EventFlags_Big_TwinkleParkClear] == false)
+			return 0x0; //fix Sonic AI fight
+	}
 
-	if (banCharacter[CurrentCharacter] == true)
-		return;
+	if (SelectedCharacter == 6) //Super Sonic Story
+	{
+		if (!AICutsceneOk && CurrentLevel == LevelIDs_MysticRuins)
+			return 0x0; //fix Super Sonic cutscene crash.
 
-	ObjectMaster* obj;
-	obj = GetCharacterObject(0);
-	ObjectMaster* lastobj = obj;
-	ObjectMaster* o2 = nullptr;
-	o2 = Load2PTails_r(obj);
+		if (IsStoryIA && CurrentLevel == LevelIDs_Past)
+			return 0x0; //Don't load Tails in the past if story option is enabled.
+		
+		if (CurrentLevel == LevelIDs_PerfectChaos)
+			return 0x0;  //Fight harder, for no reason.
+	}
 
-	return;
+	isAIActive = true;
+	return 1; //Return Load AI
 }
 
 
@@ -246,36 +162,6 @@ NJS_VECTOR UnitMatrix_GetPoint(NJS_VECTOR* orig, Rotation3* rot, float x, float 
 }
 
 
-//Tails AI Snowboard
-
-void LoadAISnowBoard_R() {
-
-	ForcePlayerAction(0, 0x2c);
-
-	//Load Tails AI Snowboard when playing Sonic
-	if (CurrentCharacter == Characters_Sonic && isAIActive) 
-	{
-			ForcePlayerAction(1, 44); //Force AI to use Snowboard
-			ObjectMaster* v1 = LoadObject((LoadObj)(LoadObj_Data1 | LoadObj_Data2), 2, Snowboard_Tails_Load);
-			if (v1 != nullptr)
-			{
-				v1->Data1->CharID = 1;
-				v1->Data1->CharIndex = 1;
-				return;
-			}
-	}
-}
-
-void LoadCharacter_r()
-{
-
-	if (banCharacter[CurrentCharacter] != true && !EV_MainThread_ptr && !EntityData1Ptrs[1])
-		LoadTails_AI_R();
-
-	LoadCharacter(); //call original function
-
-	return;
-}
 
 //While load result: Teleport AI close to the player and Force Victory Pose.
 
@@ -342,6 +228,25 @@ void PreventTailsAIDamage() {
 	}
 }
 
+//Tails AI Snowboard
+
+void LoadAISnowBoard_R() {
+
+	ForcePlayerAction(0, 0x2c);
+
+	//Load Tails AI Snowboard when playing Sonic
+	if (CurrentCharacter == Characters_Sonic && isAIActive)
+	{
+		ForcePlayerAction(1, 44); //Force AI to use Snowboard
+		ObjectMaster* v1 = LoadObject((LoadObj)(LoadObj_Data1 | LoadObj_Data2), 2, Snowboard_Tails_Load);
+		if (v1 != nullptr)
+		{
+			v1->Data1->CharID = 1;
+			v1->Data1->CharIndex = 1;
+			return;
+		}
+	}
+}
 
 void SnowboardRespawn() { 
 
@@ -359,6 +264,69 @@ void SnowboardRespawn() {
 }
 
 
+ObjectMaster* LoadMilesAI()
+{
+	ObjectMaster* obj = LoadObject((LoadObj)(LoadObj_UnknownA | LoadObj_Data1 | LoadObj_Data2), 1, Tails_Main);
+	obj->Data1->CharID = Characters_Tails;
+	obj->Data1->CharIndex = (char)1;
+	EntityData1Ptrs[1] = (EntityData1*)obj->Data1;
+	EntityData2Ptrs[1] = (EntityData2*)obj->Data2;
+	return obj;
+}
+
+//Load Tails AI
+ObjectMaster* Load2PTails_r() {
+	if (!ForceAI)
+		FlagAI = CheckTailsAI_R();
+	else
+		FlagAI = 1;
+
+
+	if (FlagAI != 1 || EV_MainThread_ptr)
+	{
+		isAIActive = false;
+		return (ObjectMaster*)0x0;
+	}
+	else
+	{
+		ObjectMaster* v1 = LoadObject(LoadObj_Data1, 0, TailsAI_Main);
+		TailsAI_ptr = v1;
+
+		if (v1)
+		{
+			v1->Data1->CharID = (char)Characters_Tails;
+			v1->Data1->CharIndex = 1;
+			v1->DeleteSub = TailsAI_Delete;
+
+			ObjectMaster* v3 = LoadMilesAI(); //load AI 
+			isAIActive = true;
+			ForceAI = false;
+			v3->Data1->Position.x = v1->Data1->Position.x - njCos(v1->Data1->Rotation.y) * 30;
+			v3->Data1->Position.y = v1->Data1->Position.y;
+			v3->Data1->Position.z = v1->Data1->Position.z - njSin(v1->Data1->Rotation.y) * 30;
+
+			v3->Data1->Action = 0;
+			dword_3B2A304 = 0;
+			return v3;
+		}
+	}
+
+	isAIActive = false;
+	return nullptr;
+}
+
+
+void LoadCharacter_r() {
+
+	if (banCharacter[CurrentCharacter] != true && !EV_MainThread_ptr && !EntityData1Ptrs[1])
+		Load2PTails_r();
+
+	LoadCharacter(); //call original function
+
+	return;
+}
+
+
 void MilesAI_OnFrames() {
 
 	if (GameState != 15 || !EntityData1Ptrs[0] || !EntityData1Ptrs[1] || EntityData1Ptrs[1]->CharID != Characters_Tails || !TailsAI_ptr)
@@ -368,8 +336,6 @@ void MilesAI_OnFrames() {
 	SnowboardRespawn();
 	//FlySoundOnFrames();
 }
-
-
 
 void AI_Init(const HelperFunctions& helperFunctions) {
 
