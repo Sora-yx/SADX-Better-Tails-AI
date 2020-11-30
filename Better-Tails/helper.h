@@ -9,10 +9,10 @@ void DisableTime_R(); //result screen Stuff
 void LoadAISnowBoard_R(); //Load Snowboard for Tails AI
 
 ObjectMaster* Load2PTails_r(); //Load Tails AI 
-float GetDistance(NJS_VECTOR* orig, NJS_VECTOR* dest);
 void FixAIHubTransition();
 void FixAIHubTransition2();
 void LoadCharacter_r();
+void LookAt(NJS_VECTOR* from, NJS_VECTOR* to, Angle* outx, Angle* outy);
 void AI_Init(const HelperFunctions& helperFunctions);
 
 void moveAItoPlayer();
@@ -21,11 +21,24 @@ void AllowTailsAI_R();
 void CheckAndDeleteAI();
 void AI_Fixes();
 void DeleteTailsAI();
+void SnowboardRespawn();
+void AI_Improvement();
+int isCharacterPetting();
 
-void OTaraiChild_Main_r(ObjectMaster* obj);
+bool IsSpecificPlayerInSphere(NJS_VECTOR* center, float radius, uint8_t player);
 VoidFunc(OTaraiChild_Main, 0x52c8f0);
 void MilesAI_OnFrames();
 NJS_VECTOR UnitMatrix_GetPoint(NJS_VECTOR* orig, Rotation3* rot, float x, float y, float z);
+float GetSquare(NJS_VECTOR* orig, NJS_VECTOR* dest);
+float GetDistance(NJS_VECTOR* orig, NJS_VECTOR* dest);
+float CheckDistance(NJS_VECTOR* vec1, NJS_VECTOR* vec2);
+void PlayerLookAt(NJS_VECTOR* from, NJS_VECTOR* to, Angle* outx, Angle* outy);
+
+FunctionPointer(long, Chao_Pleasure, (ObjectMaster* Chao), 0x75db80);
+FunctionPointer(void, Chao_SetBehavior, (ObjectMaster* Chao, long* a2), 0x71EF10);
+
+//Sphere check functions
+
 
 VoidFunc(FUN_0042ce20, 0x42ce20); //Called with Delete Tails AI
 DataPointer(int, dword_3B2A304, 0x3B2A304);

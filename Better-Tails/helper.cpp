@@ -1,6 +1,119 @@
 #include "stdafx.h"
 
 
+//teleport AI to Player 
+void moveAItoPlayer() {
+
+	if (isAIActive)
+	{
+		if (EntityData1Ptrs[0] && EntityData1Ptrs[1])
+		{
+			EntityData1* p1 = EntityData1Ptrs[0];
+			EntityData1* p2 = EntityData1Ptrs[1];
+
+			if (CurrentCharacter != Characters_Big && CurrentCharacter != Characters_Gamma)
+				p2->Position = UnitMatrix_GetPoint(&p1->Position, &p1->Rotation, -7.0f, 0.0f, 5.0f);
+			else
+				p2->Position = UnitMatrix_GetPoint(&p1->Position, &p1->Rotation, -10.0f, 0.0f, 8.0f);
+		}
+	}
+
+	return;
+}
+
+
+NJS_VECTOR UnitMatrix_GetPoint(NJS_VECTOR* orig, Rotation3* rot, float x, float y, float z) {
+	NJS_VECTOR point;
+
+	njPushMatrix(_nj_unit_matrix_);
+	njTranslateV(0, orig);
+	if (rot) njRotateXYZ(0, rot->x, rot->y, rot->z);
+	njTranslate(0, x, y, z);
+	njGetTranslation(_nj_current_matrix_ptr_, &point);
+	njPopMatrix(1u);
+
+	return point;
+}
+
+float GetSquare(NJS_VECTOR* orig, NJS_VECTOR* dest) {
+	return powf(dest->x - orig->x, 2) + powf(dest->y - orig->y, 2) + powf(dest->z - orig->z, 2);
+}
+
+
+float CheckDistance(NJS_VECTOR* vec1, NJS_VECTOR* vec2) {
+	float x_dist = vec2->x - vec1->x;
+	float y_dist = vec2->y - vec1->y;
+	float z_dist = vec2->z - vec1->z;
+
+	float len = y_dist * y_dist + x_dist * x_dist + z_dist * z_dist;
+
+	if (len < 0.02500000037252903)
+	{
+		return 0.0f;
+	}
+
+	return sqrt(len);
+}
+
+void LookAt(NJS_VECTOR* from, NJS_VECTOR* to, Angle* outx, Angle* outy) {
+	NJS_VECTOR unit = *to;
+
+	njSubVector(&unit, from);
+
+	if (outy) {
+		*outy = static_cast<Angle>(atan2f(unit.x, unit.z) * 65536.0f * 0.1591549762031479f);
+	}
+
+	if (outx) {
+		if (from->y == to->y) {
+			*outx = 0;
+		}
+		else {
+			Float len = 1.0f / squareroot(unit.z * unit.z + unit.x * unit.x + unit.y * unit.y);
+
+			*outx = static_cast<Angle>((acos(len * 3.3499999f) * 65536.0f * 0.1591549762031479f)
+				- (acos(-(len * unit.y)) * 65536.0f * 0.1591549762031479f));
+		}
+	}
+}
+
+
+void PlayerLookAt(NJS_VECTOR* from, NJS_VECTOR* to, Angle* outx, Angle* outy) {
+	LookAt(from, to, outx, outy);
+
+	if (outy) {
+		*outy = -(*outy) + 0x4000;
+	}
+}
+
+//Sphere check functions
+float GetDistance(NJS_VECTOR* orig, NJS_VECTOR* dest) {
+	return sqrtf(powf(dest->x - orig->x, 2) + powf(dest->y - orig->y, 2) + powf(dest->z - orig->z, 2));
+}
+
+bool IsPointInsideSphere(NJS_VECTOR* center, NJS_VECTOR* pos, float radius) {
+	return GetDistance(center, pos) <= radius;
+}
+
+int IsPlayerInsideSphere_(NJS_VECTOR* center, float radius) {
+	for (uint8_t player = 0; player < MaxPlayers; ++player) {
+		if (!EntityData1Ptrs[player])
+			continue;
+
+		NJS_VECTOR* pos = &EntityData1Ptrs[player]->Position;
+		if (IsPointInsideSphere(center, pos, radius)) {
+			return player + 1;
+		}
+	}
+
+	return 0;
+}
+
+bool IsSpecificPlayerInSphere(NJS_VECTOR* center, float radius, uint8_t player) {
+	return IsPlayerInsideSphere_(center, radius) == player + 1;
+}
+
+
 //Fix AI Start Position in hub world
 
 void FixAIHubTransition() {
@@ -13,7 +126,7 @@ void FixAIHubTransition() {
 			return;
 
 		if (CurrentLevel > LevelIDs_E101R && CurrentLevel < LevelIDs_TwinkleCircuit)
-			moveAItoPlayer(); //teleport AI
+			moveAItoPlayer(); 
 	}
 
 	return;
@@ -28,12 +141,12 @@ void FixAIHubTransition2() {
 		if (CurrentCharacter != Characters_Big)
 		{
 			if (CurrentLevel == LevelIDs_StationSquare && (CurrentAct == 3 || CurrentAct == 1) || CurrentLevel >= LevelIDs_ECGarden && CurrentLevel < LevelIDs_ChaoRace)
-				moveAItoPlayer(); //teleport AI
+				moveAItoPlayer(); 
 		}
 		else
 		{
 			if (CurrentLevel == LevelIDs_StationSquare && CurrentAct == 1 || CurrentLevel >= LevelIDs_ECGarden && CurrentLevel < LevelIDs_ChaoRace)
-				moveAItoPlayer(); //teleport AI
+				moveAItoPlayer(); 
 		}
 	}
 
@@ -181,49 +294,6 @@ void AllowTailsAI_R()
 	return EnableControl();
 }
 
-//Sphere check functions
-float GetDistance(NJS_VECTOR* orig, NJS_VECTOR* dest) {
-	return sqrtf(powf(dest->x - orig->x, 2) + powf(dest->y - orig->y, 2) + powf(dest->z - orig->z, 2));
-}
-
-bool IsPointInsideSphere(NJS_VECTOR* center, NJS_VECTOR* pos, float radius) {
-	return GetDistance(center, pos) <= radius;
-}
-
-int IsPlayerInsideSphere_(NJS_VECTOR* center, float radius) {
-	for (uint8_t player = 0; player < MaxPlayers; ++player) {
-		if (!EntityData1Ptrs[player]) continue;
-
-		NJS_VECTOR* pos = &EntityData1Ptrs[player]->Position;
-		if (IsPointInsideSphere(center, pos, radius)) {
-			return player + 1;
-		}
-	}
-
-	return 0;
-}
-
-bool IsSpecificPlayerInSphere(NJS_VECTOR* center, float radius, uint8_t player) {
-	return IsPlayerInsideSphere_(center, radius) == player + 1;
-}
-
-
-
-
-static Trampoline OTaraiChild_Main_t((int)OTarai, (int)OTarai + 0x5, OTaraiChild_Main_r);
-
-//static Trampoline OTaraiChild_Main_t((int)OTaraiChild_Main, (int)OTaraiChild_Main + 0x6, OTaraiChild_Main_r);
-
-void OTaraiChild_Main_r(ObjectMaster* obj) {
-
-
-	if (IsSpecificPlayerInSphere(&obj->Data1->Position, 20, 1))
-		EntityData1Ptrs[1]->Position.x += 20;
-
-	ObjectFunc(origin, OTaraiChild_Main_t.Target());
-	origin(obj);
-}
-
 
 void CheckAndDeleteAI() {
 
@@ -250,6 +320,8 @@ void DeleteTailsAI() {
 }
 
 void AI_Fixes() {
+
+
 
 	if (IsHubBanned)
 		return;

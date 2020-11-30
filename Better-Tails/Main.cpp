@@ -8,7 +8,7 @@ bool ForceAI = false;
 int AICutsceneOk = 0;
 
 
-MilesAI_Spawn TailsArray[] {
+MilesAI_Spawn TailsArray[] { //Used to prevent Miles to be called in some very specfic places/cutscenes where the game will crash.
 	{ Characters_Sonic, LevelIDs_StationSquare, EventFlags_Sonic_EmeraldCoastClear, 0x006 },
 	{ Characters_Sonic, LevelIDs_StationSquare, EventFlags_Sonic_CasinopolisClear, 0x009 },
 	{ Characters_Sonic, LevelIDs_EggCarrierOutside, EventFlags_Sonic_RedMountainClear, 0x100},
@@ -27,7 +27,7 @@ bool isTailsAIAllowed() {
 
 	for (uint8_t i = 0; i < LengthOfArray(TailsArray); i++) {
 
-		if (CurrentCharacter == TailsArray[i].curCharacter && CurrentLevel == TailsArray[i].curLevel && !GetCutsceneFlagArray(TailsArray[i].cutsceneFlag))
+		if (CurrentCharacter == TailsArray[i].curCharacter && CurrentLevel == TailsArray[i].curLevel && !GetCutsceneFlagArray(TailsArray[i].cutsceneFlag)) //if the cutscene didn't play, don't call Tails
 		{
 			if (EventFlagArray[TailsArray[i].eventFlag] == 1)
 				return false;
@@ -36,8 +36,8 @@ bool isTailsAIAllowed() {
 
 	return true;
 }
-//Tails AI Flag Check
 
+//Tails AI Flag Check
 int CheckTailsAI_R(void) {
 
 	isAIActive = false;
@@ -53,7 +53,7 @@ int CheckTailsAI_R(void) {
 		return 0x0;
 
 	//Player Settings
-	if (IsChaoGardenBanned && CurrentLevel >= LevelIDs_SSGarden && CurrentLevel <= LevelIDs_MRGarden)
+	if (CurrentLevel >= LevelIDs_SSGarden && CurrentLevel <= LevelIDs_MRGarden && (IsChaoGardenBanned || CurrentChaoStage < 4 && CurrentChaoStage > 6))
 		return 0; 
 	
 	if (IsHubBanned && CurrentLevel >= LevelIDs_StationSquare && CurrentLevel <= LevelIDs_Past || IsBossBanned && CurrentLevel >= LevelIDs_Chaos0 && CurrentLevel <= LevelIDs_E101R)
@@ -127,42 +127,6 @@ int CheckTailsAI_R(void) {
 	return 1; //Return Load AI
 }
 
-
-//teleport AI to Player 
-
-void moveAItoPlayer() {
-
-	if (isAIActive) //Move AI to player 1
-	{
-		if (EntityData1Ptrs[0] && EntityData1Ptrs[1])
-		{
-			EntityData1* p1 = EntityData1Ptrs[0];
-			EntityData1* p2 = EntityData1Ptrs[1];
-
-			if (CurrentCharacter != Characters_Big && CurrentCharacter != Characters_Gamma)
-				p2->Position = UnitMatrix_GetPoint(&p1->Position, &p1->Rotation, -7.0f, 0.0f, 5.0f);
-			else
-				p2->Position = UnitMatrix_GetPoint(&p1->Position, &p1->Rotation, -10.0f, 0.0f, 8.0f);
-
-		}
-	}
-}
-
-NJS_VECTOR UnitMatrix_GetPoint(NJS_VECTOR* orig, Rotation3* rot, float x, float y, float z) {
-	NJS_VECTOR point;
-
-	njPushMatrix(_nj_unit_matrix_);
-	njTranslateV(0, orig);
-	if (rot) njRotateXYZ(0, rot->x, rot->y, rot->z);
-	njTranslate(0, x, y, z);
-	njGetTranslation(_nj_current_matrix_ptr_, &point);
-	njPopMatrix(1u);
-
-	return point;
-}
-
-
-
 //While load result: Teleport AI close to the player and Force Victory Pose.
 
 void DisableTime_R() {
@@ -224,41 +188,6 @@ void PreventTailsAIDamage() {
 	else {
 		if ((CharObj2Ptrs[1]->Powerups & Powerups_Invincibility) == Powerups_Invincibility) {
 			CharObj2Ptrs[1]->Powerups &= 0x100u; //Remove invincibility
-		}
-	}
-}
-
-//Tails AI Snowboard
-
-void LoadAISnowBoard_R() {
-
-	ForcePlayerAction(0, 0x2c);
-
-	//Load Tails AI Snowboard when playing Sonic
-	if (CurrentCharacter == Characters_Sonic && isAIActive)
-	{
-		ForcePlayerAction(1, 44); //Force AI to use Snowboard
-		ObjectMaster* v1 = LoadObject((LoadObj)(LoadObj_Data1 | LoadObj_Data2), 2, Snowboard_Tails_Load);
-		if (v1 != nullptr)
-		{
-			v1->Data1->CharID = 1;
-			v1->Data1->CharIndex = 1;
-			return;
-		}
-	}
-}
-
-void SnowboardRespawn() { 
-
-	EntityData1* data = EntityData1Ptrs[1];
-
-	if (data->Action == 15) { 
-		if (EntityData1Ptrs[0]->Action >= 62 && EntityData1Ptrs[0]->Action <= 68 && CurrentCharacter == Characters_Sonic) { //Make Tails using snowboard again when trying to catch Sonic
-			EntityData1Ptrs[1]->Status &= ~(Status_Attack | Status_Ball | Status_LightDash);
-			CharObj2Ptrs[1]->PhysicsData.CollisionSize = PhysicsArray[Characters_Tails].CollisionSize; //Reset Miles physic properly
-			CharObj2Ptrs[1]->PhysicsData.YOff = PhysicsArray[Characters_Tails].YOff;
-			CharObj2Ptrs[1]->PhysicsData.JumpSpeed = PhysicsArray[Characters_Tails].JumpSpeed;
-			ForcePlayerAction(1, 44);
 		}
 	}
 }
@@ -327,6 +256,8 @@ void LoadCharacter_r() {
 }
 
 
+
+
 void MilesAI_OnFrames() {
 
 	if (GameState != 15 || !EntityData1Ptrs[0] || !EntityData1Ptrs[1] || EntityData1Ptrs[1]->CharID != Characters_Tails || !TailsAI_ptr)
@@ -334,6 +265,7 @@ void MilesAI_OnFrames() {
 
 	PreventTailsAIDamage();
 	SnowboardRespawn();
+
 	//FlySoundOnFrames();
 }
 
@@ -347,14 +279,8 @@ void AI_Init(const HelperFunctions& helperFunctions) {
 
 	WriteData<5>((void*)0x415948, 0x90); //remove the original load2PTails in LoadCharacter as we use a custom one
 	
-	//Miles General Improvement
-	WriteCall((void*)0x597b14, LoadAISnowBoard_R);  //Load AI Snowboard when playing Sand Hill 
-	WriteCall((void*)0x4ea091, LoadAISnowBoard_R);  //Load AI Snowboard when playing Ice Cap.
-	WriteCall((void*)0x4e9664, LoadAISnowBoard_R);
-
-	WriteData<6>((int*)0x47ea72, 0x90); //remove the unnecessary high altitude when Tails AI respawn, so he can catch you faster
-	WriteData<1>((int*)0x47DC5D, 0xF2); //Reduce the Tails "Range out" check so he can catch faster. (changing the float value from 1000 to 352)
-	WriteData<1>((int*)0x47DC5C, 0xF0);
+	AI_Fixes();
+	AI_Improvement();
 	
 	ReplaceSound("P_SONICTAILS_BANK03", "P_SONICTAILS_BANK03");
 }

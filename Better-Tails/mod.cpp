@@ -40,7 +40,7 @@ extern "C" {
 
 			//Tails AI Stuff (Load, Fixes...)
 			AI_Init(helperFunctions);
-			AI_Fixes();
+
 
 			WriteCall((void*)0x415556, DisableTime_R); //While result screen, force Tails AI to victory pose.
 		}
