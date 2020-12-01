@@ -49,7 +49,14 @@ extern "C" {
 	__declspec(dllexport) void __cdecl OnFrame()
 	{
 		MilesAI_OnFrames();
-		//DisplayDebugStringFormatted(NJM_LOCATION(2, 1), "Is AI Active: %d", isAIActive);
+
+		if (!EntityData1Ptrs[1])
+			return;
+
+
+		DisplayDebugStringFormatted(NJM_LOCATION(2, 1), "Pressed: %d", ControllerPointers[1]->PressedButtons);
+		DisplayDebugStringFormatted(NJM_LOCATION(2, 2), "Pressed: %d", ControllerPointers[1]->HeldButtons);
+		DisplayDebugStringFormatted(NJM_LOCATION(2, 3), "Pressed: %d", EntityData1Ptrs[1]->Action);
 	}
 
 	__declspec(dllexport) ModInfo SADXModInfo = { ModLoaderVer };

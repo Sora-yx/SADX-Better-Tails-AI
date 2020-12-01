@@ -89,10 +89,31 @@ extern bool ForceAI;
 extern int AICutsceneOk;
 extern bool IsStoryIA;
 extern bool banCharacter[8];
+extern bool isChaoPetByAI;
 
 struct MilesAI_Spawn {
 	int curCharacter;
 	int curLevel;
 	int eventFlag;
 	int cutsceneFlag;
+};
+
+struct MilesAI_Fly {
+	uint8_t level;
+	uint8_t act;
+	NJS_VECTOR destination;
+};
+
+struct Map_Cursor {
+	NJS_VECTOR pos;
+	float x;
+	float y;
+};
+
+enum ETailsGrab {
+	initFly,
+	getAltitude,
+	checkGrab,
+	grabbed,
+	leaving
 };

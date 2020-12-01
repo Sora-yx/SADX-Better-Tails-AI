@@ -3,6 +3,8 @@
 //every improvement and new abilities for Tails go here.
 
 Trampoline* Chao_Main_t;
+Trampoline* TailsAI_Main_t;
+ObjectMaster* TailsGrab = nullptr;
 
 //Load Tails AI Snowboard when playing Sonic
 void LoadAISnowBoard_R() {
@@ -74,6 +76,7 @@ void MakeAIPetChao(ObjectMaster* Chao) {
 	case 0:
 		if (++p2->Unknown == 40)
 		{
+			data->InvulnerableTime = 0;
 			data->Index = 1;
 		}
 		break;
@@ -104,7 +107,6 @@ void Chao_Main_R(ObjectMaster* obj) {
 
 	if (IsPlayerInsideSphere(&obj->Data1->Position, 10)) {
 		CheckAndMakeAIPetChao(obj);
-	
 	}
 	
 	if (p1->Action != isCharacterPetting() && isChaoPetByAI) {
@@ -116,6 +118,102 @@ void Chao_Main_R(ObjectMaster* obj) {
 	}
 
 	ObjectFunc(origin, Chao_Main_t->Target());
+	origin(obj);
+}
+
+void TailsAI_Grab(ObjectMaster* obj) {
+
+	if (!EntityData1Ptrs[0] || !EntityData1Ptrs[1] || GameState != 15)
+		CheckThingButThenDeleteObject(obj);
+
+	EntityData1* p1 = EntityData1Ptrs[0];
+	EntityData1* p2 = EntityData1Ptrs[1];
+	EntityData1* data = obj->Data1;
+	CharObj2* co2p1 = CharObj2Ptrs[0];
+	CharObj2* co2p2 = CharObj2Ptrs[1];
+
+
+		if (data->Action > 0 && data->Action < 3) {
+
+			if (++data->InvulnerableTime == 300) {
+				data->Action = leaving;
+			}
+		}
+
+		if (data->Action == 3)
+		{
+			if (ControllerPointers[0]->PressedButtons & Buttons_A || ControllerPointers[0]->PressedButtons & Buttons_B) {
+				co2p1->AnimationThing.Index = 14;
+				p1->Status |= Status_Ball;
+				data->Action = leaving;
+			}
+		}
+	
+
+		switch (data->Action)
+		{
+		case initFly:
+				data->Position = p2->Position;
+				EnableController(1);
+				ControllerPointers[1]->PressedButtons |= Buttons_A;
+				data->Action = getAltitude;
+			break;
+		case getAltitude:
+			if (p2->Position.y < p1->Position.y + 15) {
+				ControllerPointers[1]->PressedButtons = 0;
+				ControllerPointers[1]->HeldButtons |= Buttons_A;
+			}
+			else {
+				p2->Action = 125;
+				data->Action = checkGrab;
+			}
+			break;
+		case checkGrab:
+			CharObj2Ptrs[1]->AnimationThing.Index = 37;
+			if (GetCollidingEntityA(p2)) {
+				ControllerPointers[1]->HeldButtons = 0;
+				DisableController(1);
+				p1->Status &= ~(Status_Attack | Status_Ball | Status_LightDash);
+				p1->Action = 125;
+				data->Action = 3;
+			}
+			break;
+		case grabbed:
+			CharObj2Ptrs[0]->AnimationThing.Index = 47;
+			co2p2->Speed = co2p1->Speed;
+			p1->Position = p2->Position;
+			p1->Position.y -= 6.5f;
+			p1->Rotation = p2->Rotation;
+			break;
+		case leaving:
+			if (p1->Action == 125) {
+				p1->Action = 8;
+				p1->Status &= 0x100u;
+			}
+			p2->Status &= 0x100u;
+			ControllerPointers[1]->PressedButtons = 0;
+			ControllerPointers[1]->HeldButtons = 0;
+			DisableController(1);
+			p2->Action = 10;
+			TailsGrab = nullptr;
+			CheckThingButThenDeleteObject(obj);
+			break;
+		}
+	
+
+}
+
+void TailsAI_Main_R(ObjectMaster* obj) {
+
+	if (obj->Data1->Action > 0) {
+		if (ControllerPointers[0]->PressedButtons & Buttons_Z)
+		{
+			if (!TailsGrab)
+				TailsGrab = LoadObject((LoadObj)2, 1, TailsAI_Grab);
+		}
+	}
+
+	ObjectFunc(origin, TailsAI_Main_t->Target());
 	origin(obj);
 }
 
@@ -132,4 +230,5 @@ void AI_Improvement() {
 	WriteData<1>((int*)0x47DC5C, 0xF0);
 
 	Chao_Main_t = new Trampoline((int)Chao_Main, (int)Chao_Main + 0x6, Chao_Main_R);
+	TailsAI_Main_t = new Trampoline((int)TailsAI_Main, (int)TailsAI_Main + 0x5, TailsAI_Main_R);
 }

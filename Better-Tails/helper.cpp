@@ -164,6 +164,7 @@ void TailsAI_ResetValue() {
 //Reset value when the player quit or soft reset
 void SoftReset_R() {
 
+	isChaoPetByAI = false; //just to be safe
 	ForceAI = false;
 	isAIActive = false;
 	AICutsceneOk = 0;
