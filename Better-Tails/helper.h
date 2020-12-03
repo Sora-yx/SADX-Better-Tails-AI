@@ -105,7 +105,6 @@ struct MilesAI_Fly {
 };
 
 struct Map_Cursor {
-	NJS_VECTOR pos;
 	float x;
 	float y;
 };
@@ -115,5 +114,8 @@ enum ETailsGrab {
 	getAltitude,
 	checkGrab,
 	grabbed,
+	transitionMap,
+	displayMap,
+	movetoDestination,
 	leaving
 };
