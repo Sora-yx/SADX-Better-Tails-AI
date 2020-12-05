@@ -56,6 +56,8 @@ FunctionPointer(int, GetCutsceneFlagArray, (int cutscene), 0x42fb10);
 
 FunctionPointer(void, Start_Cutscene, (int cutscene), 0x4136e0);
 
+FunctionPointer(void, drawMapBG, (float x, float y), 0x458C00);
+
 DataPointer(char, IceCapFlag, 0x3B188B4);
 DataPointer(char, AmyTPFieldOpen, 0x3B1894C);
 DataPointer(unsigned char, SelectedCharacter, 0x3B2A2FD);
@@ -90,7 +92,7 @@ extern int AICutsceneOk;
 extern bool IsStoryIA;
 extern bool banCharacter[8];
 extern bool isChaoPetByAI;
-extern bool isMoving;
+extern uint8_t isMoving;
 
 struct MilesAI_Spawn {
 	int curCharacter;
