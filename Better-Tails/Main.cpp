@@ -163,7 +163,7 @@ void FlySoundOnFrames() {
 	if (GameState != 15 || !EntityData1Ptrs[1] || !TailsAI_ptr)
 		return;
 
-	if (EntityData1Ptrs[1]->Action == 15 && EntityData1Ptrs[1]->CharID == Characters_Tails) {
+	if (isMoving && EntityData1Ptrs[1]->CharID == Characters_Tails) {
 
 		if (EntityData1Ptrs[1]->Unknown == 0) 
 			PlaySound(0x302, NULL, 0, NULL);
@@ -266,7 +266,7 @@ void MilesAI_OnFrames() {
 	PreventTailsAIDamage();
 	SnowboardRespawn();
 
-	//FlySoundOnFrames();
+	FlySoundOnFrames();
 }
 
 void AI_Init(const HelperFunctions& helperFunctions) {

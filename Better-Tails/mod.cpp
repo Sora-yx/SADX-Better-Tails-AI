@@ -7,6 +7,7 @@ bool IsTCBanned = false;
 bool IsStoryIA = false;
 bool banCharacter[8] = { -1 };
 
+void DisplayCursorAnimation();
 
 extern "C" {
 
@@ -49,7 +50,6 @@ extern "C" {
 	__declspec(dllexport) void __cdecl OnFrame()
 	{
 		MilesAI_OnFrames();
-
 
 		//DisplayDebugStringFormatted(NJM_LOCATION(2, 1), "Pressed: %d", ControllerPointers[1]->PressedButtons);
 	}

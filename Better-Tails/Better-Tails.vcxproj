@@ -133,6 +133,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="abilities.cpp" />
+    <ClCompile Include="fly-travel.cpp" />
     <ClCompile Include="mod.cpp" />
     <ClCompile Include="helper.cpp" />
     <ClCompile Include="main.cpp" />

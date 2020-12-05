@@ -78,7 +78,7 @@ void CallTailsAI_R3();
 VoidFunc(FUN_00412ad0, 0x412ad0); //called when you soft reset / quit
 
 void SoftReset_R();
-
+void FlyTravel_Init();
 
 extern bool IsChaoGardenBanned;
 extern bool IsHubBanned;
@@ -90,6 +90,7 @@ extern int AICutsceneOk;
 extern bool IsStoryIA;
 extern bool banCharacter[8];
 extern bool isChaoPetByAI;
+extern bool isMoving;
 
 struct MilesAI_Spawn {
 	int curCharacter;
