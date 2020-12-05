@@ -51,7 +51,8 @@ extern "C" {
 	{
 		MilesAI_OnFrames();
 
-		//DisplayDebugStringFormatted(NJM_LOCATION(2, 1), "Pressed: %d", ControllerPointers[1]->PressedButtons);
+		if (EntityData1Ptrs[1])
+			DisplayDebugStringFormatted(NJM_LOCATION(2, 1), "pos: %f", EntityData1Ptrs[1]->Position.z);
 	}
 
 	__declspec(dllexport) ModInfo SADXModInfo = { ModLoaderVer };

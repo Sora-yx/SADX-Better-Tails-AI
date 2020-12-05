@@ -1,9 +1,18 @@
 #include "stdafx.h"
 
+
 Trampoline* TailsAI_Main_t;
 Trampoline* MovePlayerToStartPoint_t;
 ObjectMaster* TailsGrab = nullptr;
 bool isMoving = false;
+
+FunctionPointer(void, sub_62ECE0, (unsigned __int16 a1, NJS_VECTOR* p1Pos), 0x62ECE0);
+FunctionPointer(void, sub_51C130, (unsigned __int16 a1, NJS_VECTOR* p1Pos), 0x51C130);
+FunctionPointer(void, sub_525980, (unsigned __int16 a1, NJS_VECTOR* p1Pos), 0x525980);
+FunctionPointer(void, sub_52F9C0, (unsigned __int16 a1, NJS_VECTOR* p1Pos), 0x52F9C0);
+FunctionPointer(void, sub_541BF0, (unsigned __int16 a1, NJS_VECTOR* p1Pos), 0x541BF0);
+
+
 
 NJS_TEXANIM	MilesCursor_TEXANIM[]{
 	{ 0x10, 0x10, 0, 0, 0, 0, 0x100, 0x100, 0, 0x20 },
@@ -54,9 +63,7 @@ void LoadDestination() {
 
 void __cdecl MovePlayerToStartPoint_r(EntityData1* data) {
 	if (isMoving) {
-
-		EntityData1Ptrs[1]->Position = DestinationArray[Cursor].destination;
-		EntityData1Ptrs[0]->Position = EntityData1Ptrs[1]->Position;
+		EntityData1Ptrs[0]->Position = DestinationArray[Cursor].destination;
 		EntityData1Ptrs[0]->Position.y -= 6.5f;
 	}
 	else {
@@ -92,55 +99,66 @@ void CheckAndLoadMapPVM() {
 	LoadPVM("Map_icon", &map_icon_TEXLIST);
 }
 
+void ReleaseAllTravelTexture() {
+	njReleaseTexture(&map_ss_TEXLIST);
+	njReleaseTexture(&map_ec_X_TEXLIST);
+	njReleaseTexture(&map_mr_X_TEXLIST);
+	njReleaseTexture(&map_icon_TEXLIST);
+	njReleaseTexture(&MilesCursor_TEXLIST);
+	Cursor = -1;
+	return;
+}
+
 int setCursorPos(int curLevel, int curAct) {
 	if (curLevel == LevelIDs_StationSquare)
 	{
 		if (curAct == 3)
-			return 0;
+			return Sstation;
 
 		if (curAct == 4)
-			return 1;
+			return ShostelPool;
 
 		if (curAct == 1)
-			return 2;
+			return SCasinoArea;
 
 		if (curAct == 0)
-			return 3;
+			return SChaos0;
 	}
 
 	if (curLevel == LevelIDs_EggCarrierOutside)
-		return 4;
+		return ECarrier;
 
 	if (curLevel == LevelIDs_MysticRuins) {
 
 		if (curAct == 0)
-			return 5;
+			return MRStation;
 
 		if (curAct == 1)
-			return 6;
+			return MRAngelIsland;
 
 		if (curAct == 2)
-			return 7;
+			return MRJungleBig;
 	}
 
 	return -1;
 }
 
 void DisplayCursorAnimation() {
+
 	SetMaterialAndSpriteColor_Float(1, 1, 1, 1);
 
-		float scale = 2.0F;
-		float x = (float)HorizontalResolution / 2.0f;
-		float y = (float)VerticalResolution / 2.0f;
-		float incr = 0x10 * scale;
-		float sclx = 10;
-		float scly = 1;
+	float scale = 3.0F;
+	float x = (float)HorizontalResolution / 2.0f;
+	float y = (float)VerticalResolution / 2.0f;
+	float incr = 0x10 * scale;
+	float sclx = 10;
+	float scly = 1;
 
-		MilesCursor_SPRITE.sx = 2 * scale;
-		MilesCursor_SPRITE.sy = 2 * scale;
-		float newx = x - (incr * sclx / 2 + incr / 2);
-		MilesCursor_SPRITE.p.x = newx;
-		MilesCursor_SPRITE.p.y = y - y / 2;
+	MilesCursor_SPRITE.sx = 2 * scale;
+	MilesCursor_SPRITE.sy = 2 * scale;
+	float newx = x - (incr * sclx / 2 + incr / 2);
+	MilesCursor_SPRITE.p.x = newx;
+	MilesCursor_SPRITE.p.y = y - y / 2;
 
 	if (MilesCurTex >= 14)
 		MilesCurTex = 0;
@@ -167,6 +185,23 @@ void CheckPlayerCursorPos() {
 		Cursor--;
 		CheckAndLoadMapPVM();
 	}
+}
+
+void __cdecl PauseMenu_Map_Display_r() {
+
+	if (Cursor < 0 || Cursor > 8)
+		return;
+
+	if (Cursor >= Sstation && Cursor <= SChaos0)
+		sub_62ECE0((unsigned __int8)CurrentAct, &Current_CharObj1->Position);
+
+	if (Cursor == ECarrier)
+		sub_51C130((unsigned __int8)CurrentAct, &Current_CharObj1->Position);
+
+	if (Cursor >= MRStation && Cursor <= MRJungleBig)
+		sub_52F9C0((unsigned __int8)CurrentAct, &Current_CharObj1->Position);
+
+	return;
 }
 
 void TailsAI_Grab(ObjectMaster* obj) {
@@ -254,8 +289,8 @@ void TailsAI_Grab(ObjectMaster* obj) {
 		break;
 	case displayMap:
 		DisplayDebugStringFormatted(NJM_LOCATION(2, 1), "Cursor Value %d", Cursor);
-		PauseMenu_Map_Display();
 		CheckPlayerCursorPos();
+		PauseMenu_Map_Display_r();
 		DisplayCursorAnimation();
 		if (ControllerPointers[0]->PressedButtons & Buttons_A) {
 			data->Unknown = 0;
@@ -269,13 +304,20 @@ void TailsAI_Grab(ObjectMaster* obj) {
 		p1->Position = p2->Position;
 		p1->Position.y -= 6.5f;
 		p1->Rotation = p2->Rotation;
-		CharObj2Ptrs[1]->Speed.y += 1;
-		CharObj2Ptrs[1]->Speed.x += 1;
-		if (++data->Unknown == 120) {
+		if (++data->Unknown == 60) {
+			CharObj2Ptrs[1]->Speed.y += 2;
+			CharObj2Ptrs[1]->Speed.z += 3;
+		}
+		else {
+			CharObj2Ptrs[1]->Speed.y += 1;
+			CharObj2Ptrs[1]->Speed.x += 1;
+		}
+		if (++data->InvulnerableTime == 180) {
 			LoadDestination();
 		}
 		break;
 	case leaving:
+		ReleaseAllTravelTexture();
 		EnablePause();
 		if (p1->Action == 125) {
 			p1->Action = 8;
@@ -311,7 +353,10 @@ void TailsAI_Main_R(ObjectMaster* obj) {
 	origin(obj);
 }
 
+
+
 void FlyTravel_Init() {
+
 	TailsAI_Main_t = new Trampoline((int)TailsAI_Main, (int)TailsAI_Main + 0x5, TailsAI_Main_R);
 	MovePlayerToStartPoint_t = new Trampoline((int)MovePlayerToStartPoint, (int)MovePlayerToStartPoint + 0x6, MovePlayerToStartPoint_r);
 }

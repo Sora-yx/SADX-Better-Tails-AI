@@ -120,3 +120,15 @@ enum ETailsGrab {
 	movetoDestination,
 	leaving
 };
+
+enum EMilesMap {
+	Sstation,
+	ShostelPool,
+	SCasinoArea,
+	SChaos0,
+	ECarrier,
+	MRStation,
+	MRAngelIsland,
+	MRJungleLW,
+	MRJungleBig
+};

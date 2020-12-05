@@ -230,6 +230,7 @@ ObjectMaster* Load2PTails_r() {
 			ObjectMaster* v3 = LoadMilesAI(); //load AI 
 			isAIActive = true;
 			ForceAI = false;
+		
 			v3->Data1->Position.x = v1->Data1->Position.x - njCos(v1->Data1->Rotation.y) * 30;
 			v3->Data1->Position.y = v1->Data1->Position.y;
 			v3->Data1->Position.z = v1->Data1->Position.z - njSin(v1->Data1->Rotation.y) * 30;
@@ -254,8 +255,6 @@ void LoadCharacter_r() {
 
 	return;
 }
-
-
 
 
 void MilesAI_OnFrames() {
