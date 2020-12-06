@@ -39,6 +39,8 @@ NJS_SPRITE MilesCursor_SPRITE = { { 0, 0, 0 }, 1.0, 1.0, 0, &MilesCursor_TEXLIST
 
 
 int Cursor = -1;
+float CursorPosX = -1;
+float CursorPosY = -1;
 int MilesCurTex = 0;
 
 //Tails Grab Fly abilities
@@ -52,6 +54,18 @@ MilesAI_Fly DestinationArray[]{
 	{ LevelIDs_MysticRuins, 1, -9.2187, -15.838, 2220.16}, //angel island
 	{ LevelIDs_MysticRuins, 2, -515.191, 287.349, -865.042},	//jungle lost world
 	{ LevelIDs_MysticRuins, 2,  1307.67, 284.549, -814.303}, //jungle big's house
+};
+
+Map_Cursor CursorArray[]{
+	{300, 280 },
+	{170, 320 },
+	{170, 150 },
+	{300, 60 },
+	{420, 160 },
+	{180, 300 },
+	{352, 310 },
+	{245, 180 },
+	{455, 195 },
 };
 
 void LoadDestination() {
@@ -148,7 +162,7 @@ void DisplayCursorAnimation() {
 
 	SetMaterialAndSpriteColor_Float(1, 1, 1, 1);
 
-	float scale = 3.0F;
+	float scale = 2.0F;
 	float x = (float)HorizontalResolution / 2.0f;
 	float y = (float)VerticalResolution / 2.0f;
 	float incr = 0x10 * scale;
@@ -157,9 +171,8 @@ void DisplayCursorAnimation() {
 
 	MilesCursor_SPRITE.sx = 2 * scale;
 	MilesCursor_SPRITE.sy = 2 * scale;
-	float newx = x - (incr * sclx / 2 + incr / 2);
-	MilesCursor_SPRITE.p.x = newx;
-	MilesCursor_SPRITE.p.y = y - y / 2;
+	//float newx = x - (incr * sclx / 2 + incr / 2);
+
 
 	if (MilesCurTex >= 14)
 		MilesCurTex = 0;
@@ -167,6 +180,9 @@ void DisplayCursorAnimation() {
 	if (FrameCounterUnpaused % 10 == 0 && MilesCurTex < 15)
 		MilesCurTex++;
 
+
+	MilesCursor_SPRITE.p.x = CursorArray[Cursor].x;
+	MilesCursor_SPRITE.p.y = CursorArray[Cursor].y;
 	njDrawSprite2D_Queue(&MilesCursor_SPRITE, MilesCurTex, -1.501, NJD_SPRITE_ALPHA | NJD_SPRITE_COLOR, QueuedModelFlagsB_SomeTextureThing);
 }
 
@@ -189,7 +205,7 @@ void CheckPlayerCursorPos() {
 	}
 }
 
-void __cdecl DisplaySSMap_r()
+void __cdecl DisplayMilesMap_r()
 {
 
 	signed int v3; // ebx
@@ -204,7 +220,15 @@ void __cdecl DisplaySSMap_r()
 	signed int v14; // [esp+24h] [ebp+4h]
 
 
-	njSetTexture(&map_ss_TEXLIST);
+	if (Cursor >= Sstation && Cursor <= SChaos0)
+		njSetTexture(&map_ss_TEXLIST);
+
+	if (Cursor == ECarrier)
+		njSetTexture(&map_ec_X_TEXLIST);
+
+	if (Cursor >= MRStation && Cursor <= MRJungleBig)
+		njSetTexture(&map_mr_X_TEXLIST);
+
 	SetVtxColorB(0xFFFFFFFF);
 	njColorBlendingMode(0, NJD_COLOR_BLENDING_SRCALPHA);
 	njColorBlendingMode(NJD_DESTINATION_COLOR, NJD_COLOR_BLENDING_INVSRCALPHA);
@@ -220,6 +244,7 @@ void __cdecl DisplaySSMap_r()
 		{
 			a3 = VerticalStretch * 240.0 + v13;
 			a2 = (double)v14 * 256.0 - 64.0 - 320.0 + HorizontalStretch * 320.0;
+
 			DisplayScreenTexture(v4 + v5++, a2, a3, 1.1);
 			v14 = v5;
 		} while (v5 < 3);
@@ -229,95 +254,14 @@ void __cdecl DisplaySSMap_r()
 	} while (v3 < 2);
 }
 
-void __cdecl DisplayECMap_r()
-{
 
-	signed int v3; // ebx
-	int v4; // edi
-	signed int v5; // esi
-	float a3; // ST10_4
-	float v7; // ST0C_4
-	signed int v16; // [esp+1Ch] [ebp-Ch]
-	float v17; // [esp+1Ch] [ebp-Ch]
-	signed int v18; // [esp+2Ch] [ebp+4h]
-
-
-	njColorBlendingMode(0, NJD_COLOR_BLENDING_SRCALPHA);
-	njColorBlendingMode(NJD_DESTINATION_COLOR, NJD_COLOR_BLENDING_INVSRCALPHA);
-	njSetTexture(&map_ec_X_TEXLIST);
-	SetVtxColorB(0xFFFFFFFF);
-	v3 = 0;
-	v16 = 0;
-	v4 = TextLanguage != 0 ? 6 : 0;
-	do
-	{
-		v5 = 0;
-		v18 = 0;
-		v17 = (double)v16 * 256.0 - 16.0 - 240.0;
-		do
-		{
-			a3 = VerticalStretch * 240.0 + v17;
-			v7 = (double)v18 * 256.0 - 64.0 - 320.0 + HorizontalStretch * 320.0;
-			DisplayScreenTexture(v4 + v5++, v7, a3, 1.1);
-			v18 = v5;
-		} while (v5 < 3);
-		++v3;
-		v4 += 3;
-		v16 = v3;
-	} while (v3 < 2);
-}
-
-void __cdecl DisplayMRMap_r()
-{
-
-	signed int v3; // ebx
-	int v4; // edi
-	signed int v5; // esi
-	float a3; // ST10_4
-	float a2; // ST0C_4
-	signed int v10; // [esp+1Ch] [ebp-4h]
-	float v11; // [esp+1Ch] [ebp-4h]
-	signed int v12; // [esp+24h] [ebp+4h]
-
-
-	njSetTexture(&map_mr_X_TEXLIST);
-	SetVtxColorB(0xFFFFFFFF);
-	njColorBlendingMode(0, NJD_COLOR_BLENDING_SRCALPHA);
-	njColorBlendingMode(NJD_DESTINATION_COLOR, NJD_COLOR_BLENDING_INVSRCALPHA);
-	v3 = 0;
-	v10 = 0;
-	v4 = TextLanguage != 0 ? 6 : 0;
-	do
-	{
-		v5 = 0;
-		v12 = 0;
-		v11 = (double)v10 * 256.0 - 16.0 - 240.0;
-		do
-		{
-			a3 = VerticalStretch * 240.0 + v11;
-			a2 = (double)v12 * 256.0 - 64.0 - 320.0 + HorizontalStretch * 320.0;
-			DisplayScreenTexture(v4 + v5++, a2, a3, 1.1);
-			v12 = v5;
-		} while (v5 < 3);
-		++v3;
-		v4 += 3;
-		v10 = v3;
-	} while (v3 < 2);
-}
-
-void __cdecl PauseMenu_Map_Display_r() {
+void __cdecl PauseMenu_Map_Display_r(unsigned __int16 a1, NJS_VECTOR* a2) {
 
 	if (Cursor < 0 || Cursor > 8)
 		return;
 
-	if (Cursor >= Sstation && Cursor <= SChaos0)
-		DisplaySSMap_r();
-
-	if (Cursor == ECarrier)
-		DisplayECMap_r();
-
-	if (Cursor >= MRStation && Cursor <= MRJungleBig)
-		DisplayMRMap_r();
+	DisplayMilesMap_r();
+	DisplayCursorAnimation();
 
 	return;
 }
@@ -369,7 +313,7 @@ void ForceLeavingTailsAI(EntityData1* data) {
 
 void TailsAI_Grab(ObjectMaster* obj) {
 
-	if (!EntityData1Ptrs[0] || !EntityData1Ptrs[1] || GameState != 15) {
+	if (obj->Data1->Action != movetoDestination && (!EntityData1Ptrs[0] || !EntityData1Ptrs[1] || GameState != 15)) {
 		TailsGrab = nullptr;
 		CheckThingButThenDeleteObject(obj);
 	}
@@ -457,8 +401,7 @@ void TailsAI_Grab(ObjectMaster* obj) {
 		ForceLeavingTailsAI(data);
 		DisplayDebugStringFormatted(NJM_LOCATION(2, 1), "Cursor Value %d", Cursor);
 		CheckPlayerCursorPos();
-		PauseMenu_Map_Display_r();
-		DisplayCursorAnimation();
+		PauseMenu_Map_Display();
 		if (ControllerPointers[0]->PressedButtons & Buttons_A) {
 			data->Unknown = 0;
 			if (CurrentLevel == DestinationArray[Cursor].level)
@@ -519,8 +462,11 @@ void TailsAI_Landing(ObjectMaster* obj) {
 	CharObj2* co2p1 = CharObj2Ptrs[0];
 	CharObj2* co2p2 = CharObj2Ptrs[1];
 
+	LookAt(&EntityData1Ptrs[1]->Position, &obj->Data1->Position, nullptr, &EntityData1Ptrs[1]->Rotation.y);
+
 	switch (data->Action) {
 	case 0:
+		data->Position = DestinationArray[Cursor].destination;
 		DisableController(0);
 		EnableController(1);
 		p1->Action = 125;
@@ -535,7 +481,6 @@ void TailsAI_Landing(ObjectMaster* obj) {
 		p1->Position = p2->Position;
 		p1->Position.y -= 5.5f;
 		p1->Rotation = p2->Rotation;
-
 		CharObj2Ptrs[1]->Speed.y -= 0.8;
 		CharObj2Ptrs[1]->Speed.z += 0.8;
 
@@ -550,8 +495,9 @@ void TailsAI_Landing(ObjectMaster* obj) {
 		DisableController(1);
 		EnablePause();
 		if (p1->Action == 125) {
-			p1->Action = 8;
 			p1->Status &= 0x100u;
+			CharObj2Ptrs[1]->AnimationThing.Index = 18;
+			p1->Action = 12;
 		}
 		data->Unknown = 0;
 		p2->Action = 10;
@@ -587,6 +533,11 @@ void TailsAI_Main_R(ObjectMaster* obj) {
 
 
 void FlyTravel_Init() {
+
+	WriteCall((void*)0x458b86, PauseMenu_Map_Display_r);
+	WriteCall((void*)0x458bd0, PauseMenu_Map_Display_r);	
+	WriteCall((void*)0x458bb8, PauseMenu_Map_Display_r);
+	WriteCall((void*)0x458b6e, PauseMenu_Map_Display_r);	
 
 	TailsAI_Main_t = new Trampoline((int)TailsAI_Main, (int)TailsAI_Main + 0x5, TailsAI_Main_R);
 	MovePlayerToStartPoint_t = new Trampoline((int)MovePlayerToStartPoint, (int)MovePlayerToStartPoint + 0x6, MovePlayerToStartPoint_r);
