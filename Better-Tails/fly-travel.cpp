@@ -234,6 +234,7 @@ void __cdecl DisplayMilesMap_r()
 	SetVtxColorB(0xFFFFFFFF);
 	njColorBlendingMode(0, NJD_COLOR_BLENDING_SRCALPHA);
 	njColorBlendingMode(NJD_DESTINATION_COLOR, NJD_COLOR_BLENDING_INVSRCALPHA);
+
 	v3 = 0;
 	v12 = 0;
 	v4 = TextLanguage != 0 ? 6 : 0;
@@ -248,6 +249,7 @@ void __cdecl DisplayMilesMap_r()
 			a2 = (double)v14 * 256.0 - 64.0 - 320.0 + HorizontalStretch * 320.0;
 
 			DisplayScreenTexture(v4 + v5++, a2, a3, 1.1);
+
 			v14 = v5;
 		} while (v5 < 3);
 		++v3;
@@ -293,7 +295,8 @@ void __cdecl PauseMenu_Map_Display_r() {
 	if (Cursor < 0 || Cursor > 8)
 		return;
 
-	DisplayMilesMap_r();
+
+	DisplayMilesMap_r(),
 	DisplayCursorAnimation();
 	
 	return;
@@ -435,7 +438,7 @@ void TailsAI_Grab(ObjectMaster* obj) {
 		ForceLeavingTailsAI(data);
 		DisplayDebugStringFormatted(NJM_LOCATION(2, 1), "Cursor Value %d", Cursor);
 		CheckPlayerCursorPos();
-		PauseMenu_Map_Display();
+		DrawModelCallback_Queue((void(__cdecl*)(void*))PauseMenu_Map_DisplayCallback, 0, 22047.998, QueuedModelFlagsB_EnableZWrite); //fix transparency issue
 		if (ControllerPointers[0]->PressedButtons & Buttons_A || ControllerPointers[0]->PressedButtons & Buttons_Start) {
 			data->Unknown = 0;
 			data->InvulnerableTime = 0;
@@ -547,7 +550,6 @@ void TailsAI_Landing(ObjectMaster* obj) {
 		ControllerPointers[1]->PressedButtons = 0;
 		ControllerPointers[1]->HeldButtons = 0;
 		DisableController(1);
-		TailsAI_ptr->Data1->Action = 0;
 		isMoving = 0;
 		CheckThingButThenDeleteObject(obj);
 		break;
