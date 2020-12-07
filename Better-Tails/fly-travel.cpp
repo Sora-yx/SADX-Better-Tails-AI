@@ -69,7 +69,9 @@ Map_Cursor CursorArray[]{
 };
 
 void LoadDestination() {
-
+	ControllerPointers[1]->PressedButtons = 0;
+	ControllerPointers[1]->HeldButtons = 0;
+	DisableController(1);
 	LastLevel = CurrentLevel;
 	LastAct = CurrentAct;
 	SetNextLevelAndAct_CutsceneMode(DestinationArray[Cursor].level, DestinationArray[Cursor].act);
@@ -254,15 +256,46 @@ void __cdecl DisplayMilesMap_r()
 	} while (v3 < 2);
 }
 
+void PauseMenuMap_OriginalFunction() {
 
-void __cdecl PauseMenu_Map_Display_r(unsigned __int16 a1, NJS_VECTOR* a2) {
+	switch ((unsigned __int16)((((unsigned __int16)CurrentAct | (unsigned __int16)(CurrentLevel << 8)) & 0xFF00) >> 8))
+	{
+	case 26u:
+	case 27u:
+	case 28u:
+		sub_62ECE0((unsigned __int8)CurrentAct, &Current_CharObj1->Position);
+		break;
+	case 29u:
+	case 30u:
+	case 31u:
+		sub_51C130((unsigned __int8)CurrentAct, &Current_CharObj1->Position);
+		break;
+	case 32u:
+		sub_525980((unsigned __int8)CurrentAct, &Current_CharObj1->Position);
+		break;
+	case LevelIDs_MysticRuins:
+		sub_52F9C0((unsigned __int8)CurrentAct, &Current_CharObj1->Position);
+		break;
+	case LevelIDs_Past:
+		sub_541BF0((unsigned __int8)CurrentAct, &Current_CharObj1->Position);
+		break;
+	}
+}
+
+void __cdecl PauseMenu_Map_Display_r() {
+
+	if (GameState == 16) //pause menu
+	{
+		PauseMenuMap_OriginalFunction();
+		return;
+	}
 
 	if (Cursor < 0 || Cursor > 8)
 		return;
 
 	DisplayMilesMap_r();
 	DisplayCursorAnimation();
-
+	
 	return;
 }
 
@@ -276,9 +309,10 @@ bool isTailsAI_GrabAllowed() {
 			return false;
 	}
 
-	if (CurrentLevel == LevelIDs_MysticRuins && CurrentAct == 1)
+	if (CurrentLevel == LevelIDs_MysticRuins && CurrentAct == 1) {
 		if (p1->Position.z < 1020)
 			return false;
+	}
 
 	if (CurrentLevel == LevelIDs_StationSquare && (CurrentAct == 2 || CurrentAct == 5))
 		return false;
@@ -288,6 +322,8 @@ bool isTailsAI_GrabAllowed() {
 
 	if (CurrentLevel < LevelIDs_StationSquare || CurrentLevel == LevelIDs_EggCarrierInside || CurrentLevel > LevelIDs_MysticRuins)
 		return false;
+
+	return true;
 }
 
 void TailsAI_GrabDelete(ObjectMaster* obj) {
@@ -336,7 +372,6 @@ void TailsAI_Grab(ObjectMaster* obj) {
 	{
 	case initFly:
 		obj->DeleteSub = TailsAI_GrabDelete;
-		data->Unknown = 0;
 		if (!isTailsAI_GrabAllowed()) {
 			DisplayDebugStringFormatted(NJM_LOCATION(2, 1), "Error, Tails doesn't have enough space to fly");
 			if (++data->InvulnerableTime == 120) {
@@ -346,33 +381,32 @@ void TailsAI_Grab(ObjectMaster* obj) {
 		}
 		else {
 			data->Position = p2->Position;
-			EnableController(1);
-			ControllerPointers[1]->PressedButtons |= Buttons_A;
 			data->Action = getAltitude;
 		}
 		break;
 	case getAltitude:
 		if (p2->Position.y < p1->Position.y + 15) {
-			ControllerPointers[1]->PressedButtons = 0;
-			ControllerPointers[1]->HeldButtons |= Buttons_A;
+			Controllers[1].HeldButtons |= JumpButtons;
+			Controllers[1].PressedButtons |= JumpButtons;
 		}
 		else {
 			p2->Status &= 0x100u;
 			p2->Action = 125;
+			CharObj2Ptrs[1]->AnimationThing.Index = 37;
 			data->Action = checkGrab;
 		}
 		break;
 	case checkGrab:
-		CharObj2Ptrs[1]->AnimationThing.Index = 37;
 		if (GetCollidingEntityA(p2)) {
-			ControllerPointers[1]->HeldButtons = 0;
-			DisableController(1);
 			p1->Status &= ~(Status_Attack | Status_Ball | Status_LightDash);
 			p1->Action = 125;
 			data->Action = grabbed;
 		}
 		break;
 	case grabbed:
+		data->Unknown = 0;
+		data->InvulnerableTime = 0;
+		data->field_A = 0;
 		ForceLeavingTailsAI(data);
 		DisablePause();
 		CharObj2Ptrs[0]->AnimationThing.Index = 47;
@@ -392,7 +426,7 @@ void TailsAI_Grab(ObjectMaster* obj) {
 		break;
 	case transitionMap:
 		ForceLeavingTailsAI(data);
-		if (++data->Unknown == 60) {
+		if (++data->Unknown == 50) {
 			PlaySound(3, NULL, 0, NULL);
 			data->Action = displayMap;
 		}
@@ -402,12 +436,15 @@ void TailsAI_Grab(ObjectMaster* obj) {
 		DisplayDebugStringFormatted(NJM_LOCATION(2, 1), "Cursor Value %d", Cursor);
 		CheckPlayerCursorPos();
 		PauseMenu_Map_Display();
-		if (ControllerPointers[0]->PressedButtons & Buttons_A) {
+		if (ControllerPointers[0]->PressedButtons & Buttons_A || ControllerPointers[0]->PressedButtons & Buttons_Start) {
 			data->Unknown = 0;
+			data->InvulnerableTime = 0;
+			data->field_A = 0;
 			if (CurrentLevel == DestinationArray[Cursor].level)
 				isMoving = 2;
 			else
 				isMoving = 1;
+
 			data->Action = movetoDestination;
 		}
 		break;
@@ -428,27 +465,36 @@ void TailsAI_Grab(ObjectMaster* obj) {
 
 		if (++data->InvulnerableTime == 180) {
 			LoadDestination();
+			CheckThingButThenDeleteObject(obj);
 		}
 	
 		break;
 	case leaving:
 		p2->Action = 10;
+		ControllerPointers[1]->PressedButtons = 0;
+		ControllerPointers[1]->HeldButtons = 0;
+		DisableController(1);
 		ReleaseAllTravelTexture();
 		EnablePause();
 		if (p1->Action == 125) {
 			p1->Action = 8;
 			p1->Status &= 0x100u;
 		}
-		ControllerPointers[1]->PressedButtons = 0;
-		ControllerPointers[1]->HeldButtons = 0;
-		data->Unknown = 0;
-		DisableController(1);
-		TailsGrab = nullptr;
+		
 		isMoving = 0;
 		CheckThingButThenDeleteObject(obj);
 		break;
 	}
 }
+
+void TailsAI_LandingDelete(ObjectMaster* obj) {
+	if (TailsLanding) {
+		isMoving = 0;
+		Cursor = -1;
+		TailsLanding = nullptr;
+	}
+}
+
 
 void TailsAI_Landing(ObjectMaster* obj) {
 
@@ -466,6 +512,7 @@ void TailsAI_Landing(ObjectMaster* obj) {
 
 	switch (data->Action) {
 	case 0:
+		obj->DeleteSub = TailsAI_LandingDelete;
 		data->Position = DestinationArray[Cursor].destination;
 		DisableController(0);
 		EnableController(1);
@@ -489,10 +536,7 @@ void TailsAI_Landing(ObjectMaster* obj) {
 		}
 		break;
 	case 2:
-		ControllerPointers[1]->PressedButtons = 0;
-		ControllerPointers[1]->HeldButtons = 0;
 		EnableController(0);
-		DisableController(1);
 		EnablePause();
 		if (p1->Action == 125) {
 			p1->Status &= 0x100u;
@@ -500,9 +544,11 @@ void TailsAI_Landing(ObjectMaster* obj) {
 			p1->Action = 12;
 		}
 		data->Unknown = 0;
-		p2->Action = 10;
+		ControllerPointers[1]->PressedButtons = 0;
+		ControllerPointers[1]->HeldButtons = 0;
+		DisableController(1);
+		TailsAI_ptr->Data1->Action = 0;
 		isMoving = 0;
-		TailsLanding = nullptr;
 		CheckThingButThenDeleteObject(obj);
 		break;
 	}
