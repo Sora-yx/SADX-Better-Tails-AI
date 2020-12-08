@@ -350,6 +350,23 @@ void ForceLeavingTailsAI(EntityData1* data) {
 	}
 }
 
+void FlySoundOnFrames() {
+
+	if (GameState != 15 || !EntityData1Ptrs[1] || !TailsAI_ptr)
+		return;
+
+	if (isMoving > 0 && EntityData1Ptrs[1]->CharID == Characters_Tails) {
+
+		if (EntityData1Ptrs[1]->Unknown == 0)
+			PlaySound(0x302, NULL, 0, NULL);
+
+		if (++EntityData1Ptrs[1]->Unknown == 31) {
+			PlaySound(0x302, NULL, 0, NULL);
+			EntityData1Ptrs[1]->Unknown = 1;
+		}
+	}
+}
+
 void TailsAI_Grab(ObjectMaster* obj) {
 
 	if (obj->Data1->Action != movetoDestination && (!EntityData1Ptrs[0] || !EntityData1Ptrs[1] || GameState != 15)) {
@@ -376,7 +393,7 @@ void TailsAI_Grab(ObjectMaster* obj) {
 	case initFly:
 		obj->DeleteSub = TailsAI_GrabDelete;
 		if (!isTailsAI_GrabAllowed()) {
-			DisplayDebugStringFormatted(NJM_LOCATION(2, 1), "Error, Tails doesn't have enough space to fly");
+			DisplayDebugStringFormatted(NJM_LOCATION(2, 1), "Error, Tails doesn't have enough space to fly or you aren't in the hub world.");
 			if (++data->InvulnerableTime == 120) {
 				TailsGrab = nullptr;
 				CheckThingButThenDeleteObject(obj);
@@ -452,6 +469,7 @@ void TailsAI_Grab(ObjectMaster* obj) {
 		}
 		break;
 	case movetoDestination:
+		FlySoundOnFrames();
 		p2->Action = 15;
 		co2p2->Speed = co2p1->Speed;
 		p1->Position = p2->Position;
@@ -512,11 +530,13 @@ void TailsAI_Landing(ObjectMaster* obj) {
 	CharObj2* co2p2 = CharObj2Ptrs[1];
 
 	LookAt(&EntityData1Ptrs[1]->Position, &obj->Data1->Position, nullptr, &EntityData1Ptrs[1]->Rotation.y);
+	FlySoundOnFrames();
 
 	switch (data->Action) {
 	case 0:
 		obj->DeleteSub = TailsAI_LandingDelete;
 		data->Position = DestinationArray[Cursor].destination;
+		p1->Rotation = p2->Rotation;
 		DisableController(0);
 		EnableController(1);
 		p1->Action = 125;
@@ -556,7 +576,7 @@ void TailsAI_Landing(ObjectMaster* obj) {
 	}
 }
 
-void TailsAI_Main_R(ObjectMaster* obj) {
+void CheckAndLoadTailsTravelObjects(ObjectMaster* obj) {
 
 	if (obj->Data1->Action == 0 && isMoving == 1 || obj->Data1->Action > 0 && isMoving == 2) {
 		if (!TailsGrab && !TailsLanding)
@@ -567,12 +587,16 @@ void TailsAI_Main_R(ObjectMaster* obj) {
 		if (ControllerPointers[0]->PressedButtons & Buttons_Z)
 		{
 			if (EntityData1Ptrs[1]->CharID == Characters_Tails && EntityData1Ptrs[0]->Action < 3 && EntityData1Ptrs[1]->Action < 3) {
-
 				if (!TailsGrab)
 					TailsGrab = LoadObject((LoadObj)2, 1, TailsAI_Grab);
 			}
 		}
 	}
+}
+
+void TailsAI_Main_R(ObjectMaster* obj) {
+
+	CheckAndLoadTailsTravelObjects(obj);
 
 	ObjectFunc(origin, TailsAI_Main_t->Target());
 	origin(obj);

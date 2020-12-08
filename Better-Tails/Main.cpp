@@ -127,70 +127,6 @@ int CheckTailsAI_R(void) {
 	return 1; //Return Load AI
 }
 
-//While load result: Teleport AI close to the player and Force Victory Pose.
-
-void DisableTime_R() {
-
-	TimeThing = 0;
-
-	if (isAIActive && CurrentCharacter != Characters_Tails) 
-	{
-		if (EntityData1Ptrs[0] && EntityData1Ptrs[1]) //Move AI to player 1 
-		{
-			EntityData1* p1 = EntityData1Ptrs[0];
-			EntityData1* p2 = EntityData1Ptrs[1];
-			p2->Status &= ~(Status_Attack | Status_Ball | Status_LightDash | Status_Unknown3);
-			p2->Action = 1;
-			CharObj2Ptrs[1]->AnimationThing.Index = 1;
-
-			p2->Position = UnitMatrix_GetPoint(&p1->Position, &p1->Rotation, -8.0f, 0.0f, 5.0f);
-			p2->Rotation = p1->Rotation;
-
-			if (p2->CharID == Characters_Tails) {
-				SetTailsRaceVictory(); //Fix Tails AI victory animation
-				ForcePlayerAction(1, 19); //Force AI to Victory pose
-			}
-
-			dword_3B2A304 = 0;
-		}
-
-	}
-}
-
-
-void FlySoundOnFrames() {
-
-	if (GameState != 15 || !EntityData1Ptrs[1] || !TailsAI_ptr)
-		return;
-
-	if (isMoving > 0 && EntityData1Ptrs[1]->CharID == Characters_Tails) {
-
-		if (EntityData1Ptrs[1]->Unknown == 0) 
-			PlaySound(0x302, NULL, 0, NULL);
-
-		if (++EntityData1Ptrs[1]->Unknown == 31) {
-			PlaySound(0x302, NULL, 0, NULL);
-			EntityData1Ptrs[1]->Unknown = 1;
-		}
-	}
-}
-
-void PreventTailsAIDamage() {
-
-	if (EntityData1Ptrs[1]->CharID != Characters_Tails || !EntityData1Ptrs[1])
-		return;
-	
-	EntityData1* data = EntityData1Ptrs[0];
-
-	if (GetCollidingEntityA(data)) {
-		CharObj2Ptrs[1]->Powerups |= Powerups_Invincibility;
-	}
-	else {
-		if ((CharObj2Ptrs[1]->Powerups & Powerups_Invincibility) == Powerups_Invincibility) {
-			CharObj2Ptrs[1]->Powerups &= 0x100u; //Remove invincibility
-		}
-	}
-}
 
 
 ObjectMaster* LoadMilesAI()
@@ -264,8 +200,6 @@ void MilesAI_OnFrames() {
 
 	PreventTailsAIDamage();
 	SnowboardRespawn();
-
-	FlySoundOnFrames();
 }
 
 void AI_Init(const HelperFunctions& helperFunctions) {

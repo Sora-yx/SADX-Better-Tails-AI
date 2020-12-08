@@ -14,7 +14,7 @@ void FixAIHubTransition2();
 void LoadCharacter_r();
 void LookAt(NJS_VECTOR* from, NJS_VECTOR* to, Angle* outx, Angle* outy);
 void AI_Init(const HelperFunctions& helperFunctions);
-
+void PreventTailsAIDamage();
 void moveAItoPlayer();
 void TailsAI_ResetValue();
 void AllowTailsAI_R();
@@ -39,13 +39,17 @@ FunctionPointer(void, Chao_SetBehavior, (ObjectMaster* Chao, long* a2), 0x71EF10
 
 //Sphere check functions
 
+//FunctionPointer(void, GetPlayerSidePos, (NJS_VECTOR* a1, EntityData1* a2, float m), 0x47dd50);
+void GetPlayerSidePos(NJS_VECTOR* v1, EntityData1* a2, float m);
+void __declspec() GetPlayerSidePos_asm(NJS_VECTOR* v1, EntityData1* a2, float m);
+
 
 VoidFunc(FUN_0042ce20, 0x42ce20); //Called with Delete Tails AI
 DataPointer(int, dword_3B2A304, 0x3B2A304);
 
 FunctionPointer(int, sub_47DE00, (NJS_VECTOR *a1, float* a2, Angle *a3), 0x47DE00);
 
-FunctionPointer(void, GetPlayerSidePos, (NJS_VECTOR* a1, EntityData1* a2, float m), 0x47dd50);
+
 FunctionPointer(signed int, SetPlayerPosition, (unsigned __int8 playerNum, char a2, NJS_POINT3* a3, long* a4), 0x441a40);
 FunctionPointer(bool, sub_42FB00, (), 0x42FB00);
 FunctionPointer(signed int, sub_47DC20, (EntityData1* a1, EntityData1* a2, ObjectMaster* a3), 0x47DC20);

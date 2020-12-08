@@ -121,6 +121,69 @@ void Chao_Main_R(ObjectMaster* obj) {
 }
 
 
+void MilesAI_VictoryPose(ObjectMaster* obj) {
+
+	if (!EntityData1Ptrs[0] || !EntityData1Ptrs[1] || !isAIActive || EntityData1Ptrs[1]->CharID != Characters_Tails)
+		return;
+
+	EntityData1* p1 = EntityData1Ptrs[0];
+	EntityData1* p2 = EntityData1Ptrs[1];
+	EntityData1* data = obj->Data1;
+
+	switch (obj->Data1->Action)
+	{
+	case 0:
+		if (p1->NextAction == 0x13) {
+			p2->Position = UnitMatrix_GetPoint(&p1->Position, &p1->Rotation, 0.0f, 0.0f, 0.0f);
+			GetPlayerSidePos(&p2->Position, EntityData1Ptrs[0], 6.0);
+			SetPlayerPosition(1u, 0, &EntityData1Ptrs[1]->Position, 0);
+			p2->Position.x += 6;
+			if (++data->InvulnerableTime == 10)
+				data->Action = 1;
+		}
+		break;
+	case 1:
+		if ((p2->Status & Status_Ground) == Status_Ground || p2->Action <= 2) {
+			if (p2->Position.y >= p1->Position.y + 6 || p2->Position.y <= p1->Position.y - 6) {
+				p2->Rotation = p1->Rotation;
+				p2->Position = UnitMatrix_GetPoint(&p1->Position, &p1->Rotation, 0.0f, 0.0f, 7.0f);
+			}
+			//PlayerLookAt(&p2->Position, &p1->Position, nullptr, &p2->Rotation.y);
+			SetTailsRaceVictory(); //Fix Tails AI victory animation
+			ForcePlayerAction(1, 19); //Force AI to Victory pose
+		}
+		break;
+	}
+	
+}
+
+//While load result: Teleport AI close to the player and Force Victory Pose.
+
+void DisableTime_R() {
+	TimeThing = 0;
+
+	LoadObject((LoadObj)(LoadObj_Data1 | LoadObj_Data2), 2, MilesAI_VictoryPose);
+	return;
+}
+
+
+void PreventTailsAIDamage() {
+
+	if (EntityData1Ptrs[1]->CharID != Characters_Tails || !EntityData1Ptrs[1])
+		return;
+
+	EntityData1* data = EntityData1Ptrs[0];
+
+	if (GetCollidingEntityA(data)) {
+		CharObj2Ptrs[1]->Powerups |= Powerups_Invincibility;
+	}
+	else {
+		if ((CharObj2Ptrs[1]->Powerups & Powerups_Invincibility) == Powerups_Invincibility) {
+			CharObj2Ptrs[1]->Powerups &= 0x100u; //Remove invincibility
+		}
+	}
+}
+
 
 
 void AI_Improvement() {

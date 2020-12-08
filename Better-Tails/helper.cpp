@@ -320,9 +320,42 @@ void DeleteTailsAI() {
 	}
 }
 
+static const void* const GetPlayerSidePosPtr = (void*)0x47dd50;
+void __declspec() GetPlayerSidePos_asm(NJS_VECTOR* v1, EntityData1* a2, float m)
+{
+	__asm
+	{
+		push[esp + 04h] // m
+		push esi // e
+		push edi // v
+
+		// Call your __cdecl function here:
+		call GetPlayerSidePosPtr
+
+		pop edi // v
+		pop esi // e
+		add esp, 4 // m
+		retn
+	}
+}
+
+void GetPlayerSidePos(NJS_VECTOR* v1, EntityData1* a2, float m)
+{
+	Float _sin; // ST00_4
+
+	if (a2)
+	{
+		if (v1)
+		{
+			_sin = njSin(a2->Rotation.y);
+			v1->x = a2->Position.x - njCos(a2->Rotation.y) * m;
+			v1->y = a2->Position.y;
+			v1->z = a2->Position.z - _sin * m;
+		}
+	}
+}
+
 void AI_Fixes() {
-
-
 
 	if (IsHubBanned)
 		return;

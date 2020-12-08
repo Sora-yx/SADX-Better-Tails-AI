@@ -35,13 +35,12 @@ extern "C" {
 		{
 			WriteCall((void*)0x415a25, LoadCharacter_r); //Call Tails AI when Load Character.
 
-			// Tails AI Reset Values 
+			// Tails AI Reset Values  
 			WriteCall((void*)0x42ca4f, SoftReset_R); //Reset value and stuff properly when you Soft Reset and quit.
 			WriteJump((void*)0x47db1a, TailsAI_ResetValue); //Reset value and stuff properly when Tails AI is deleted by the game.
 
 			//Tails AI Stuff (Load, Fixes...)
 			AI_Init(helperFunctions);
-
 
 			WriteCall((void*)0x415556, DisableTime_R); //While result screen, force Tails AI to victory pose.
 		}
