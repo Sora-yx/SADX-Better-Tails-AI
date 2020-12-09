@@ -78,6 +78,12 @@ DataPointer(char, Init_Cutscene, 0x3b2c4e4);
 DataPointer(char, TailsHotelOpen, 0x3B188C9);
 DataPointer(char, TailsKnuxDefeated, 0x3B188E8);
 
+FunctionPointer(void, sub_62ECE0, (unsigned __int16 a1, NJS_VECTOR* p1Pos), 0x62ECE0);
+FunctionPointer(void, sub_51C130, (unsigned __int16 a1, NJS_VECTOR* p1Pos), 0x51C130);
+FunctionPointer(void, sub_525980, (unsigned __int16 a1, NJS_VECTOR* p1Pos), 0x525980);
+FunctionPointer(void, sub_52F9C0, (unsigned __int16 a1, NJS_VECTOR* p1Pos), 0x52F9C0);
+FunctionPointer(void, sub_541BF0, (unsigned __int16 a1, NJS_VECTOR* p1Pos), 0x541BF0);
+
 void CallTailsAI_R();
 void CallTailsAI_R2();
 void CallTailsAI_R3();
@@ -97,6 +103,7 @@ extern bool IsStoryIA;
 extern bool banCharacter[8];
 extern bool isChaoPetByAI;
 extern uint8_t isMoving;
+extern bool isFlyTravel;
 
 struct MilesAI_Spawn {
 	int curCharacter;

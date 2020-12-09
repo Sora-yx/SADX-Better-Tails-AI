@@ -1,19 +1,10 @@
 #include "stdafx.h"
 
-
 Trampoline* TailsAI_Main_t;
 Trampoline* MovePlayerToStartPoint_t;
 ObjectMaster* TailsGrab = nullptr;
 uint8_t isMoving = 0;
 ObjectMaster* TailsLanding = nullptr;
-
-FunctionPointer(void, sub_62ECE0, (unsigned __int16 a1, NJS_VECTOR* p1Pos), 0x62ECE0);
-FunctionPointer(void, sub_51C130, (unsigned __int16 a1, NJS_VECTOR* p1Pos), 0x51C130);
-FunctionPointer(void, sub_525980, (unsigned __int16 a1, NJS_VECTOR* p1Pos), 0x525980);
-FunctionPointer(void, sub_52F9C0, (unsigned __int16 a1, NJS_VECTOR* p1Pos), 0x52F9C0);
-FunctionPointer(void, sub_541BF0, (unsigned __int16 a1, NJS_VECTOR* p1Pos), 0x541BF0);
-
-
 
 NJS_TEXANIM	MilesCursor_TEXANIM[]{
 	{ 0x10, 0x10, 0, 0, 0, 0, 0x100, 0x100, 0, 0x20 },
@@ -37,10 +28,7 @@ NJS_TEXNAME MilesCursor_TEXNAMES[15];
 NJS_TEXLIST MilesCursor_TEXLIST = { arrayptrandlength(MilesCursor_TEXNAMES) };
 NJS_SPRITE MilesCursor_SPRITE = { { 0, 0, 0 }, 1.0, 1.0, 0, &MilesCursor_TEXLIST, MilesCursor_TEXANIM };
 
-
 int Cursor = -1;
-float CursorPosX = -1;
-float CursorPosY = -1;
 int MilesCurTex = 0;
 
 //Tails Grab Fly abilities
@@ -173,7 +161,6 @@ void DisplayCursorAnimation() {
 
 	MilesCursor_SPRITE.sx = 2 * scale;
 	MilesCursor_SPRITE.sy = 2 * scale;
-	//float newx = x - (incr * sclx / 2 + incr / 2);
 
 
 	if (MilesCurTex >= 14)
@@ -181,7 +168,6 @@ void DisplayCursorAnimation() {
 
 	if (FrameCounterUnpaused % 10 == 0 && MilesCurTex < 15)
 		MilesCurTex++;
-
 
 	MilesCursor_SPRITE.p.x = CursorArray[Cursor].x;
 	MilesCursor_SPRITE.p.y = CursorArray[Cursor].y;
@@ -195,6 +181,7 @@ void CheckPlayerCursorPos() {
 			Cursor = 0;
 		else
 			Cursor++;
+		PlaySound(1, NULL, 0, NULL);
 		CheckAndLoadMapPVM();
 	}
 
@@ -203,6 +190,7 @@ void CheckPlayerCursorPos() {
 			Cursor = 8;
 		else
 			Cursor--;
+		PlaySound(1, NULL, 0, NULL);
 		CheckAndLoadMapPVM();
 	}
 }
@@ -295,7 +283,6 @@ void __cdecl PauseMenu_Map_Display_r() {
 	if (Cursor < 0 || Cursor > 8)
 		return;
 
-
 	DisplayMilesMap_r(),
 	DisplayCursorAnimation();
 	
@@ -320,7 +307,7 @@ bool isTailsAI_GrabAllowed() {
 	if (CurrentLevel == LevelIDs_StationSquare && (CurrentAct == 2 || CurrentAct == 5))
 		return false;
 
-	if (CurrentLevel == LevelIDs_EggCarrierOutside && CurrentAct != 0)
+	if (CurrentLevel == LevelIDs_EggCarrierOutside && CurrentAct != 0 && CurrentAct != 2)
 		return false;
 
 	if (CurrentLevel < LevelIDs_StationSquare || CurrentLevel == LevelIDs_EggCarrierInside || CurrentLevel > LevelIDs_MysticRuins)
@@ -335,7 +322,7 @@ void TailsAI_GrabDelete(ObjectMaster* obj) {
 	}
 }
 
-void ForceLeavingTailsAI(EntityData1* data) {
+void CheckAndForceLeavingGrab(EntityData1* data) {
 
 	EntityData1* p1 = EntityData1Ptrs[0];
 	CharObj2* co2p1 = CharObj2Ptrs[0];
@@ -343,6 +330,7 @@ void ForceLeavingTailsAI(EntityData1* data) {
 	if (data->Action >= grabbed && data->Action <= data->Action < leaving)
 	{
 		if (ControllerPointers[0]->PressedButtons & Buttons_B) {
+			PlaySound(3, NULL, 0, NULL);
 			co2p1->AnimationThing.Index = 14;
 			p1->Status |= Status_Ball;
 			data->Action = leaving;
@@ -369,7 +357,7 @@ void FlySoundOnFrames() {
 
 void TailsAI_Grab(ObjectMaster* obj) {
 
-	if (obj->Data1->Action != movetoDestination && (!EntityData1Ptrs[0] || !EntityData1Ptrs[1] || GameState != 15)) {
+	if (obj->Data1->Action != movetoDestination && (!EntityData1Ptrs[0] || !EntityData1Ptrs[1] || GameState != 15 || TailsLanding)) {
 		TailsGrab = nullptr;
 		CheckThingButThenDeleteObject(obj);
 	}
@@ -393,7 +381,7 @@ void TailsAI_Grab(ObjectMaster* obj) {
 	case initFly:
 		obj->DeleteSub = TailsAI_GrabDelete;
 		if (!isTailsAI_GrabAllowed()) {
-			DisplayDebugStringFormatted(NJM_LOCATION(2, 1), "Error, Tails doesn't have enough space to fly or you aren't in the hub world.");
+
 			if (++data->InvulnerableTime == 120) {
 				TailsGrab = nullptr;
 				CheckThingButThenDeleteObject(obj);
@@ -427,7 +415,7 @@ void TailsAI_Grab(ObjectMaster* obj) {
 		data->Unknown = 0;
 		data->InvulnerableTime = 0;
 		data->field_A = 0;
-		ForceLeavingTailsAI(data);
+		CheckAndForceLeavingGrab(data);
 		DisablePause();
 		CharObj2Ptrs[0]->AnimationThing.Index = 47;
 		co2p2->Speed = co2p1->Speed;
@@ -445,26 +433,26 @@ void TailsAI_Grab(ObjectMaster* obj) {
 		}
 		break;
 	case transitionMap:
-		ForceLeavingTailsAI(data);
+		CheckAndForceLeavingGrab(data);
 		if (++data->Unknown == 50) {
-			PlaySound(3, NULL, 0, NULL);
+			PlaySound(21, NULL, 0, NULL);
 			data->Action = displayMap;
 		}
 		break;
 	case displayMap:
-		ForceLeavingTailsAI(data);
-		DisplayDebugStringFormatted(NJM_LOCATION(2, 1), "Cursor Value %d", Cursor);
+		CheckAndForceLeavingGrab(data);
+		//DisplayDebugStringFormatted(NJM_LOCATION(2, 1), "Cursor Value %d", Cursor);
 		CheckPlayerCursorPos();
 		DrawModelCallback_Queue((void(__cdecl*)(void*))PauseMenu_Map_DisplayCallback, 0, 22047.998, QueuedModelFlagsB_EnableZWrite); //fix transparency issue
 		if (ControllerPointers[0]->PressedButtons & Buttons_A || ControllerPointers[0]->PressedButtons & Buttons_Start) {
-			data->Unknown = 0;
-			data->InvulnerableTime = 0;
-			data->field_A = 0;
+			PlaySound(0x2, NULL, 0, NULL);
 			if (CurrentLevel == DestinationArray[Cursor].level)
 				isMoving = 2;
 			else
 				isMoving = 1;
-
+			data->Unknown = 0;
+			data->InvulnerableTime = 0;
+			data->field_A = 0;
 			data->Action = movetoDestination;
 		}
 		break;
@@ -476,8 +464,8 @@ void TailsAI_Grab(ObjectMaster* obj) {
 		p1->Position.y -= 5.5f;
 		p1->Rotation = p2->Rotation;
 
-		CharObj2Ptrs[1]->Speed.y += 1;
-		CharObj2Ptrs[1]->Speed.x += 1;
+		CharObj2Ptrs[1]->Speed.y += 0.7;
+		CharObj2Ptrs[1]->Speed.x += 1.2;
 		
 		if (++data->Unknown == 60) {
 			CharObj2Ptrs[1]->Speed.y += 2;
@@ -486,7 +474,8 @@ void TailsAI_Grab(ObjectMaster* obj) {
 
 		if (++data->InvulnerableTime == 180) {
 			LoadDestination();
-			CheckThingButThenDeleteObject(obj);
+			if (isMoving == 2) //object isn't deleted between act transition unlike with level changes.
+				CheckThingButThenDeleteObject(obj);
 		}
 	
 		break;
@@ -601,7 +590,6 @@ void TailsAI_Main_R(ObjectMaster* obj) {
 	ObjectFunc(origin, TailsAI_Main_t->Target());
 	origin(obj);
 }
-
 
 
 void FlyTravel_Init() {

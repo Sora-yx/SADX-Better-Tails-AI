@@ -135,7 +135,7 @@ void MilesAI_VictoryPose(ObjectMaster* obj) {
 	case 0:
 		if (p1->NextAction == 0x13) {
 			p2->Position = UnitMatrix_GetPoint(&p1->Position, &p1->Rotation, 0.0f, 0.0f, 0.0f);
-			GetPlayerSidePos(&p2->Position, EntityData1Ptrs[0], 6.0);
+			GetPlayerSidePos(&p2->Position, EntityData1Ptrs[0], 5.0);
 			SetPlayerPosition(1u, 0, &EntityData1Ptrs[1]->Position, 0);
 			p2->Position.x += 6;
 			if (++data->InvulnerableTime == 10)
@@ -143,12 +143,11 @@ void MilesAI_VictoryPose(ObjectMaster* obj) {
 		}
 		break;
 	case 1:
-		if ((p2->Status & Status_Ground) == Status_Ground || p2->Action <= 2) {
-			if (p2->Position.y >= p1->Position.y + 6 || p2->Position.y <= p1->Position.y - 6) {
+		if ((p2->Status & Status_Ground) == Status_Ground || p2->Action <= 2) { //fix floating victory pose
+			if (p2->Position.y >= p1->Position.y + 6 || p2->Position.y <= p1->Position.y - 6) { //failsafe
 				p2->Rotation = p1->Rotation;
-				p2->Position = UnitMatrix_GetPoint(&p1->Position, &p1->Rotation, 0.0f, 0.0f, 7.0f);
+				p2->Position = UnitMatrix_GetPoint(&p1->Position, &p1->Rotation, 0.0f, 0.0f, 6.0f);
 			}
-			//PlayerLookAt(&p2->Position, &p1->Position, nullptr, &p2->Rotation.y);
 			SetTailsRaceVictory(); //Fix Tails AI victory animation
 			ForcePlayerAction(1, 19); //Force AI to Victory pose
 		}
@@ -199,6 +198,8 @@ void AI_Improvement() {
 	WriteData<1>((int*)0x47DC5D, 0x52); //Reduce the Tails "Range out" check so he can catch faster. (changing the float value from 1000 to 500)
 	WriteData<1>((int*)0x47DC5C, 0xD8);
 
-	FlyTravel_Init();
+	if (isFlyTravel)
+		FlyTravel_Init();
+
 	Chao_Main_t = new Trampoline((int)Chao_Main, (int)Chao_Main + 0x6, Chao_Main_R);
 }

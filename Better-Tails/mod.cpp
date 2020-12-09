@@ -6,6 +6,7 @@ bool IsBossBanned = false;
 bool IsTCBanned = false;
 bool IsStoryIA = false;
 bool banCharacter[8] = { -1 };
+bool isFlyTravel = true;
 
 void DisplayCursorAnimation();
 
@@ -26,6 +27,7 @@ extern "C" {
 		banCharacter[6] = config->getBool("Roster", "Gamma", false);
 
 		IsStoryIA = config->getBool("AI", "IsStoryIA", false);
+		isFlyTravel = config->getBool("AI", "isFlyTravel", true);
 
 		delete config;
 

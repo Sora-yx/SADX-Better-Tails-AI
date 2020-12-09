@@ -63,8 +63,8 @@ int CheckTailsAI_R(void) {
 		return 0;  
 
 	//General Place where we don't want AI to spawn
-	if (CurrentLevel == LevelIDs_EggCarrierInside && CurrentAct == 5 || CurrentLevel == LevelIDs_Casinopolis && CurrentAct > 1)
-		return 0;
+	if (CurrentLevel == LevelIDs_EggCarrierInside && CurrentAct == 5 || CurrentLevel == LevelIDs_Casinopolis && CurrentAct > 1 || CurrentLevel == LevelIDs_EggCarrierOutside && CurrentAct == 6)
+		return 0x0;
 
 	//Story plot check for coherent Tails AI spawn (if setting enabled)
 	if (IsStoryIA)
