@@ -358,6 +358,10 @@ void FlySoundOnFrames() {
 void TailsAI_Grab(ObjectMaster* obj) {
 
 	if (obj->Data1->Action != movetoDestination && (!EntityData1Ptrs[0] || !EntityData1Ptrs[1] || GameState != 15 || TailsLanding)) {
+		if (EntityData1Ptrs[1]) {
+			if (EntityData1Ptrs[1]->Action == 125) //failsafe if the player start fly travel but leave the level/act
+				EntityData1Ptrs[1]->Action = 1;
+		}
 		TailsGrab = nullptr;
 		CheckThingButThenDeleteObject(obj);
 	}
