@@ -330,9 +330,7 @@ void CheckAndForceLeavingGrab(EntityData1* data) {
 	if (data->Action >= grabbed && data->Action <= data->Action < leaving)
 	{
 		if (ControllerPointers[0]->PressedButtons & Buttons_B) {
-			PlaySound(3, NULL, 0, NULL);
-			co2p1->AnimationThing.Index = 14;
-			p1->Status |= Status_Ball;
+			PlaySound(3, NULL, 0, NULL);	
 			data->Action = leaving;
 		}
 	}
@@ -343,7 +341,7 @@ void FlySoundOnFrames() {
 	if (GameState != 15 || !EntityData1Ptrs[1] || !TailsAI_ptr)
 		return;
 
-	if (isMoving > 0 && EntityData1Ptrs[1]->CharID == Characters_Tails) {
+	if (isMoving > 0 && EntityData1Ptrs[1]->CharID == Characters_Tails && EntityData1Ptrs[0]->CharID <= Characters_Tails) {
 
 		if (EntityData1Ptrs[1]->Unknown == 0)
 			PlaySound(0x302, NULL, 0, NULL);
@@ -353,6 +351,81 @@ void FlySoundOnFrames() {
 			EntityData1Ptrs[1]->Unknown = 1;
 		}
 	}
+}
+
+void PlayCharacterGrabAnimation(EntityData1* p1, CharObj2* co2) {
+
+	switch (p1->CharID) {
+		case Characters_Sonic:
+			if ((co2->Upgrades & Upgrades_SuperSonic) == 0) 
+				co2->AnimationThing.Index = 47;
+			else  
+				co2->AnimationThing.Index = 141;
+			break;
+		case Characters_Knuckles: 
+			co2->AnimationThing.Index = 84; 
+			break;
+		case Characters_Amy: 
+			co2->AnimationThing.Index = 55; 
+			break;
+		case Characters_Big: 
+			co2->AnimationThing.Index = 32; 
+			break;
+	}
+
+	return;
+}
+
+void PlayCharacterLeaveAnimation(EntityData1* p1, CharObj2* co2) {
+	switch (p1->CharID) {
+	case Characters_Sonic:
+
+		if (co2->Upgrades & Upgrades_SuperSonic) {
+			p1->Action = 82;
+			co2->AnimationThing.Index = 145;
+		}
+		else {
+			p1->Action = 12;
+			CharObj2Ptrs[1]->AnimationThing.Index = 18;
+		}
+
+		break;
+	case Characters_Knuckles:
+		p1->Action = 10;
+		co2->AnimationThing.Index = 82;
+		break;
+	case Characters_Amy:
+		p1->Action = 5;
+		co2->AnimationThing.Index = 18;
+		break;
+	case Characters_Big:
+		p1->Action = 4;
+		co2->AnimationThing.Index = 15;
+		break;
+	case Characters_Gamma:
+		p1->Action = 4;
+		co2->AnimationThing.Index = 6;
+		break;
+	}
+
+	return;
+}
+
+float GetCharacterPositionY(EntityData1* p1) {
+
+	switch (p1->CharID) {
+	case Characters_Sonic:
+	case Characters_Knuckles:
+		return 6.5f;
+		break;
+	case Characters_Amy:
+		return 5.5f;
+		break;
+	case Characters_Gamma:
+	case Characters_Big:
+		return 18.5f;
+	}
+
 }
 
 void TailsAI_Grab(ObjectMaster* obj) {
@@ -397,7 +470,7 @@ void TailsAI_Grab(ObjectMaster* obj) {
 		}
 		break;
 	case getAltitude:
-		if (p2->Position.y < p1->Position.y + 15) {
+		if ((p1->CharID <= Characters_Amy && p2->Position.y < p1->Position.y + 15) || (p1->CharID >= Characters_Gamma && p2->Position.y < p1->Position.y + 25)) {
 			Controllers[1].HeldButtons |= JumpButtons;
 			Controllers[1].PressedButtons |= JumpButtons;
 		}
@@ -419,13 +492,15 @@ void TailsAI_Grab(ObjectMaster* obj) {
 		data->Unknown = 0;
 		data->InvulnerableTime = 0;
 		data->field_A = 0;
-		CheckAndForceLeavingGrab(data);
-		DisablePause();
-		CharObj2Ptrs[0]->AnimationThing.Index = 47;
 		co2p2->Speed = co2p1->Speed;
 		p1->Position = p2->Position;
-		p1->Position.y -= 6.5f;
+		p1->Position.y -= GetCharacterPositionY(p1);
 		p1->Rotation = p2->Rotation;
+
+		CheckAndForceLeavingGrab(data);
+		DisablePause();
+		PlayCharacterGrabAnimation(p1, co2p1);
+
 		Cursor = setCursorPos(CurrentLevel, CurrentAct);
 		if (Cursor > -1) {
 			CheckAndLoadMapPVM();
@@ -465,7 +540,7 @@ void TailsAI_Grab(ObjectMaster* obj) {
 		p2->Action = 15;
 		co2p2->Speed = co2p1->Speed;
 		p1->Position = p2->Position;
-		p1->Position.y -= 5.5f;
+		p1->Position.y -= GetCharacterPositionY(p1);
 		p1->Rotation = p2->Rotation;
 
 		CharObj2Ptrs[1]->Speed.y += 0.7;
@@ -491,8 +566,8 @@ void TailsAI_Grab(ObjectMaster* obj) {
 		ReleaseAllTravelTexture();
 		EnablePause();
 		if (p1->Action == 125) {
-			p1->Action = 8;
 			p1->Status &= 0x100u;
+			PlayCharacterLeaveAnimation(p1, co2p1);
 		}
 		
 		isMoving = 0;
@@ -535,14 +610,14 @@ void TailsAI_Landing(ObjectMaster* obj) {
 		p1->Action = 125;
 		p2->Action = 15;
 		CharObj2Ptrs[1]->AnimationThing.Index = 37;
-		CharObj2Ptrs[0]->AnimationThing.Index = 47;
+		PlayCharacterGrabAnimation(p1, co2p1);
 		data->Action = 1;
 		break;
 	case 1:
 		EnableController(1);
 		co2p2->Speed = co2p1->Speed;
 		p1->Position = p2->Position;
-		p1->Position.y -= 5.5f;
+		p1->Position.y -= GetCharacterPositionY(p1);
 		p1->Rotation = p2->Rotation;
 		CharObj2Ptrs[1]->Speed.y -= 0.8;
 		CharObj2Ptrs[1]->Speed.z += 0.8;
@@ -556,8 +631,7 @@ void TailsAI_Landing(ObjectMaster* obj) {
 		EnablePause();
 		if (p1->Action == 125) {
 			p1->Status &= 0x100u;
-			CharObj2Ptrs[1]->AnimationThing.Index = 18;
-			p1->Action = 12;
+			PlayCharacterLeaveAnimation(p1, co2p1);
 		}
 		data->Unknown = 0;
 		ControllerPointers[1]->PressedButtons = 0;
