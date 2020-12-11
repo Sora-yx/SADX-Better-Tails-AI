@@ -316,11 +316,6 @@ bool isTailsAI_GrabAllowed() {
 	return true;
 }
 
-void TailsAI_GrabDelete(ObjectMaster* obj) {
-	if (TailsGrab) {
-		TailsGrab = nullptr;
-	}
-}
 
 void CheckAndForceLeavingGrab(EntityData1* data) {
 
@@ -341,7 +336,7 @@ void FlySoundOnFrames() {
 	if (GameState != 15 || !EntityData1Ptrs[1] || !TailsAI_ptr)
 		return;
 
-	if (isMoving > 0 && EntityData1Ptrs[1]->CharID == Characters_Tails && EntityData1Ptrs[0]->CharID <= Characters_Tails) {
+	if (EntityData1Ptrs[1]->CharID == Characters_Tails && EntityData1Ptrs[0]->CharID <= Characters_Tails) {
 
 		if (EntityData1Ptrs[1]->Unknown == 0)
 			PlaySound(0x302, NULL, 0, NULL);
@@ -445,6 +440,12 @@ void RestoreAIControl() {
 	return;
 }
 
+void TailsAI_GrabDelete(ObjectMaster* obj) {
+	if (TailsGrab) {
+		TailsGrab = nullptr;
+	}
+}
+
 void TailsAI_Grab(ObjectMaster* obj) {
 
 	if (obj->Data1->Action != movetoDestination && (!EntityData1Ptrs[0] || !EntityData1Ptrs[1] || GameState != 15 || TailsLanding)) {
@@ -476,10 +477,8 @@ void TailsAI_Grab(ObjectMaster* obj) {
 		obj->DeleteSub = TailsAI_GrabDelete;
 		if (!isTailsAI_GrabAllowed()) {
 
-			if (++data->InvulnerableTime == 120) {
-				TailsGrab = nullptr;
+			if (++data->InvulnerableTime == 120)
 				CheckThingButThenDeleteObject(obj);
-			}
 		}
 		else {
 			data->Position = p2->Position;
@@ -658,6 +657,7 @@ void CheckAndLoadTailsTravelObjects(ObjectMaster* obj) {
 void TailsAI_Main_R(ObjectMaster* obj) {
 
 	CheckAndLoadTailsTravelObjects(obj);
+	MilesAI_OnFrames();
 
 	ObjectFunc(origin, TailsAI_Main_t->Target());
 	origin(obj);

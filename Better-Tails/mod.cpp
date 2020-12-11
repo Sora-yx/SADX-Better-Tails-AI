@@ -50,7 +50,7 @@ extern "C" {
 
 	__declspec(dllexport) void __cdecl OnFrame()
 	{
-		MilesAI_OnFrames();
+		
 	}
 
 	__declspec(dllexport) ModInfo SADXModInfo = { ModLoaderVer };

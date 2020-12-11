@@ -33,6 +33,9 @@
     <ClCompile Include="fly-travel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="rescue.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="helper.h">

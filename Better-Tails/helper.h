@@ -9,6 +9,7 @@ void DisableTime_R(); //result screen Stuff
 void LoadAISnowBoard_R(); //Load Snowboard for Tails AI
 
 ObjectMaster* Load2PTails_r(); //Load Tails AI 
+void RestoreAIControl();
 void FixAIHubTransition();
 void FixAIHubTransition2();
 void LoadCharacter_r();
@@ -25,14 +26,22 @@ void SnowboardRespawn();
 void AI_Improvement();
 int isCharacterPetting();
 
-bool IsSpecificPlayerInSphere(NJS_VECTOR* center, float radius, uint8_t player);
-VoidFunc(OTaraiChild_Main, 0x52c8f0);
-void MilesAI_OnFrames();
 NJS_VECTOR UnitMatrix_GetPoint(NJS_VECTOR* orig, Rotation3* rot, float x, float y, float z);
 float GetSquare(NJS_VECTOR* orig, NJS_VECTOR* dest);
 float GetDistance(NJS_VECTOR* orig, NJS_VECTOR* dest);
 float CheckDistance(NJS_VECTOR* vec1, NJS_VECTOR* vec2);
 void PlayerLookAt(NJS_VECTOR* from, NJS_VECTOR* to, Angle* outx, Angle* outy);
+float GetCharacterPositionY(EntityData1* p1);
+void UpdateP1Position(CharObj2* co2p1, CharObj2* co2p2, EntityData1* p1, EntityData1* p2);
+void PlayCharacterLeaveAnimation(EntityData1* p1, CharObj2* co2);
+void Rescue_Init();
+void PlayCharacterGrabAnimation(EntityData1* p1, CharObj2* co2);
+void FlySoundOnFrames();
+
+bool IsSpecificPlayerInSphere(NJS_VECTOR* center, float radius, uint8_t player);
+VoidFunc(OTaraiChild_Main, 0x52c8f0);
+void MilesAI_OnFrames();
+
 
 FunctionPointer(long, Chao_Pleasure, (ObjectMaster* Chao), 0x75db80);
 FunctionPointer(void, Chao_SetBehavior, (ObjectMaster* Chao, long* a2), 0x71EF10);
