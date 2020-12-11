@@ -69,23 +69,26 @@ void MilesRescuesCharacterFall(ObjectMaster* obj) {
 	EntityData1* data = obj->Data1;
 	short Fadeout = 0;
 
-	FlySoundOnFrames();
+	if (data->Action >= 2)
+		FlySoundOnFrames();
 
 	switch (data->Action) {
 
 	case 0:
 		obj->DeleteSub = TailsAI_RescueDelete;
-		p1co2->Speed.y = 2;
+		p1co2->Speed = { 0, 2, 0 };
 		p2->Position.x = p1->Position.x;
 		p2->Position.y = p1->Position.y + 60;
 		p2->Position.z = p1->Position.z;
-		p2->Status &= ~(Status_Attack | Status_Ball | Status_LightDash);
-		p2->Action = 15;
-		CharObj2Ptrs[1]->AnimationThing.Index = 37;
+		p2->Action = 6;
+
 		data->Action = 1;
 		break;
 	case 1:
-		if (p2->Position.y - p1->Position.y <= GetCharacterPositionY(p1) + 5) {
+		if (p2->Position.y - p1->Position.y <= GetCharacterPositionY(p1) + 5) {	
+			p2->Status &= ~(Status_Attack | Status_Ball | Status_LightDash);
+			p2->Action = 15;
+			CharObj2Ptrs[1]->AnimationThing.Index = 37;
 			p1->Status &= ~(Status_Attack | Status_Ball | Status_LightDash);
 			p1->Action = 125;
 			data->Position = RestartLevel.Position;
@@ -93,8 +96,10 @@ void MilesRescuesCharacterFall(ObjectMaster* obj) {
 			data->Action = 2;
 		}
 		else {
-			p1co2->Speed.y = 2;
-			CharObj2Ptrs[1]->Speed.y -= 0.3;
+			p2->Status |= Status_Ball;
+			CharObj2Ptrs[1]->AnimationThing.Index = 15;
+			p1co2->Speed.y = 1.5;
+			CharObj2Ptrs[1]->Speed.y -= 0.2;
 		}
 		break;
 	case 2:
@@ -122,10 +127,14 @@ void MilesRescuesCharacterFall(ObjectMaster* obj) {
 	}
 }
 
+
+
 void PlayCharacterDeathSound_r(ObjectMaster* a1, int pid) {
 
-	if (!EntityData1Ptrs[1] || EntityData1Ptrs[1]->CharID != Characters_Tails)
-		return PlayCharacterDeathSound(a1, pid);
+	if (!EntityData1Ptrs[1] || EntityData1Ptrs[1]->CharID != Characters_Tails) {
+		PlayCharacterDeathSound(a1, pid);
+		return;
+	}
 
 
 	int getRng = (rand() % 100) < 21;
@@ -133,10 +142,28 @@ void PlayCharacterDeathSound_r(ObjectMaster* a1, int pid) {
 	DisableController(0);
 
 	if (!MilesRescue)
-		MilesRescue = LoadObject((LoadObj)2,1, MilesRescuesCharacterFall);
+		MilesRescue = LoadObject((LoadObj)2, 1, MilesRescuesCharacterFall);
 }
 
+
+static void __declspec(naked) PlayCharacterDeathSoundAsm(ObjectMaster* eax, int pid)
+{
+	__asm
+	{
+		push[esp + 04h] // pid
+		push eax // eax0
+
+		// Call your __cdecl function here:
+		call PlayCharacterDeathSound_r
+
+		pop eax // eax0
+		add esp, 4 // pid
+		retn
+	}
+}
+
+
 void Rescue_Init() {
-	WriteCall((void*)0x44af87, PlayCharacterDeathSound_r);
-	WriteCall((void*)0x44affe, PlayCharacterDeathSound_r);
+	WriteCall((void*)0x44af87, PlayCharacterDeathSoundAsm);
+	WriteCall((void*)0x44affe, PlayCharacterDeathSoundAsm);
 }
