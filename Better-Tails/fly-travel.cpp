@@ -36,7 +36,7 @@ MilesAI_Fly DestinationArray[]{
 	{ LevelIDs_StationSquare, 3,  112.861, 70.962, 1555.12}, //Station (main)
 	{ LevelIDs_StationSquare, 4, -483.971, 173.856, 2070.45 }, //Hostel pool
 	{ LevelIDs_StationSquare, 1, -449.364, 21.0912, 1458.25},	//Casino area
-	{ LevelIDs_StationSquare, 0, 271.549, 250.1508, 329.312 }, //chaos 0
+	{ LevelIDs_StationSquare, 0, 275.532, 250.9145, 328.018 }, //chaos 0
 	{ LevelIDs_EggCarrierOutside, 0,  97.0032, 950.573, 817.829 },
 	{ LevelIDs_MysticRuins, 0, -48.1315, 300.108, 1033.91},	//station
 	{ LevelIDs_MysticRuins, 1, -9.2187, -15.838, 2220.16}, //angel island
@@ -377,9 +377,12 @@ void PlayCharacterGrabAnimation(EntityData1* p1, CharObj2* co2) {
 }
 
 void PlayCharacterLeaveAnimation(EntityData1* p1, CharObj2* co2) {
+
+	if (p1->Action == 125)
+		p1->Status &= 0x100u; //remove any status
+
 	switch (p1->CharID) {
 	case Characters_Sonic:
-
 		if (co2->Upgrades & Upgrades_SuperSonic) {
 			p1->Action = 82;
 			co2->AnimationThing.Index = 145;
@@ -425,7 +428,21 @@ float GetCharacterPositionY(EntityData1* p1) {
 	case Characters_Big:
 		return 18.5f;
 	}
+}
 
+void UpdateP1Position(CharObj2* co2p1, CharObj2* co2p2, EntityData1* p1, EntityData1* p2) {
+	co2p2->Speed = co2p1->Speed;
+	p1->Position = p2->Position;
+	p1->Position.y -= GetCharacterPositionY(p1);
+	p1->Rotation = p2->Rotation;
+	return;
+}
+
+void RestoreAIControl() {
+	ControllerPointers[1]->PressedButtons = 0;
+	ControllerPointers[1]->HeldButtons = 0;
+	DisableController(1);
+	return;
 }
 
 void TailsAI_Grab(ObjectMaster* obj) {
@@ -492,11 +509,8 @@ void TailsAI_Grab(ObjectMaster* obj) {
 		data->Unknown = 0;
 		data->InvulnerableTime = 0;
 		data->field_A = 0;
-		co2p2->Speed = co2p1->Speed;
-		p1->Position = p2->Position;
-		p1->Position.y -= GetCharacterPositionY(p1);
-		p1->Rotation = p2->Rotation;
 
+		UpdateP1Position(co2p1, co2p2, p1, p2);
 		CheckAndForceLeavingGrab(data);
 		DisablePause();
 		PlayCharacterGrabAnimation(p1, co2p1);
@@ -537,11 +551,8 @@ void TailsAI_Grab(ObjectMaster* obj) {
 		break;
 	case movetoDestination:
 		FlySoundOnFrames();
-		p2->Action = 15;
-		co2p2->Speed = co2p1->Speed;
-		p1->Position = p2->Position;
-		p1->Position.y -= GetCharacterPositionY(p1);
-		p1->Rotation = p2->Rotation;
+		p2->Action = 15; //fly mode
+		UpdateP1Position(co2p1, co2p2, p1, p2);
 
 		CharObj2Ptrs[1]->Speed.y += 0.7;
 		CharObj2Ptrs[1]->Speed.x += 1.2;
@@ -560,16 +571,10 @@ void TailsAI_Grab(ObjectMaster* obj) {
 		break;
 	case leaving:
 		p2->Action = 10;
-		ControllerPointers[1]->PressedButtons = 0;
-		ControllerPointers[1]->HeldButtons = 0;
-		DisableController(1);
+		RestoreAIControl();
 		ReleaseAllTravelTexture();
 		EnablePause();
-		if (p1->Action == 125) {
-			p1->Status &= 0x100u;
-			PlayCharacterLeaveAnimation(p1, co2p1);
-		}
-		
+		PlayCharacterLeaveAnimation(p1, co2p1);
 		isMoving = 0;
 		CheckThingButThenDeleteObject(obj);
 		break;
@@ -597,7 +602,7 @@ void TailsAI_Landing(ObjectMaster* obj) {
 	CharObj2* co2p1 = CharObj2Ptrs[0];
 	CharObj2* co2p2 = CharObj2Ptrs[1];
 
-	LookAt(&EntityData1Ptrs[1]->Position, &obj->Data1->Position, nullptr, &EntityData1Ptrs[1]->Rotation.y);
+	LookAt(&p2->Position, &data->Position, nullptr, &p2->Rotation.y);
 	FlySoundOnFrames();
 
 	switch (data->Action) {
@@ -614,30 +619,19 @@ void TailsAI_Landing(ObjectMaster* obj) {
 		data->Action = 1;
 		break;
 	case 1:
-		EnableController(1);
-		co2p2->Speed = co2p1->Speed;
-		p1->Position = p2->Position;
-		p1->Position.y -= GetCharacterPositionY(p1);
-		p1->Rotation = p2->Rotation;
+		UpdateP1Position(co2p1, co2p2, p1, p2);
 		CharObj2Ptrs[1]->Speed.y -= 0.8;
 		CharObj2Ptrs[1]->Speed.z += 0.8;
 
-		if (++data->InvulnerableTime == 140 || ((p1->Status & Status_Ground) == Status_Ground)) {
+		if (++data->InvulnerableTime == 140 || ((p1->Status & Status_Ground) == Status_Ground) || (p1->Status & Status_Unknown1) == Status_Unknown1) {
 			data->Action = 2;
 		}
 		break;
 	case 2:
 		EnableController(0);
 		EnablePause();
-		if (p1->Action == 125) {
-			p1->Status &= 0x100u;
-			PlayCharacterLeaveAnimation(p1, co2p1);
-		}
-		data->Unknown = 0;
-		ControllerPointers[1]->PressedButtons = 0;
-		ControllerPointers[1]->HeldButtons = 0;
-		DisableController(1);
-		isMoving = 0;
+		PlayCharacterLeaveAnimation(p1, co2p1);
+		RestoreAIControl();
 		CheckThingButThenDeleteObject(obj);
 		break;
 	}
