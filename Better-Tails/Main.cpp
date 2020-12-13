@@ -6,6 +6,7 @@ bool isAIActive = false;
 int FlagAI = 0;
 bool ForceAI = false;
 int AICutsceneOk = 0;
+Trampoline* TailsAI_Main_t;
 
 
 MilesAI_Spawn TailsArray[] { //Used to prevent Miles to be called in some very specfic places/cutscenes where the game will crash.
@@ -202,6 +203,31 @@ void MilesAI_OnFrames() {
 	SnowboardRespawn();
 }
 
+//Reset value when Tails AI is deleted
+void TailsAI_ResetValue() {
+	isAIActive = false;
+	ForceAI = false;
+	return FUN_0042ce20();
+}
+
+//Reset value when the player quit or soft reset
+void SoftReset_R() {
+	isChaoPetByAI = false; //just to be safe
+	ForceAI = false;
+	isAIActive = false;
+	AICutsceneOk = 0;
+	FUN_00412ad0();
+}
+
+void TailsAI_Main_R(ObjectMaster* obj) {
+
+	CheckAndLoadTailsTravelObjects(obj);
+	MilesAI_OnFrames();
+
+	ObjectFunc(origin, TailsAI_Main_t->Target());
+	origin(obj);
+}
+
 void AI_Init(const HelperFunctions& helperFunctions) {
 
 	//Allow Tails AI to spawn in acton stages, hub world, bosses and chao garden + fixes
@@ -214,6 +240,8 @@ void AI_Init(const HelperFunctions& helperFunctions) {
 	
 	AI_Fixes();
 	AI_Improvement();
+
+	TailsAI_Main_t = new Trampoline((int)TailsAI_Main, (int)TailsAI_Main + 0x5, TailsAI_Main_R);
 	
 	ReplaceSound("P_SONICTAILS_BANK03", "P_SONICTAILS_BANK03");
 }

@@ -1,6 +1,5 @@
 #include "stdafx.h"
 
-Trampoline* TailsAI_Main_t;
 Trampoline* MovePlayerToStartPoint_t;
 ObjectMaster* TailsGrab = nullptr;
 uint8_t isMoving = 0;
@@ -448,7 +447,7 @@ void TailsAI_GrabDelete(ObjectMaster* obj) {
 
 void TailsAI_Grab(ObjectMaster* obj) {
 
-	if (obj->Data1->Action != movetoDestination && (!EntityData1Ptrs[0] || !EntityData1Ptrs[1] || GameState != 15 || TailsLanding)) {
+	if (obj->Data1->Action != movetoDestination && (!EntityData1Ptrs[0] || !EntityData1Ptrs[1] || GameState != 15 || TailsLanding || isMilesSaving())) {
 		if (EntityData1Ptrs[1]) {
 			if (EntityData1Ptrs[1]->Action == 125) //failsafe if the player start fly travel but leave the level/act
 				EntityData1Ptrs[1]->Action = 1;
@@ -654,14 +653,6 @@ void CheckAndLoadTailsTravelObjects(ObjectMaster* obj) {
 	}
 }
 
-void TailsAI_Main_R(ObjectMaster* obj) {
-
-	CheckAndLoadTailsTravelObjects(obj);
-	MilesAI_OnFrames();
-
-	ObjectFunc(origin, TailsAI_Main_t->Target());
-	origin(obj);
-}
 
 
 void FlyTravel_Init() {
@@ -671,6 +662,6 @@ void FlyTravel_Init() {
 	WriteCall((void*)0x458bb8, PauseMenu_Map_Display_r);
 	WriteCall((void*)0x458b6e, PauseMenu_Map_Display_r);	
 
-	TailsAI_Main_t = new Trampoline((int)TailsAI_Main, (int)TailsAI_Main + 0x5, TailsAI_Main_R);
+
 	MovePlayerToStartPoint_t = new Trampoline((int)MovePlayerToStartPoint, (int)MovePlayerToStartPoint + 0x6, MovePlayerToStartPoint_r);
 }

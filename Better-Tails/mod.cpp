@@ -7,8 +7,8 @@ bool IsTCBanned = false;
 bool IsStoryIA = false;
 bool banCharacter[8] = { -1 };
 bool isFlyTravel = true;
+bool isRescue = true;
 
-void DisplayCursorAnimation();
 
 extern "C" {
 
@@ -28,6 +28,7 @@ extern "C" {
 
 		IsStoryIA = config->getBool("AI", "IsStoryIA", false);
 		isFlyTravel = config->getBool("AI", "isFlyTravel", true);
+		isRescue = config->getBool("AI", "isRescue", true);
 
 		delete config;
 
@@ -50,7 +51,7 @@ extern "C" {
 
 	__declspec(dllexport) void __cdecl OnFrame()
 	{
-		
+
 	}
 
 	__declspec(dllexport) ModInfo SADXModInfo = { ModLoaderVer };

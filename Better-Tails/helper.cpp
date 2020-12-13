@@ -153,24 +153,6 @@ void FixAIHubTransition2() {
 	return;
 }
 
-//Reset value when Tails AI is deleted
-void TailsAI_ResetValue() {
-
-	isAIActive = false;
-	ForceAI = false;
-	return FUN_0042ce20();
-}
-
-//Reset value when the player quit or soft reset
-void SoftReset_R() {
-
-	isChaoPetByAI = false; //just to be safe
-	ForceAI = false;
-	isAIActive = false;
-	AICutsceneOk = 0;
-	FUN_00412ad0();
-}
-
 
 //Manually Call Tails Ai when necessary.
 void CallTailsAI_R() {

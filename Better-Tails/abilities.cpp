@@ -144,7 +144,7 @@ void MilesAI_VictoryPose(ObjectMaster* obj) {
 		break;
 	case 1:
 		if ((p2->Status & Status_Ground) == Status_Ground || p2->Action <= 2) { //fix floating victory pose
-			if (p2->Position.y >= p1->Position.y + 6 || p2->Position.y <= p1->Position.y - 6) { //failsafe
+			if (p2->Position.y >= p1->Position.y + 6 || p2->Position.y <= p1->Position.y - 6 || p1->Position.z == p2->Position.z) { //failsafe
 				p2->Rotation = p1->Rotation;
 				p2->Position = UnitMatrix_GetPoint(&p1->Position, &p1->Rotation, 0.0f, 0.0f, 6.0f);
 			}

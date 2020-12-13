@@ -17,6 +17,8 @@ void LookAt(NJS_VECTOR* from, NJS_VECTOR* to, Angle* outx, Angle* outy);
 void AI_Init(const HelperFunctions& helperFunctions);
 void PreventTailsAIDamage();
 void moveAItoPlayer();
+bool isMilesSaving();
+void CheckAndLoadTailsTravelObjects(ObjectMaster* obj);
 void TailsAI_ResetValue();
 void AllowTailsAI_R();
 void CheckAndDeleteAI();
@@ -37,6 +39,7 @@ void PlayCharacterLeaveAnimation(EntityData1* p1, CharObj2* co2);
 void Rescue_Init();
 void PlayCharacterGrabAnimation(EntityData1* p1, CharObj2* co2);
 void FlySoundOnFrames();
+
 
 bool IsSpecificPlayerInSphere(NJS_VECTOR* center, float radius, uint8_t player);
 VoidFunc(OTaraiChild_Main, 0x52c8f0);
@@ -113,6 +116,7 @@ extern bool banCharacter[8];
 extern bool isChaoPetByAI;
 extern uint8_t isMoving;
 extern bool isFlyTravel;
+extern bool isRescue;
 
 struct MilesAI_Spawn {
 	int curCharacter;

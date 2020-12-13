@@ -1,10 +1,20 @@
 #include "stdafx.h"
 
+
+//This is the rescue page, the idea here is editing the deathzones to add code so Tails can save you.
+
+
 ObjectMaster* MilesRescue = nullptr;
 ObjectMaster* TailsRescueLanding = nullptr;
 
+bool isMilesSaving() {
+	if (MilesRescue || TailsRescueLanding)
+		return true;
 
+	return false;
+}
 
+//reset PTR when objects are deleted
 void TailsAI_LandingDelete2(ObjectMaster* obj) {
 	TailsRescueLanding = nullptr;
 }
@@ -13,7 +23,7 @@ void TailsAI_RescueDelete(ObjectMaster* obj) {
 	MilesRescue = nullptr;
 }
 
-//Actually need a second separate object for the landing part, otherwise Tails AI behavior become dumb, idk, kill me, this game sucks.
+//Actually need a second separate object for the landing part, otherwise Tails AI behavior become dumb, idk, kill me, game sucks.
 void TailsAI_Landing2(ObjectMaster* obj) {
 
 	if (!EntityData1Ptrs[0] || !EntityData1Ptrs[1] || GameState != 15 && GameState != 4) {
@@ -32,9 +42,6 @@ void TailsAI_Landing2(ObjectMaster* obj) {
 	switch (data->Action) {
 	case 0:
 		obj->DeleteSub = TailsAI_LandingDelete2;
-		//CharObj2Ptrs[1]->Speed = { 0, 0, 0 };
-		//CharObj2Ptrs[0]->Speed = { 0, 0, 0 };
-		DisableController(0);
 		EnableController(1);
 		p1->Action = 125;
 		p2->Action = 15;
@@ -77,7 +84,7 @@ void MilesRescuesCharacterFall(ObjectMaster* obj) {
 	case 0:
 		obj->DeleteSub = TailsAI_RescueDelete;
 		p1co2->Speed = { 0, 2, 0 };
-		p2->Position.x = p1->Position.x;
+		p2->Position.x = p1->Position.x + 5;
 		p2->Position.y = p1->Position.y + 60;
 		p2->Position.z = p1->Position.z;
 		p2->Action = 6;
@@ -100,6 +107,9 @@ void MilesRescuesCharacterFall(ObjectMaster* obj) {
 			CharObj2Ptrs[1]->AnimationThing.Index = 15;
 			p1co2->Speed.y = 1.5;
 			CharObj2Ptrs[1]->Speed.y -= 0.2;
+			if (p2->Position.x > p1->Position.x)
+				CharObj2Ptrs[1]->Speed.x += 0.3;
+
 		}
 		break;
 	case 2:
@@ -115,6 +125,7 @@ void MilesRescuesCharacterFall(ObjectMaster* obj) {
 		else {
 			UpdateP1Position(p1co2, p2co2, p1, p2);
 			CharObj2Ptrs[1]->Speed.y += 0.5;
+			CharObj2Ptrs[1]->Speed.x += 0.2;
 		}
 		break;
 	case 3:
@@ -129,13 +140,12 @@ void MilesRescuesCharacterFall(ObjectMaster* obj) {
 
 
 
-void PlayCharacterDeathSound_r(ObjectMaster* a1, int pid) {
+void CheckAndCallMilesRescue(ObjectMaster* a1, int pid) {
 
 	if (!EntityData1Ptrs[1] || EntityData1Ptrs[1]->CharID != Characters_Tails) {
-		PlayCharacterDeathSound(a1, pid);
+		PlayCharacterDeathSound(a1, pid); //kill the player
 		return;
 	}
-
 
 	int getRng = (rand() % 100) < 21;
 	//TO DO: add rng check
@@ -154,7 +164,7 @@ static void __declspec(naked) PlayCharacterDeathSoundAsm(ObjectMaster* eax, int 
 		push eax // eax0
 
 		// Call your __cdecl function here:
-		call PlayCharacterDeathSound_r
+		call CheckAndCallMilesRescue
 
 		pop eax // eax0
 		add esp, 4 // pid
