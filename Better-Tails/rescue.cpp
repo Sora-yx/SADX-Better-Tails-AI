@@ -1,8 +1,6 @@
 #include "stdafx.h"
 
-
 //This is the rescue page, the idea here is editing the deathzones to add code so Tails can save you.
-
 
 ObjectMaster* MilesRescue = nullptr;
 ObjectMaster* TailsRescueLanding = nullptr;
@@ -40,14 +38,11 @@ void TailsAI_Landing2(ObjectMaster* obj) {
 	FlySoundOnFrames();
 
 	switch (data->Action) {
-	case 0:
+	case 0: {
 		obj->DeleteSub = TailsAI_LandingDelete2;
-		EnableController(1);
-		p1->Action = 125;
-		p2->Action = 15;
-		CharObj2Ptrs[1]->AnimationThing.Index = 37;
 		PlayCharacterGrabAnimation(p1, co2p1);
 		data->Action = 1;
+	}
 		break;
 	case 1:
 		UpdateP1Position(co2p1, co2p2, p1, p2);
@@ -74,7 +69,6 @@ void MilesRescuesCharacterFall(ObjectMaster* obj) {
 	CharObj2* p1co2 = CharObj2Ptrs[0];
 	CharObj2* p2co2 = CharObj2Ptrs[1];
 	EntityData1* data = obj->Data1;
-	short Fadeout = 0;
 
 	if (data->Action >= 2)
 		FlySoundOnFrames();
@@ -88,7 +82,6 @@ void MilesRescuesCharacterFall(ObjectMaster* obj) {
 		p2->Position.y = p1->Position.y + 60;
 		p2->Position.z = p1->Position.z;
 		p2->Action = 6;
-
 		data->Action = 1;
 		break;
 	case 1:
@@ -98,7 +91,6 @@ void MilesRescuesCharacterFall(ObjectMaster* obj) {
 			CharObj2Ptrs[1]->AnimationThing.Index = 37;
 			p1->Status &= ~(Status_Attack | Status_Ball | Status_LightDash);
 			p1->Action = 125;
-			data->Position = RestartLevel.Position;
 			PlayCharacterGrabAnimation(p1, p1co2);
 			data->Action = 2;
 		}
@@ -109,10 +101,12 @@ void MilesRescuesCharacterFall(ObjectMaster* obj) {
 			CharObj2Ptrs[1]->Speed.y -= 0.2;
 			if (p2->Position.x > p1->Position.x)
 				CharObj2Ptrs[1]->Speed.x += 0.3;
-
 		}
 		break;
 	case 2:
+		if (++data->field_A == 140) {
+			LoadObject(LoadObj_Data1, 1, FadeoutScreen);
+		}
 		if (++data->InvulnerableTime == 200) {
 			Controllers[1].HeldButtons = 0;
 			Controllers[1].PressedButtons = 0;
@@ -139,7 +133,6 @@ void MilesRescuesCharacterFall(ObjectMaster* obj) {
 }
 
 
-
 void CheckAndCallMilesRescue(ObjectMaster* a1, int pid) {
 
 	if (!EntityData1Ptrs[1] || EntityData1Ptrs[1]->CharID != Characters_Tails) {
@@ -154,7 +147,6 @@ void CheckAndCallMilesRescue(ObjectMaster* a1, int pid) {
 	if (!MilesRescue)
 		MilesRescue = LoadObject((LoadObj)2, 1, MilesRescuesCharacterFall);
 }
-
 
 static void __declspec(naked) PlayCharacterDeathSoundAsm(ObjectMaster* eax, int pid)
 {
@@ -171,7 +163,6 @@ static void __declspec(naked) PlayCharacterDeathSoundAsm(ObjectMaster* eax, int 
 		retn
 	}
 }
-
 
 void Rescue_Init() {
 	WriteCall((void*)0x44af87, PlayCharacterDeathSoundAsm);

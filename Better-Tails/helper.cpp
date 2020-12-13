@@ -337,6 +337,38 @@ void GetPlayerSidePos(NJS_VECTOR* v1, EntityData1* a2, float m)
 	}
 }
 
+void FadeoutScreen(ObjectMaster* obj) {
+
+	EntityData1* data = obj->Data1;
+
+	if (++data->InvulnerableTime > 80) {
+
+		int color = 0x00000000;
+		ScreenFade_Color = *(NJS_COLOR*)&color;
+		CheckThingButThenDeleteObject(obj);
+	}
+	else {
+		int color = 0x0000000;
+		ScreenFade_Color = *(NJS_COLOR*)&color;
+
+		if (data->InvulnerableTime < 120) {
+			if (data->InvulnerableTime < 60) {
+				data->CharID += 4;
+				ScreenFade_Color.argb.a = data->CharID;
+			}
+			else {
+				ScreenFade_Color.argb.a = 0x0;
+			}
+		}
+		else {
+			data->CharID -= 20;
+			ScreenFade_Color.argb.a = data->CharID;
+		}
+
+		ScreenFade_DrawColor();
+	}
+}
+
 void AI_Fixes() {
 
 	if (IsHubBanned)
