@@ -21,6 +21,17 @@ void TailsAI_RescueDelete(ObjectMaster* obj) {
 	MilesRescue = nullptr;
 }
 
+const char* const Sonic_message01[] = {
+	"	 	 Thank you Tails!   \n",
+	NULL,
+};
+
+const char* const Miles_message01[] = {
+	"	 	 Ahehehe...   \n",
+	NULL,
+};
+
+
 //Actually need a second separate object for the landing part, otherwise Tails AI behavior become dumb, idk, kill me, game sucks.
 void TailsAI_Landing2(ObjectMaster* obj) {
 
@@ -47,16 +58,35 @@ void TailsAI_Landing2(ObjectMaster* obj) {
 	case 1:
 		UpdateP1Position(co2p1, co2p2, p1, p2);
 		CharObj2Ptrs[1]->Speed.y -= 0.4;
+		if (++data->Index == 30) {
+			if (p1->CharID == Characters_Sonic) {
+				if (TextLanguage == 1)
+					DisplayHintText(Sonic_message01, 100);
+				if (VoiceLanguage)
+					PlayVoice(64871);
+			}
+		}
 
 		if (++data->InvulnerableTime == 90 || ((p1->Status & Status_Ground) == Status_Ground) || (p1->Status & Status_Unknown1) == Status_Unknown1) {
+			data->Index = 0;
 			data->Action = 2;
 		}
 		break;
 	case 2:
 		EnableController(0);
 		PlayCharacterLeaveAnimation(p1, co2p1);
-		RestoreAIControl();
-		CheckThingButThenDeleteObject(obj);
+		RestoreAIControl();	
+		if (++data->Index == 20) {
+			if (p1->CharID == Characters_Sonic) {
+
+				if (TextLanguage == 1)
+					DisplayHintText(Miles_message01, 100);
+				if (VoiceLanguage)
+					PlayVoice(64872);
+			}
+
+			CheckThingButThenDeleteObject(obj);
+		}
 		break;
 	}
 }
