@@ -205,6 +205,7 @@ void MilesAI_OnFrames() {
 
 //Reset value when Tails AI is deleted
 void TailsAI_ResetValue() {
+	rngKill = 0;
 	isAIActive = false;
 	ForceAI = false;
 	isRescued = false;

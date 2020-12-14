@@ -6,6 +6,7 @@ ObjectMaster* MilesRescue = nullptr;
 ObjectMaster* TailsRescueLanding = nullptr;
 Trampoline* KillPlayer_t;
 bool isRescued = false;
+int rngKill = 0;
 
 MilesAI_Fly RescueArray[]{
 	{ LevelIDs_EggHornet, 0, 812, 226.58, 839 },
@@ -44,6 +45,7 @@ bool isMilesSaving() {
 
 //reset PTR when objects are deleted
 void TailsAI_LandingDelete2(ObjectMaster* obj) {
+	rngKill = 0;
 	TailsRescueLanding = nullptr;
 	MilesRescue = nullptr;
 }
@@ -75,7 +77,6 @@ void TailsAI_Landing2(ObjectMaster* obj) {
 	EntityData1* data = obj->Data1;
 	CharObj2* co2p1 = CharObj2Ptrs[0];
 	CharObj2* co2p2 = CharObj2Ptrs[1];
-	int randT = 0;
 
 	LookAt(&p2->Position, &data->Position, nullptr, &p2->Rotation.y);
 	FlySoundOnFrames();
@@ -93,8 +94,8 @@ void TailsAI_Landing2(ObjectMaster* obj) {
 		CharObj2Ptrs[1]->Speed.y -= 0.4;
 
 		if (++data->Index == 30) {
-			randT = setRandom(0, 2);
-			if (randT != 0) {
+			data->NextAction = rand() % 2;
+			if (data->NextAction != 0) {
 				if (p1->CharID == Characters_Sonic) {
 					if (TextLanguage == 1)
 						DisplayHintText(Sonic_message01, 100);
@@ -115,9 +116,7 @@ void TailsAI_Landing2(ObjectMaster* obj) {
 		RestoreAIControl();	
 		if (++data->Index == 20) {
 			if (p1->CharID == Characters_Sonic) {
-
-				int randT = setRandom(0, 1);
-				if (randT) {
+				if (data->NextAction != 0) {
 					if (TextLanguage == 1)
 						DisplayHintText(Miles_message01, 100);
 					if (VoiceLanguage)
@@ -219,15 +218,14 @@ void CheckAndCallMilesRescue() {
 
 void PlayCharacterDeathSound_r(ObjectMaster* a1, int pid) {
 
-	if (!MilesRescue && !TailsRescueLanding) {
+	if (isMilesSaving() || rngKill)
+		return;
 
-		int getRng = 0;
-		if (CurrentLevel >= LevelIDs_StationSquare && CurrentLevel <= LevelIDs_Past)
-			getRng = setRandom(20, 100);
-		else
-			getRng = setRandom(1, 100);
+	if (!MilesRescue && !TailsRescueLanding && !rngKill) {
 
-		if (!EntityData1Ptrs[1] || EntityData1Ptrs[1]->CharID != Characters_Tails || CurrentLevel == LevelIDs_SkyDeck && CurrentAct == 1 || isRescued && CurrentLevel < LevelIDs_StationSquare || getRng < 50) {
+		rngKill = rand() % (40, 100);
+
+		if (!EntityData1Ptrs[1] || EntityData1Ptrs[1]->CharID != Characters_Tails || CurrentLevel == LevelIDs_SkyDeck && CurrentAct == 1 || isRescued && CurrentLevel < LevelIDs_StationSquare || rngKill < 50) {
 			PlayCharacterDeathSound(a1, pid); //kill the player
 			return;
 		}
@@ -255,11 +253,14 @@ static void __declspec(naked) PlayCharacterDeathSoundAsm(ObjectMaster* eax, int 
 
 void KillPlayer_r(int Character) {
 
-	if (!MilesRescue && !TailsRescueLanding) {
+	if (isMilesSaving() || rngKill)
+		return;
 
-		int getRng = setRandom(1, 100);
+	if (!MilesRescue && !TailsRescueLanding && !rngKill) {
 
-		if (!EntityData1Ptrs[1] || EntityData1Ptrs[1]->CharID != Characters_Tails || getRng < 50) {
+		rngKill = rand() % 2;
+
+		if (!EntityData1Ptrs[1] || EntityData1Ptrs[1]->CharID != Characters_Tails || !rngKill) {
 			KillPlayer(Character);
 			return;
 		}

@@ -2,10 +2,26 @@
 
 #define MaxPlayers 8
 
+extern bool IsChaoGardenBanned;
+extern bool IsHubBanned;
+extern bool IsBossBanned;
+extern bool IsTCBanned;
+extern bool isAIActive;
+extern bool ForceAI;
+extern int AICutsceneOk;
+extern bool IsStoryIA;
+extern bool banCharacter[8];
+extern bool isChaoPetByAI;
+extern uint8_t isMoving;
+extern bool isFlyTravel;
+extern bool isRescueAllowed;
+extern bool isRescued;
+
 int CheckTailsAI_R(void); //Tails flag spawn allowed
 void DisableTime_R(); //result screen Stuff
 void LoadAISnowBoard_R(); //Load Snowboard for Tails AI
 
+extern int rngKill;
 ObjectMaster* Load2PTails_r(); //Load Tails AI 
 void RestoreAIControl();
 void FixAIHubTransition();
@@ -26,7 +42,6 @@ void SnowboardRespawn();
 void AI_Improvement();
 int isCharacterPetting();
 void FadeoutScreen(ObjectMaster* obj);
-int setRandom(int a, int b);
 
 NJS_VECTOR UnitMatrix_GetPoint(NJS_VECTOR* orig, Rotation3* rot, float x, float y, float z);
 float GetSquare(NJS_VECTOR* orig, NJS_VECTOR* dest);
@@ -85,20 +100,8 @@ VoidFunc(FUN_00412ad0, 0x412ad0); //called when you soft reset / quit
 void SoftReset_R();
 void FlyTravel_Init();
 
-extern bool IsChaoGardenBanned;
-extern bool IsHubBanned;
-extern bool IsBossBanned;
-extern bool IsTCBanned;
-extern bool isAIActive;
-extern bool ForceAI;
-extern int AICutsceneOk;
-extern bool IsStoryIA;
-extern bool banCharacter[8];
-extern bool isChaoPetByAI;
-extern uint8_t isMoving;
-extern bool isFlyTravel;
-extern bool isRescueAllowed;
-extern bool isRescued;
+
+
 
 struct MilesAI_Spawn {
 	int curCharacter;
