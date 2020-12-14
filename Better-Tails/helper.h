@@ -26,6 +26,7 @@ void SnowboardRespawn();
 void AI_Improvement();
 int isCharacterPetting();
 void FadeoutScreen(ObjectMaster* obj);
+int setRandom(int a, int b);
 
 NJS_VECTOR UnitMatrix_GetPoint(NJS_VECTOR* orig, Rotation3* rot, float x, float y, float z);
 float GetSquare(NJS_VECTOR* orig, NJS_VECTOR* dest);
@@ -96,7 +97,8 @@ extern bool banCharacter[8];
 extern bool isChaoPetByAI;
 extern uint8_t isMoving;
 extern bool isFlyTravel;
-extern bool isRescue;
+extern bool isRescueAllowed;
+extern bool isRescued;
 
 struct MilesAI_Spawn {
 	int curCharacter;

@@ -369,6 +369,10 @@ void FadeoutScreen(ObjectMaster* obj) {
 	}
 }
 
+int setRandom(int a, int b) {
+	return rand() % (a, b);
+}
+
 void AI_Fixes() {
 
 	if (IsHubBanned)

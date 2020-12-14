@@ -5,6 +5,35 @@
 ObjectMaster* MilesRescue = nullptr;
 ObjectMaster* TailsRescueLanding = nullptr;
 Trampoline* KillPlayer_t;
+bool isRescued = false;
+
+MilesAI_Fly RescueArray[]{
+	{ LevelIDs_EggHornet, 0, 812, 226.58, 839 },
+	{ LevelIDs_EggViper, 0, 260, 12.8, 0},
+	{ LevelIDs_StationSquare, 0,  273.946, 93.7993, 345.299},
+	{ LevelIDs_StationSquare, 1,  -14.823, 122.437, 1339.01},	
+	{ LevelIDs_StationSquare, 2,  399.721, -54.527, 994.518},	
+	{ LevelIDs_StationSquare, 3,  63.2726, 152.052, 1511.99},
+	{ LevelIDs_StationSquare, 4,  -470.063, 105.65, 2034.67},	
+	{ LevelIDs_StationSquare, 5,  695.884, 87.0144, 1771.52},
+	{ LevelIDs_MysticRuins, 0, -180.056, 255.684, 909.889},
+	{ LevelIDs_MysticRuins, 2, -533.295, 127.576, -869.326},	
+	{ LevelIDs_Past, 0, 7.64868, 442.872, -739.94},
+	{ LevelIDs_Past, 1, 0.782157, 138.21, 1358},
+	{ LevelIDs_Past, 2, 0.782157, 138.21, 1358},
+};
+
+NJS_VECTOR CheckRescueArray() {
+
+	for (int i = 0; i < LengthOfArray(RescueArray); i++) {
+		if (CurrentLevel == RescueArray[i].level && CurrentAct == RescueArray[i].act)
+		{
+			return RescueArray[i].destination;
+		}
+	}
+
+	return { -1, -1, -1 };
+}
 
 bool isMilesSaving() {
 	if (MilesRescue || TailsRescueLanding)
@@ -16,6 +45,7 @@ bool isMilesSaving() {
 //reset PTR when objects are deleted
 void TailsAI_LandingDelete2(ObjectMaster* obj) {
 	TailsRescueLanding = nullptr;
+	MilesRescue = nullptr;
 }
 
 void TailsAI_RescueDelete(ObjectMaster* obj) {
@@ -45,12 +75,14 @@ void TailsAI_Landing2(ObjectMaster* obj) {
 	EntityData1* data = obj->Data1;
 	CharObj2* co2p1 = CharObj2Ptrs[0];
 	CharObj2* co2p2 = CharObj2Ptrs[1];
+	int randT = 0;
 
 	LookAt(&p2->Position, &data->Position, nullptr, &p2->Rotation.y);
 	FlySoundOnFrames();
 
 	switch (data->Action) {
 	case 0: {
+		isRescued = true;
 		obj->DeleteSub = TailsAI_LandingDelete2;
 		PlayCharacterGrabAnimation(p1, co2p1);
 		data->Action = 1;
@@ -59,12 +91,16 @@ void TailsAI_Landing2(ObjectMaster* obj) {
 	case 1:
 		UpdateP1Position(co2p1, co2p2, p1, p2);
 		CharObj2Ptrs[1]->Speed.y -= 0.4;
+
 		if (++data->Index == 30) {
-			if (p1->CharID == Characters_Sonic) {
-				if (TextLanguage == 1)
-					DisplayHintText(Sonic_message01, 100);
-				if (VoiceLanguage)
-					PlayVoice(64871);
+			randT = setRandom(0, 2);
+			if (randT != 0) {
+				if (p1->CharID == Characters_Sonic) {
+					if (TextLanguage == 1)
+						DisplayHintText(Sonic_message01, 100);
+					if (VoiceLanguage)
+						PlayVoice(64871);
+				}
 			}
 		}
 
@@ -80,10 +116,13 @@ void TailsAI_Landing2(ObjectMaster* obj) {
 		if (++data->Index == 20) {
 			if (p1->CharID == Characters_Sonic) {
 
-				if (TextLanguage == 1)
-					DisplayHintText(Miles_message01, 100);
-				if (VoiceLanguage)
-					PlayVoice(64872);
+				int randT = setRandom(0, 1);
+				if (randT) {
+					if (TextLanguage == 1)
+						DisplayHintText(Miles_message01, 100);
+					if (VoiceLanguage)
+						PlayVoice(64872);
+				}
 			}
 
 			CheckThingButThenDeleteObject(obj);
@@ -141,7 +180,13 @@ void MilesRescuesCharacterFall(ObjectMaster* obj) {
 		if (++data->InvulnerableTime == 200) {
 			Controllers[1].HeldButtons = 0;
 			Controllers[1].PressedButtons = 0;
-			p1->Position = RestartLevel.Position;
+			NJS_VECTOR getPos = CheckRescueArray();
+			if (getPos.x != -1 && getPos.y != -1 && getPos.z != -1) {
+				p1->Position = getPos;
+			}
+			else {
+				p1->Position = RestartLevel.Position;
+			}
 			p1->Position.y += 50;
 			p2->Position = p1->Position;
 			p1co2->Speed = { 0, 0, 0 };
@@ -164,8 +209,7 @@ void MilesRescuesCharacterFall(ObjectMaster* obj) {
 }
 
 void CheckAndCallMilesRescue() {
-	int getRng = (rand() % 100) < 21;
-	//TO DO: add rng check
+
 	DisableController(0);
 
 	if (!MilesRescue)
@@ -175,9 +219,18 @@ void CheckAndCallMilesRescue() {
 
 void PlayCharacterDeathSound_r(ObjectMaster* a1, int pid) {
 
-	if (!EntityData1Ptrs[1] || EntityData1Ptrs[1]->CharID != Characters_Tails || CurrentLevel == LevelIDs_SkyDeck && CurrentAct == 1) {
-		PlayCharacterDeathSound(a1, pid); //kill the player
-		return;
+	if (!MilesRescue && !TailsRescueLanding) {
+
+		int getRng = 0;
+		if (CurrentLevel >= LevelIDs_StationSquare && CurrentLevel <= LevelIDs_Past)
+			getRng = setRandom(20, 100);
+		else
+			getRng = setRandom(1, 100);
+
+		if (!EntityData1Ptrs[1] || EntityData1Ptrs[1]->CharID != Characters_Tails || CurrentLevel == LevelIDs_SkyDeck && CurrentAct == 1 || isRescued && CurrentLevel < LevelIDs_StationSquare || getRng < 50) {
+			PlayCharacterDeathSound(a1, pid); //kill the player
+			return;
+		}
 	}
 
 	CheckAndCallMilesRescue();
@@ -202,9 +255,14 @@ static void __declspec(naked) PlayCharacterDeathSoundAsm(ObjectMaster* eax, int 
 
 void KillPlayer_r(int Character) {
 
-	if (!EntityData1Ptrs[1] || EntityData1Ptrs[1]->CharID != Characters_Tails) {
-		KillPlayer(Character);
-		return;
+	if (!MilesRescue && !TailsRescueLanding) {
+
+		int getRng = setRandom(1, 100);
+
+		if (!EntityData1Ptrs[1] || EntityData1Ptrs[1]->CharID != Characters_Tails || getRng < 50) {
+			KillPlayer(Character);
+			return;
+		}
 	}
 
 	CheckAndCallMilesRescue();

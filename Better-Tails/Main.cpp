@@ -207,6 +207,7 @@ void MilesAI_OnFrames() {
 void TailsAI_ResetValue() {
 	isAIActive = false;
 	ForceAI = false;
+	isRescued = false;
 	return FUN_0042ce20();
 }
 

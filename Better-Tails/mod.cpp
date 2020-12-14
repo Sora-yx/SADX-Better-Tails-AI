@@ -7,7 +7,7 @@ bool IsTCBanned = false;
 bool IsStoryIA = false;
 bool banCharacter[8] = { -1 };
 bool isFlyTravel = true;
-bool isRescue = true;
+bool isRescueAllowed = true;
 time_t t;
 
 extern "C" {
@@ -28,7 +28,7 @@ extern "C" {
 
 		IsStoryIA = config->getBool("AI", "IsStoryIA", false);
 		isFlyTravel = config->getBool("AI", "isFlyTravel", true);
-		isRescue = config->getBool("AI", "isRescue", true);
+		isRescueAllowed = config->getBool("AI", "isRescue", true);
 
 		delete config;
 
