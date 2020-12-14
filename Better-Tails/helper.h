@@ -74,6 +74,8 @@ FunctionPointer(void, sub_525980, (unsigned __int16 a1, NJS_VECTOR* p1Pos), 0x52
 FunctionPointer(void, sub_52F9C0, (unsigned __int16 a1, NJS_VECTOR* p1Pos), 0x52F9C0);
 FunctionPointer(void, sub_541BF0, (unsigned __int16 a1, NJS_VECTOR* p1Pos), 0x541BF0);
 
+FunctionPointer(void, KillPlayer, (int player), 0x440cd0);
+
 void CallTailsAI_R();
 void CallTailsAI_R2();
 void CallTailsAI_R3();

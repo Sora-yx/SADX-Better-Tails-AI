@@ -4,6 +4,7 @@
 
 ObjectMaster* MilesRescue = nullptr;
 ObjectMaster* TailsRescueLanding = nullptr;
+Trampoline* KillPlayer_t;
 
 bool isMilesSaving() {
 	if (MilesRescue || TailsRescueLanding)
@@ -149,7 +150,7 @@ void MilesRescuesCharacterFall(ObjectMaster* obj) {
 		else {
 			UpdateP1Position(p1co2, p2co2, p1, p2);
 			CharObj2Ptrs[1]->Speed.y += 0.5;
-			CharObj2Ptrs[1]->Speed.x += 0.2;
+			CharObj2Ptrs[1]->Speed.x += 0.3;
 		}
 		break;
 	case 3:
@@ -162,20 +163,25 @@ void MilesRescuesCharacterFall(ObjectMaster* obj) {
 	}
 }
 
-
-void CheckAndCallMilesRescue(ObjectMaster* a1, int pid) {
-
-	if (!EntityData1Ptrs[1] || EntityData1Ptrs[1]->CharID != Characters_Tails) {
-		PlayCharacterDeathSound(a1, pid); //kill the player
-		return;
-	}
-
+void CheckAndCallMilesRescue() {
 	int getRng = (rand() % 100) < 21;
 	//TO DO: add rng check
 	DisableController(0);
 
 	if (!MilesRescue)
 		MilesRescue = LoadObject((LoadObj)2, 1, MilesRescuesCharacterFall);
+}
+
+
+void PlayCharacterDeathSound_r(ObjectMaster* a1, int pid) {
+
+	if (!EntityData1Ptrs[1] || EntityData1Ptrs[1]->CharID != Characters_Tails || CurrentLevel == LevelIDs_SkyDeck && CurrentAct == 1) {
+		PlayCharacterDeathSound(a1, pid); //kill the player
+		return;
+	}
+
+	CheckAndCallMilesRescue();
+	return;
 }
 
 static void __declspec(naked) PlayCharacterDeathSoundAsm(ObjectMaster* eax, int pid)
@@ -186,7 +192,7 @@ static void __declspec(naked) PlayCharacterDeathSoundAsm(ObjectMaster* eax, int 
 		push eax // eax0
 
 		// Call your __cdecl function here:
-		call CheckAndCallMilesRescue
+		call PlayCharacterDeathSound_r
 
 		pop eax // eax0
 		add esp, 4 // pid
@@ -194,7 +200,22 @@ static void __declspec(naked) PlayCharacterDeathSoundAsm(ObjectMaster* eax, int 
 	}
 }
 
+void KillPlayer_r(int Character) {
+
+	if (!EntityData1Ptrs[1] || EntityData1Ptrs[1]->CharID != Characters_Tails) {
+		KillPlayer(Character);
+		return;
+	}
+
+	CheckAndCallMilesRescue();
+	return;
+}
+
+
 void Rescue_Init() {
 	WriteCall((void*)0x44af87, PlayCharacterDeathSoundAsm);
 	WriteCall((void*)0x44affe, PlayCharacterDeathSoundAsm);
+
+	WriteCall((void*)0x5721f8, KillPlayer_r);
+	WriteCall((void*)0x5810d1, KillPlayer_r);
 }

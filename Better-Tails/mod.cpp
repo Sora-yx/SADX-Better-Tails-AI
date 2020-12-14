@@ -8,7 +8,7 @@ bool IsStoryIA = false;
 bool banCharacter[8] = { -1 };
 bool isFlyTravel = true;
 bool isRescue = true;
-
+time_t t;
 
 extern "C" {
 
@@ -31,6 +31,8 @@ extern "C" {
 		isRescue = config->getBool("AI", "isRescue", true);
 
 		delete config;
+
+		srand((unsigned)time(&t));
 
 		HMODULE Rando = GetModuleHandle(L"SADX-Randomizer");
 

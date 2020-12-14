@@ -32,9 +32,9 @@ int MilesCurTex = 0;
 
 //Tails Grab Fly abilities
 MilesAI_Fly DestinationArray[]{
-	{ LevelIDs_StationSquare, 3,  112.861, 70.962, 1555.12}, //Station (main)
+	{ LevelIDs_StationSquare, 3,  42.5287, 363.153, 1799.71}, //Station (main)
 	{ LevelIDs_StationSquare, 4, -483.971, 173.856, 2070.45 }, //Hostel pool
-	{ LevelIDs_StationSquare, 1, -449.364, 21.0912, 1458.25},	//Casino area
+	{ LevelIDs_StationSquare, 1, -445.595, 331.35, 1462.26},	//Casino area
 	{ LevelIDs_StationSquare, 0, 275.532, 250.9145, 328.018 }, //chaos 0
 	{ LevelIDs_EggCarrierOutside, 0,  97.0032, 950.573, 817.829 },
 	{ LevelIDs_MysticRuins, 0, -48.1315, 300.108, 1033.91},	//station
