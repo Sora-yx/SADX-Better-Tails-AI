@@ -184,7 +184,6 @@ void PreventTailsAIDamage() {
 }
 
 
-
 void AI_Improvement() {
 	//Miles General Improvement
 	WriteCall((void*)0x597b14, LoadAISnowBoard_R);  //Load AI Snowboard when playing Sand Hill 

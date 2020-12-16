@@ -59,6 +59,9 @@ bool IsSpecificPlayerInSphere(NJS_VECTOR* center, float radius, uint8_t player);
 VoidFunc(OTaraiChild_Main, 0x52c8f0);
 void MilesAI_OnFrames();
 
+FunctionPointer(int, isHostelOpen, (), 0x630900);
+FunctionPointer(int, isAngelIslandOpen, (), 0x534570);
+
 FunctionPointer(long, Chao_Pleasure, (ObjectMaster* Chao), 0x75db80);
 FunctionPointer(void, Chao_SetBehavior, (ObjectMaster* Chao, long* a2), 0x71EF10);
 
@@ -91,6 +94,7 @@ FunctionPointer(void, sub_52F9C0, (unsigned __int16 a1, NJS_VECTOR* p1Pos), 0x52
 FunctionPointer(void, sub_541BF0, (unsigned __int16 a1, NJS_VECTOR* p1Pos), 0x541BF0);
 
 FunctionPointer(void, KillPlayer, (int player), 0x440cd0);
+DataArray(int, IslandDoor_Col, 0x111e010, 7);
 
 void CallTailsAI_R();
 void CallTailsAI_R2();
@@ -101,8 +105,6 @@ void SoftReset_R();
 void FlyTravel_Init();
 
 
-
-
 struct MilesAI_Spawn {
 	int curCharacter;
 	int curLevel;
@@ -110,16 +112,14 @@ struct MilesAI_Spawn {
 	int cutsceneFlag;
 };
 
+
 struct MilesAI_Fly {
 	uint8_t level;
 	uint8_t act;
 	NJS_VECTOR destination;
+	NJS_POINT2 cursor;
 };
 
-struct Map_Cursor {
-	float x;
-	float y;
-};
 
 enum ETailsGrab {
 	initFly,
@@ -129,7 +129,8 @@ enum ETailsGrab {
 	transitionMap,
 	displayMap,
 	movetoDestination,
-	leaving
+	leaving,
+	errorMove
 };
 
 enum EMilesMap {

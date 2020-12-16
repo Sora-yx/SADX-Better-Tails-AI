@@ -27,33 +27,25 @@ NJS_TEXNAME MilesCursor_TEXNAMES[15];
 NJS_TEXLIST MilesCursor_TEXLIST = { arrayptrandlength(MilesCursor_TEXNAMES) };
 NJS_SPRITE MilesCursor_SPRITE = { { 0, 0, 0 }, 1.0, 1.0, 0, &MilesCursor_TEXLIST, MilesCursor_TEXANIM };
 
+NJS_TEXNAME TravelMap_TEXNAMES[30];
+NJS_TEXLIST TravelMap_TEXLIST = { arrayptrandlength(TravelMap_TEXNAMES) };
+
 int Cursor = -1;
 int MilesCurTex = 0;
 
 //Tails Grab Fly abilities
 MilesAI_Fly DestinationArray[]{
-	{ LevelIDs_StationSquare, 3,  42.5287, 363.153, 1799.71}, //Station (main)
-	{ LevelIDs_StationSquare, 4, -483.971, 173.856, 2070.45 }, //Hostel pool
-	{ LevelIDs_StationSquare, 1, -445.595, 331.35, 1462.26},	//Casino area
-	{ LevelIDs_StationSquare, 0, 275.532, 250.9145, 328.018 }, //chaos 0
-	{ LevelIDs_EggCarrierOutside, 0,  97.0032, 950.573, 817.829 },
-	{ LevelIDs_MysticRuins, 0, -48.1315, 300.108, 1033.91},	//station
-	{ LevelIDs_MysticRuins, 1, -9.2187, -15.838, 2220.16}, //angel island
-	{ LevelIDs_MysticRuins, 2, -515.191, 287.349, -865.042},	//jungle lost world
-	{ LevelIDs_MysticRuins, 2,  1307.67, 284.549, -814.303}, //jungle big's house
+	{ LevelIDs_StationSquare, 3,  42.5287, 363.153, 1799.71, {300, 280}}, //Station (main)
+	{ LevelIDs_StationSquare, 4, -483.971, 173.856, 2070.45, {170, 320 }}, //Hostel pool
+	{ LevelIDs_StationSquare, 1, -445.595, 331.35, 1462.26, {170, 150}},	//Casino area
+	{ LevelIDs_StationSquare, 0, 275.532, 250.9145, 328.018, {300, 60}}, //chaos 0
+	{ LevelIDs_EggCarrierOutside, 0,  97.0032, 950.573, 817.829, {420, 160}},
+	{ LevelIDs_MysticRuins, 0, -48.1315, 300.108, 1033.91, {180, 300}},	//station
+	{ LevelIDs_MysticRuins, 1, -9.2187, -15.838, 2220.16, {352, 310}}, //angel island
+	{ LevelIDs_MysticRuins, 2, -515.191, 287.349, -865.042, {245, 180}},	//jungle lost world
+	{ LevelIDs_MysticRuins, 2,  1307.67, 284.549, -814.303, {455, 195}}, //jungle big's house
 };
 
-Map_Cursor CursorArray[]{
-	{300, 280 },
-	{170, 320 },
-	{170, 150 },
-	{300, 60 },
-	{420, 160 },
-	{180, 300 },
-	{352, 310 },
-	{245, 180 },
-	{455, 195 },
-};
 
 void LoadDestination() {
 	ControllerPointers[1]->PressedButtons = 0;
@@ -77,37 +69,13 @@ void __cdecl MovePlayerToStartPoint_r(EntityData1* data) {
 }
 
 void CheckAndLoadMapPVM() {
-
-	switch (Cursor) {
-	case 0:
-	case 1:
-	case 2:
-	case 3:
-		LoadPVM("map_ss", &map_ss_TEXLIST);
-		break;
-	case 4:
-		LoadPVM("map_ec_a", &map_ec_X_TEXLIST);
-		break;
-	case 5:
-		LoadPVM("map_mr_s", &map_mr_X_TEXLIST);
-		break;
-	case 6:
-		LoadPVM("map_mr_a", &map_mr_X_TEXLIST);
-		break;
-	case 7:
-	case 8:
-		LoadPVM("map_mr_j", &map_mr_X_TEXLIST);
-		break;
-	}
-
-	LoadPVM("Map_icon", &map_icon_TEXLIST);
+	LoadPVM("TravelMapEng", &TravelMap_TEXLIST);
+	LoadPVM("MilesCursor", &MilesCursor_TEXLIST);
+	return;
 }
 
 void ReleaseAllTravelTexture() {
-	njReleaseTexture(&map_ss_TEXLIST);
-	njReleaseTexture(&map_ec_X_TEXLIST);
-	njReleaseTexture(&map_mr_X_TEXLIST);
-	njReleaseTexture(&map_icon_TEXLIST);
+	njReleaseTexture(&TravelMap_TEXLIST);
 	njReleaseTexture(&MilesCursor_TEXLIST);
 	Cursor = -1;
 	return;
@@ -161,36 +129,37 @@ void DisplayCursorAnimation() {
 	MilesCursor_SPRITE.sx = 2 * scale;
 	MilesCursor_SPRITE.sy = 2 * scale;
 
-
 	if (MilesCurTex >= 14)
 		MilesCurTex = 0;
 
 	if (FrameCounterUnpaused % 10 == 0 && MilesCurTex < 15)
 		MilesCurTex++;
 
-	MilesCursor_SPRITE.p.x = CursorArray[Cursor].x;
-	MilesCursor_SPRITE.p.y = CursorArray[Cursor].y;
+	MilesCursor_SPRITE.p.x = DestinationArray[Cursor].cursor.x;
+	MilesCursor_SPRITE.p.y = DestinationArray[Cursor].cursor.y;
 	njDrawSprite2D_Queue(&MilesCursor_SPRITE, MilesCurTex, -1.501, NJD_SPRITE_ALPHA | NJD_SPRITE_COLOR, QueuedModelFlagsB_SomeTextureThing);
 }
 
-void CheckPlayerCursorPos() {
+void UpdatePlayerCursorPos() {
 
 	if (ControllerPointers[0]->PressedButtons & Buttons_Up) {
+
 		if (Cursor >= 8)
 			Cursor = 0;
 		else
 			Cursor++;
+
 		PlaySound(1, NULL, 0, NULL);
-		CheckAndLoadMapPVM();
 	}
 
 	if (ControllerPointers[0]->PressedButtons & Buttons_Down) {
+
 		if (Cursor <= 0)
 			Cursor = 8;
 		else
 			Cursor--;
-		PlaySound(1, NULL, 0, NULL);
-		CheckAndLoadMapPVM();
+
+		PlaySound(1, NULL, 0, NULL);	
 	}
 }
 
@@ -198,25 +167,15 @@ void __cdecl DisplayMilesMap_r()
 {
 
 	signed int v3; // ebx
-	int v4; // edi
+	int texId; // edi
 	signed int v5; // esi
 	float a3; // ST10_4
 	float a2; // ST0C_4
-	double v8 = 0; // st7
-	double v9 = 0; // st6
 	signed int v12; // [esp+1Ch] [ebp-4h]
 	float v13; // [esp+1Ch] [ebp-4h]
 	signed int v14; // [esp+24h] [ebp+4h]
 
-
-	if (Cursor >= Sstation && Cursor <= SChaos0)
-		njSetTexture(&map_ss_TEXLIST);
-
-	if (Cursor == ECarrier)
-		njSetTexture(&map_ec_X_TEXLIST);
-
-	if (Cursor >= MRStation && Cursor <= MRJungleBig)
-		njSetTexture(&map_mr_X_TEXLIST);
+	njSetTexture(&TravelMap_TEXLIST);
 
 	SetVtxColorB(0xFFFFFFFF);
 	njColorBlendingMode(0, NJD_COLOR_BLENDING_SRCALPHA);
@@ -224,7 +183,22 @@ void __cdecl DisplayMilesMap_r()
 
 	v3 = 0;
 	v12 = 0;
-	v4 = TextLanguage != 0 ? 6 : 0;
+
+	if (Cursor >= Sstation && Cursor <= SChaos0)
+		texId = 0;
+
+	if (Cursor == ECarrier)
+		texId = 24;
+
+	if (Cursor == MRStation)
+		texId = 6;
+
+	if (Cursor == MRAngelIsland)
+		texId = 12;
+
+	if (Cursor == MRJungleLW || Cursor == MRJungleBig)
+		texId = 18;
+
 	do
 	{
 		v5 = 0;
@@ -235,12 +209,12 @@ void __cdecl DisplayMilesMap_r()
 			a3 = VerticalStretch * 240.0 + v13;
 			a2 = (double)v14 * 256.0 - 64.0 - 320.0 + HorizontalStretch * 320.0;
 
-			DisplayScreenTexture(v4 + v5++, a2, a3, 1.1);
+			DisplayScreenTexture(texId + v5++, a2, a3, 1.1);
 
 			v14 = v5;
 		} while (v5 < 3);
 		++v3;
-		v4 += 3;
+		texId += 3;
 		v12 = v3;
 	} while (v3 < 2);
 }
@@ -439,6 +413,40 @@ void RestoreAIControl() {
 	return;
 }
 
+int CheckFastTravelStoryProgression() {
+
+	if (IsAdventureComplete(SelectedCharacter))
+		return 1;
+
+	if (Cursor == MRAngelIsland) {
+		int v14 = IslandDoor_Col[GetCharacterID(0)];
+		if (v14 < 0 || !EventFlagArray[v14]) {
+			return 0;
+		}
+	}
+
+	if (!IsEggCarrierSunk() && CurrentLevel != LevelIDs_EggCarrierOutside && Cursor == 4) {
+		return 0;
+	}
+
+	if (!TrainsInService())
+	{
+		if (CurrentLevel == LevelIDs_StationSquare && (Cursor >= MRStation && Cursor <= MRJungleBig || Cursor == SCasinoArea)) {
+			return 0;
+		}
+
+		if (CurrentLevel == LevelIDs_MysticRuins && Cursor >= Sstation && Cursor <= SChaos0) {
+			return 0;
+		}
+	}
+
+	if (!isHostelOpen() && Cursor == ShostelPool) {
+		return 0;
+	}
+
+	return 1;
+}
+
 void TailsAI_GrabDelete(ObjectMaster* obj) {
 	if (TailsGrab) {
 		TailsGrab = nullptr;
@@ -475,8 +483,7 @@ void TailsAI_Grab(ObjectMaster* obj) {
 	case initFly:
 		obj->DeleteSub = TailsAI_GrabDelete;
 		if (!isTailsAI_GrabAllowed()) {
-
-			if (++data->InvulnerableTime == 120)
+			if (++data->InvulnerableTime == 20)
 				CheckThingButThenDeleteObject(obj);
 		}
 		else {
@@ -516,7 +523,7 @@ void TailsAI_Grab(ObjectMaster* obj) {
 		Cursor = setCursorPos(CurrentLevel, CurrentAct);
 		if (Cursor > -1) {
 			CheckAndLoadMapPVM();
-			LoadPVM("MilesCursor", &MilesCursor_TEXLIST);
+
 			data->Action = transitionMap;
 		}
 		else {
@@ -527,24 +534,33 @@ void TailsAI_Grab(ObjectMaster* obj) {
 		CheckAndForceLeavingGrab(data);
 		if (++data->Unknown == 50) {
 			PlaySound(21, NULL, 0, NULL);
+			data->Index = 0;
 			data->Action = displayMap;
 		}
 		break;
 	case displayMap:
 		CheckAndForceLeavingGrab(data);
-		//DisplayDebugStringFormatted(NJM_LOCATION(2, 1), "Cursor Value %d", Cursor);
-		CheckPlayerCursorPos();
+		DisplayDebugStringFormatted(NJM_LOCATION(2, 1), "Cursor Value %d", Cursor);
+		UpdatePlayerCursorPos();
 		DrawModelCallback_Queue((void(__cdecl*)(void*))PauseMenu_Map_DisplayCallback, 0, 22047.998, QueuedModelFlagsB_EnableZWrite); //fix transparency issue
+
 		if (ControllerPointers[0]->PressedButtons & Buttons_A || ControllerPointers[0]->PressedButtons & Buttons_Start) {
-			PlaySound(0x2, NULL, 0, NULL);
-			if (CurrentLevel == DestinationArray[Cursor].level)
-				isMoving = 2;
-			else
-				isMoving = 1;
-			data->Unknown = 0;
-			data->InvulnerableTime = 0;
-			data->field_A = 0;
-			data->Action = movetoDestination;
+			if (!CheckFastTravelStoryProgression()) {
+
+				data->Index = 0;
+				data->Action = errorMove;
+			}
+			else {
+				PlaySound(0x2, NULL, 0, NULL);
+				if (CurrentLevel == DestinationArray[Cursor].level)
+					isMoving = 2;
+				else
+					isMoving = 1;
+				data->Unknown = 0;
+				data->InvulnerableTime = 0;
+				data->field_A = 0;
+				data->Action = movetoDestination;
+			}
 		}
 		break;
 	case movetoDestination:
@@ -576,6 +592,13 @@ void TailsAI_Grab(ObjectMaster* obj) {
 		isMoving = 0;
 		CheckThingButThenDeleteObject(obj);
 		break;
+	case errorMove:
+		DisplayDebugStringFormatted(NJM_LOCATION(2, 8), "You cannot fly here at the moment.");
+		if (++data->Index == 60) {
+			data->Unknown = 0;
+			data->InvulnerableTime = 0;
+			data->Action = displayMap;
+		}
 	}
 }
 
