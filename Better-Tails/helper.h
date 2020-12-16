@@ -17,16 +17,25 @@ extern bool isFlyTravel;
 extern bool isRescueAllowed;
 extern bool isRescued;
 
+VoidFunc(InitObjects, 0x49dd70);
+FunctionPointer(int, sub_42FB00, (), 0x42FB00); //Knuckles thing
+FunctionPointer(ObjectMaster*, CheckLoadBird, (), 0x4C6820);
+
+bool isCharSelActive();
+bool isRandoActive();
+void __cdecl LoadCharacter_r();
+
 int CheckTailsAI_R(void); //Tails flag spawn allowed
 void DisableTime_R(); //result screen Stuff
 void LoadAISnowBoard_R(); //Load Snowboard for Tails AI
+
 
 extern int rngKill;
 ObjectMaster* Load2PTails_r(); //Load Tails AI 
 void RestoreAIControl();
 void FixAIHubTransition();
 void FixAIHubTransition2();
-void LoadCharacter_r();
+void LoadCharactersAndAI();
 void LookAt(NJS_VECTOR* from, NJS_VECTOR* to, Angle* outx, Angle* outy);
 void AI_Init(const HelperFunctions& helperFunctions);
 void PreventTailsAIDamage();
@@ -100,6 +109,7 @@ void CallTailsAI_R();
 void CallTailsAI_R2();
 void CallTailsAI_R3();
 VoidFunc(FUN_00412ad0, 0x412ad0); //called when you soft reset / quit
+
 
 void SoftReset_R();
 void FlyTravel_Init();

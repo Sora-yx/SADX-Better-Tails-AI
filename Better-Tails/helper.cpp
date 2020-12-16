@@ -302,24 +302,6 @@ void DeleteTailsAI() {
 	}
 }
 
-static const void* const GetPlayerSidePosPtr = (void*)0x47dd50;
-void __declspec() GetPlayerSidePos_asm(NJS_VECTOR* v1, EntityData1* a2, float m)
-{
-	__asm
-	{
-		push[esp + 04h] // m
-		push esi // e
-		push edi // v
-
-		// Call your __cdecl function here:
-		call GetPlayerSidePosPtr
-
-		pop edi // v
-		pop esi // e
-		add esp, 4 // m
-		retn
-	}
-}
 
 void GetPlayerSidePos(NJS_VECTOR* v1, EntityData1* a2, float m)
 {
@@ -367,6 +349,82 @@ void FadeoutScreen(ObjectMaster* obj) {
 
 		ScreenFade_DrawColor();
 	}
+}
+
+
+bool isCharSelActive() {
+
+	HMODULE charSel = GetModuleHandle(L"SADXCharSel");
+
+	if (charSel)
+		return true;
+
+	return false;
+}
+
+bool isRandoActive() {
+
+	HMODULE Rando = GetModuleHandle(L"sadx-randomizer");
+
+	if (Rando)
+		return true;
+
+	return false;
+}
+
+void SetCharaInfo(ObjectMaster* obj) {
+	obj->Data1->CharID = (char)CurrentCharacter;
+	obj->Data1->CharIndex = 0;
+	EntityData1Ptrs[0] = obj->Data1;
+	EntityData2Ptrs[0] = (EntityData2*)obj->Data2;
+	MovePlayerToStartPoint(obj->Data1);
+	return;
+}
+
+ObjectFuncPtr charMainArray[] = {
+	Sonic_Main,
+	Tails_Main,
+	Knuckles_Main,
+	Amy_Main,
+	Gamma_Main,
+	Big_Main
+};
+
+void __cdecl LoadCharacter_r() {
+
+	ClearPlayerArrays();
+	ObjectMaster* obj = nullptr;
+	if (CurrentLevel == LevelIDs_SkyChase1 || CurrentLevel == LevelIDs_SkyChase2)
+	{
+		obj = LoadObject((LoadObj)(LoadObj_UnknownA | LoadObj_Data1 | LoadObj_Data2), 1, Tornado_Main);
+		SetCharaInfo(obj);
+		return;
+	}
+
+	obj = LoadObject((LoadObj)(LoadObj_UnknownA | LoadObj_Data1 | LoadObj_Data2), 1, charMainArray[CurrentCharacter]);
+	
+	switch (CurrentCharacter)
+	{
+	case Characters_Tails:
+		LoadTailsOpponent(CurrentCharacter, 1, CurrentLevel);
+		break;
+	case Characters_Knuckles:
+		if (sub_42FB00() != 1
+			&& (GameMode == GameModes_Adventure_ActionStg || GameMode == GameModes_Mission || GameMode == GameModes_Trial)) {
+
+			LoadObject(LoadObj_Data1, 6, EmeraldRadarHud_Load_Load);
+		}
+		break;
+	case Characters_Amy:
+		CheckLoadBird();
+		break;
+	case Characters_Big:
+		LoadObject(LoadObj_Data1, 6, BigHud_Main);
+		break;
+	}
+
+	SetCharaInfo(obj);
+	return;
 }
 
 void AI_Fixes() {

@@ -130,7 +130,7 @@ int CheckTailsAI_R(void) {
 
 
 
-ObjectMaster* LoadMilesAI()
+ObjectMaster* LoadTails()
 {
 	ObjectMaster* obj = LoadObject((LoadObj)(LoadObj_UnknownA | LoadObj_Data1 | LoadObj_Data2), 1, Tails_Main);
 	obj->Data1->CharID = Characters_Tails;
@@ -155,26 +155,21 @@ ObjectMaster* Load2PTails_r() {
 	}
 	else
 	{
-		ObjectMaster* v1 = LoadObject(LoadObj_Data1, 0, TailsAI_Main);
-		TailsAI_ptr = v1;
+		ObjectMaster* AI = LoadObject(LoadObj_Data1, 0, TailsAI_Main);  //load AI 
+		TailsAI_ptr = AI;
 
-		if (v1)
+		if (AI)
 		{
-			v1->Data1->CharID = (char)Characters_Tails;
-			v1->Data1->CharIndex = 1;
-			v1->DeleteSub = TailsAI_Delete;
+			ObjectMaster* Chara = LoadTails(); //set the character
+			if (Chara) {
+				isAIActive = true;
+				ForceAI = false;
+				GetPlayerSidePos(&Chara->Data1->Position, AI->Data1, 10);
 
-			ObjectMaster* v3 = LoadMilesAI(); //load AI 
-			isAIActive = true;
-			ForceAI = false;
-		
-			v3->Data1->Position.x = v1->Data1->Position.x - njCos(v1->Data1->Rotation.y) * 30;
-			v3->Data1->Position.y = v1->Data1->Position.y;
-			v3->Data1->Position.z = v1->Data1->Position.z - njSin(v1->Data1->Rotation.y) * 30;
-
-			v3->Data1->Action = 0;
+			}
+			AI->Data1->Action = 0;
 			dword_3B2A304 = 0;
-			return v3;
+			return AI;
 		}
 	}
 
@@ -183,14 +178,16 @@ ObjectMaster* Load2PTails_r() {
 }
 
 
-void LoadCharacter_r() {
+void LoadCharactersAndAI() {
 
 	if (banCharacter[CurrentCharacter] != true && !EV_MainThread_ptr && !EntityData1Ptrs[1])
 		Load2PTails_r();
 
-	LoadCharacter(); //call original function
+	if (isCharSelActive())
+		return LoadCharacter_r();
 
-	return;
+
+	return LoadCharacter(); //call original function
 }
 
 
@@ -233,10 +230,7 @@ void TailsAI_Main_R(ObjectMaster* obj) {
 void AI_Init(const HelperFunctions& helperFunctions) {
 
 	//Allow Tails AI to spawn in acton stages, hub world, bosses and chao garden + fixes
-	WriteCall((void*)0x47ed8e, CheckTailsAI_R);
-	WriteCall((void*)0x47e943, CheckTailsAI_R);
-	WriteCall((void*)0x47ea46, CheckTailsAI_R);
-	WriteCall((void*)0x47ec62, CheckTailsAI_R);
+	WriteJump(CheckTailsAI, CheckTailsAI_R);
 
 	WriteData<5>((void*)0x415948, 0x90); //remove the original load2PTails in LoadCharacter as we use a custom one
 	

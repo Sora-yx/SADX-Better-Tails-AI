@@ -85,6 +85,7 @@ void TailsAI_Landing2(ObjectMaster* obj) {
 	case 0: {
 		isRescued = true;
 		obj->DeleteSub = TailsAI_LandingDelete2;
+		CharObj2Ptrs[1]->AnimationThing.Index = 37;
 		PlayCharacterGrabAnimation(p1, co2p1);
 		data->Action = 1;
 	}

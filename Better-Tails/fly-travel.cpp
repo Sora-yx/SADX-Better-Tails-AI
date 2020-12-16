@@ -418,14 +418,7 @@ int CheckFastTravelStoryProgression() {
 	if (IsAdventureComplete(SelectedCharacter))
 		return 1;
 
-	if (Cursor == MRAngelIsland) {
-		int v14 = IslandDoor_Col[GetCharacterID(0)];
-		if (v14 < 0 || !EventFlagArray[v14]) {
-			return 0;
-		}
-	}
-
-	if (!IsEggCarrierSunk() && CurrentLevel != LevelIDs_EggCarrierOutside && Cursor == 4) {
+	if (!IsEggCarrierSunk() && CurrentLevel != LevelIDs_EggCarrierOutside && Cursor == ECarrier) {
 		return 0;
 	}
 
@@ -436,6 +429,13 @@ int CheckFastTravelStoryProgression() {
 		}
 
 		if (CurrentLevel == LevelIDs_MysticRuins && Cursor >= Sstation && Cursor <= SChaos0) {
+			return 0;
+		}
+	}
+
+	if (Cursor == MRAngelIsland) {
+		int v14 = IslandDoor_Col[GetCharacterID(0)];
+		if (v14 < 0 || !EventFlagArray[v14]) {
 			return 0;
 		}
 	}

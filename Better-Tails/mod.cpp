@@ -34,11 +34,8 @@ extern "C" {
 
 		srand((unsigned)time(&t));
 
-		HMODULE Rando = GetModuleHandle(L"SADX-Randomizer");
-
-		if (!Rando) //do not call better tails AI if rando mod is activated
-		{
-			WriteCall((void*)0x415a25, LoadCharacter_r); //Call Tails AI when Load Character.
+		if (!isRandoActive()) {
+			WriteCall((void*)0x415a25, LoadCharactersAndAI); //Call Tails AI when Load Character.
 
 			// Tails AI Reset Values  
 			WriteCall((void*)0x42ca4f, SoftReset_R); //Reset value and stuff properly when you Soft Reset and quit.
@@ -49,6 +46,7 @@ extern "C" {
 
 			WriteCall((void*)0x415556, DisableTime_R); //While result screen, force Tails AI to victory pose.
 		}
+		
 	}
 
 	__declspec(dllexport) void __cdecl OnFrame()
