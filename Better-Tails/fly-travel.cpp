@@ -455,7 +455,9 @@ void TailsAI_GrabDelete(ObjectMaster* obj) {
 
 void TailsAI_Grab(ObjectMaster* obj) {
 
-	if (obj->Data1->Action != movetoDestination && (!EntityData1Ptrs[0] || !EntityData1Ptrs[1] || GameState != 15 || TailsLanding || isMilesSaving())) {
+	if (obj->Data1->Action != movetoDestination && (!EntityData1Ptrs[0] 
+		|| !EntityData1Ptrs[1] || GameState != 15 || TailsLanding || isMilesSaving())) {
+
 		if (EntityData1Ptrs[1]) {
 			if (EntityData1Ptrs[1]->Action == 125) //failsafe if the player start fly travel but leave the level/act
 				EntityData1Ptrs[1]->Action = 1;
@@ -470,13 +472,10 @@ void TailsAI_Grab(ObjectMaster* obj) {
 	CharObj2* co2p1 = CharObj2Ptrs[0];
 	CharObj2* co2p2 = CharObj2Ptrs[1];
 
-	
-	if (data->Action > 0 && data->Action < 3) {
-
-		if (++data->field_A == 230) {
-			data->Action = leaving;
-		}
+	if ((++data->field_A == 230 && data->Action > 0 && data->Action < 3) || p2->CharID != Characters_Tails) {
+		data->Action = leaving;
 	}
+	
 
 	switch (data->Action)
 	{
@@ -540,13 +539,12 @@ void TailsAI_Grab(ObjectMaster* obj) {
 		break;
 	case displayMap:
 		CheckAndForceLeavingGrab(data);
-		DisplayDebugStringFormatted(NJM_LOCATION(2, 1), "Cursor Value %d", Cursor);
+		//DisplayDebugStringFormatted(NJM_LOCATION(2, 1), "Cursor Value %d", Cursor);
 		UpdatePlayerCursorPos();
 		DrawModelCallback_Queue((void(__cdecl*)(void*))PauseMenu_Map_DisplayCallback, 0, 22047.998, QueuedModelFlagsB_EnableZWrite); //fix transparency issue
 
 		if (ControllerPointers[0]->PressedButtons & Buttons_A || ControllerPointers[0]->PressedButtons & Buttons_Start) {
 			if (!CheckFastTravelStoryProgression()) {
-
 				data->Index = 0;
 				data->Action = errorMove;
 			}
@@ -632,7 +630,6 @@ void TailsAI_Landing(ObjectMaster* obj) {
 		data->Position = DestinationArray[Cursor].destination;
 		p1->Rotation = p2->Rotation;
 		DisableController(0);
-		EnableController(1);
 		p1->Action = 125;
 		p2->Action = 15;
 		CharObj2Ptrs[1]->AnimationThing.Index = 37;
@@ -650,6 +647,7 @@ void TailsAI_Landing(ObjectMaster* obj) {
 		break;
 	case 2:
 		EnableController(0);
+		EnableController(1);
 		EnablePause();
 		PlayCharacterLeaveAnimation(p1, co2p1);
 		RestoreAIControl();
@@ -659,6 +657,9 @@ void TailsAI_Landing(ObjectMaster* obj) {
 }
 
 void CheckAndLoadTailsTravelObjects(ObjectMaster* obj) {
+
+	if (!EntityData1Ptrs[1])
+		return;
 
 	if (obj->Data1->Action == 0 && isMoving == 1 || obj->Data1->Action > 0 && isMoving == 2) {
 		if (!TailsGrab && !TailsLanding)
@@ -677,14 +678,12 @@ void CheckAndLoadTailsTravelObjects(ObjectMaster* obj) {
 }
 
 
-
 void FlyTravel_Init() {
 
 	WriteCall((void*)0x458b86, PauseMenu_Map_Display_r);
 	WriteCall((void*)0x458bd0, PauseMenu_Map_Display_r);	
 	WriteCall((void*)0x458bb8, PauseMenu_Map_Display_r);
 	WriteCall((void*)0x458b6e, PauseMenu_Map_Display_r);	
-
 
 	MovePlayerToStartPoint_t = new Trampoline((int)MovePlayerToStartPoint, (int)MovePlayerToStartPoint + 0x6, MovePlayerToStartPoint_r);
 }

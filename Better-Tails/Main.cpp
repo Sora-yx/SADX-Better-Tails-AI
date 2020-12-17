@@ -160,6 +160,9 @@ ObjectMaster* Load2PTails_r() {
 
 		if (AI)
 		{
+			AI->Data1->CharID = Characters_Tails;
+			AI->Data1->CharIndex = (char)1;
+			AI->DeleteSub = TailsAI_Delete;
 			ObjectMaster* Chara = LoadTails(); //set the character
 			if (Chara) {
 				isAIActive = true;
@@ -178,7 +181,7 @@ ObjectMaster* Load2PTails_r() {
 }
 
 
-void LoadCharactersAndAI() {
+void LoadCharacterAndAI() {
 
 	if (banCharacter[CurrentCharacter] != true && !EV_MainThread_ptr && !EntityData1Ptrs[1])
 		Load2PTails_r();
@@ -211,6 +214,7 @@ void TailsAI_ResetValue() {
 
 //Reset value when the player quit or soft reset
 void SoftReset_R() {
+	rngKill = 0;
 	isChaoPetByAI = false; //just to be safe
 	ForceAI = false;
 	isAIActive = false;

@@ -35,7 +35,7 @@ ObjectMaster* Load2PTails_r(); //Load Tails AI
 void RestoreAIControl();
 void FixAIHubTransition();
 void FixAIHubTransition2();
-void LoadCharactersAndAI();
+void LoadCharacterAndAI();
 void LookAt(NJS_VECTOR* from, NJS_VECTOR* to, Angle* outx, Angle* outy);
 void AI_Init(const HelperFunctions& helperFunctions);
 void PreventTailsAIDamage();

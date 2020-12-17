@@ -224,9 +224,9 @@ void PlayCharacterDeathSound_r(ObjectMaster* a1, int pid) {
 
 	if (!MilesRescue && !TailsRescueLanding && !rngKill) {
 
-		rngKill = rand() % (40, 100);
+		rngKill = rand() % 100 + 1;
 
-		if (!EntityData1Ptrs[1] || EntityData1Ptrs[1]->CharID != Characters_Tails || CurrentLevel == LevelIDs_SkyDeck && CurrentAct == 1 || isRescued && CurrentLevel < LevelIDs_StationSquare || rngKill < 50) {
+		if (!EntityData1Ptrs[1] || EntityData1Ptrs[1]->CharID != Characters_Tails || CurrentLevel == LevelIDs_SkyDeck && CurrentAct == 1 || isRescued && CurrentLevel < LevelIDs_StationSquare || rngKill < 40) {
 			PlayCharacterDeathSound(a1, pid); //kill the player
 			return;
 		}
@@ -259,9 +259,9 @@ void KillPlayer_r(int Character) {
 
 	if (!MilesRescue && !TailsRescueLanding && !rngKill) {
 
-		rngKill = rand() % 2;
+		rngKill = rand() % 100 + 1;
 
-		if (!EntityData1Ptrs[1] || EntityData1Ptrs[1]->CharID != Characters_Tails || !rngKill) {
+		if (!EntityData1Ptrs[1] || EntityData1Ptrs[1]->CharID != Characters_Tails || rngKill < 40) {
 			KillPlayer(Character);
 			return;
 		}

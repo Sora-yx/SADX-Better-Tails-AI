@@ -35,7 +35,7 @@ extern "C" {
 		srand((unsigned)time(&t));
 
 		if (!isRandoActive()) {
-			WriteCall((void*)0x415a25, LoadCharactersAndAI); //Call Tails AI when Load Character.
+			WriteCall((void*)0x415a25, LoadCharacterAndAI); //Call Tails AI when Load Character.
 
 			// Tails AI Reset Values  
 			WriteCall((void*)0x42ca4f, SoftReset_R); //Reset value and stuff properly when you Soft Reset and quit.
@@ -51,7 +51,7 @@ extern "C" {
 
 	__declspec(dllexport) void __cdecl OnFrame()
 	{
-		//DisplayDebugStringFormatted(NJM_LOCATION(2, 1), "Cursor Value %d", TrainsInService());
+		DisplayDebugStringFormatted(NJM_LOCATION(2, 1), "Cur RNG %d", rngKill);
 	}
 
 	__declspec(dllexport) ModInfo SADXModInfo = { ModLoaderVer };
