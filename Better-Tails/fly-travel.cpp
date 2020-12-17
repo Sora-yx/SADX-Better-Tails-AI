@@ -569,11 +569,6 @@ void TailsAI_Grab(ObjectMaster* obj) {
 		CharObj2Ptrs[1]->Speed.y += 0.7;
 		CharObj2Ptrs[1]->Speed.x += 1.2;
 		
-		if (++data->Unknown == 60) {
-			CharObj2Ptrs[1]->Speed.y += 2;
-			CharObj2Ptrs[1]->Speed.z += 3;
-		}
-
 		if (++data->InvulnerableTime == 180) {
 			LoadDestination();
 			if (isMoving == 2) //object isn't deleted between act transition unlike with level changes.

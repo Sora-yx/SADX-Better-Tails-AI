@@ -200,7 +200,8 @@ void AI_Improvement() {
 	if (isFlyTravel)
 		FlyTravel_Init();
 
-	Rescue_Init();
+	if (isRescueAllowed)
+		Rescue_Init();
 
 	Chao_Main_t = new Trampoline((int)Chao_Main, (int)Chao_Main + 0x6, Chao_Main_R);
 }

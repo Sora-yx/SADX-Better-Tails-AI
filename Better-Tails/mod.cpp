@@ -28,7 +28,7 @@ extern "C" {
 
 		IsStoryIA = config->getBool("AI", "IsStoryIA", false);
 		isFlyTravel = config->getBool("AI", "isFlyTravel", true);
-		isRescueAllowed = config->getBool("AI", "isRescue", true);
+		isRescueAllowed = config->getBool("AI", "isRescueAllowed", true);
 
 		delete config;
 
@@ -51,7 +51,7 @@ extern "C" {
 
 	__declspec(dllexport) void __cdecl OnFrame()
 	{
-		DisplayDebugStringFormatted(NJM_LOCATION(2, 1), "Cur RNG %d", rngKill);
+		//DisplayDebugStringFormatted(NJM_LOCATION(2, 1), "Cur RNG %d", rngKill);
 	}
 
 	__declspec(dllexport) ModInfo SADXModInfo = { ModLoaderVer };
