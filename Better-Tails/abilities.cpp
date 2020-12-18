@@ -168,7 +168,7 @@ void DisableTime_R() {
 
 void PreventTailsAIDamage() {
 
-	if (EntityData1Ptrs[1]->CharID != Characters_Tails || !EntityData1Ptrs[1])
+	if (EntityData1Ptrs[1]->CharID != Characters_Tails || !EntityData1Ptrs[1] || !CharObj2Ptrs[1])
 		return;
 
 	EntityData1* data = EntityData1Ptrs[0];

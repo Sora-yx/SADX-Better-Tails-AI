@@ -7,8 +7,6 @@ extern bool IsHubBanned;
 extern bool IsBossBanned;
 extern bool IsTCBanned;
 extern bool isAIActive;
-extern bool ForceAI;
-extern int AICutsceneOk;
 extern bool IsStoryIA;
 extern bool banCharacter[8];
 extern bool isChaoPetByAI;
@@ -17,10 +15,11 @@ extern bool isFlyTravel;
 extern bool isRescueAllowed;
 extern bool isRescued;
 
+
 VoidFunc(InitObjects, 0x49dd70);
 FunctionPointer(int, sub_42FB00, (), 0x42FB00); //Knuckles thing
 FunctionPointer(ObjectMaster*, CheckLoadBird, (), 0x4C6820);
-
+bool isTailsAIAllowed();
 bool isCharSelActive();
 bool isRandoActive();
 void __cdecl LoadCharacter_r();

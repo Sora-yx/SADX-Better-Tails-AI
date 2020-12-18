@@ -51,7 +51,10 @@ extern "C" {
 
 	__declspec(dllexport) void __cdecl OnFrame()
 	{
-		//DisplayDebugStringFormatted(NJM_LOCATION(2, 1), "Cur RNG %d", rngKill);
+		//LoadAI_OnFrames();
+		if (EntityData1Ptrs[1])
+			DisplayDebugStringFormatted(NJM_LOCATION(2, 1), "is Miles here %d", isAIActive);
+		//DisplayDebugStringFormatted(NJM_LOCATION(2, 1), "Cutscene Active %d", EV_MainThread_ptr);
 	}
 
 	__declspec(dllexport) ModInfo SADXModInfo = { ModLoaderVer };

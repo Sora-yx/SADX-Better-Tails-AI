@@ -662,7 +662,7 @@ void CheckAndLoadTailsTravelObjects(ObjectMaster* obj) {
 	}
 
 	if (obj->Data1->Action > 0) {
-		if (ControllerPointers[0]->PressedButtons & Buttons_Z)
+		if (ControllerPointers[0]->PressedButtons & Buttons_C)
 		{
 			if (EntityData1Ptrs[1]->CharID == Characters_Tails && EntityData1Ptrs[0]->Action < 3 && EntityData1Ptrs[1]->Action < 3) {
 				if (!TailsGrab)

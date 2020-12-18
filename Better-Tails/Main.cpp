@@ -4,14 +4,15 @@
 
 bool isAIActive = false;
 int FlagAI = 0;
-bool ForceAI = false;
-int AICutsceneOk = 0;
 Trampoline* TailsAI_Main_t;
 
 
 MilesAI_Spawn TailsArray[] { //Used to prevent Miles to be called in some very specfic places/cutscenes where the game will crash.
 	{ Characters_Sonic, LevelIDs_StationSquare, EventFlags_Sonic_EmeraldCoastClear, 0x006 },
 	{ Characters_Sonic, LevelIDs_StationSquare, EventFlags_Sonic_CasinopolisClear, 0x009 },
+	{ Characters_Sonic, LevelIDs_MysticRuins, EventFlags_Sonic_Chaos4Clear, 0x00B },
+	{ Characters_Sonic, LevelIDs_StationSquare, EventFlags_Sonic_SpeedHighwayClear, 0x014 },
+	{ Characters_Sonic, LevelIDs_MysticRuins, EventFlags_Sonic_SpeedHighwayClear, 0x016 },
 	{ Characters_Sonic, LevelIDs_EggCarrierOutside, EventFlags_Sonic_RedMountainClear, 0x100},
 	{ Characters_Sonic, LevelIDs_EggCarrierInside, EventFlags_Sonic_SkyDeckClear, 0x01B},
 	{ Characters_Sonic, LevelIDs_EggCarrierOutside, EventFlags_Sonic_SkyDeckClear, 0x01B},
@@ -28,15 +29,16 @@ bool isTailsAIAllowed() {
 
 	for (uint8_t i = 0; i < LengthOfArray(TailsArray); i++) {
 
-		if (CurrentCharacter == TailsArray[i].curCharacter && CurrentLevel == TailsArray[i].curLevel && !GetCutsceneFlagArray(TailsArray[i].cutsceneFlag)) //if the cutscene didn't play, don't call Tails
+		if (CurrentCharacter == TailsArray[i].curCharacter && CurrentLevel == TailsArray[i].curLevel && EventFlagArray[TailsArray[i].eventFlag] == 1)
 		{
-			if (EventFlagArray[TailsArray[i].eventFlag] == 1)
+			if (!GetCutsceneFlagArray(TailsArray[i].cutsceneFlag)) //if the cutscene didn't play, don't call Tails
 				return false;
 		}
 	}
 
 	return true;
 }
+
 
 //Tails AI Flag Check
 int CheckTailsAI_R(void) {
@@ -76,7 +78,6 @@ int CheckTailsAI_R(void) {
 
 			if (SonicSkyChaseAct1Clear == 1 && EventFlagArray[EventFlags_Sonic_RedMountainClear] == 0)
 			{
-				AICutsceneOk = 0;  //don't load Tails after Sky Chase Crash until Sonic and Tails land on the Egg Carrier.
 				return 0x0;
 			}
 		}
@@ -114,7 +115,7 @@ int CheckTailsAI_R(void) {
 
 	if (SelectedCharacter == 6) //Super Sonic Story
 	{
-		if (!AICutsceneOk && CurrentLevel == LevelIDs_MysticRuins)
+		if (!GetCutsceneFlagArray(0x0F4) && CurrentLevel == LevelIDs_MysticRuins)
 			return 0x0; //fix Super Sonic cutscene crash.
 
 		if (IsStoryIA && CurrentLevel == LevelIDs_Past)
@@ -142,13 +143,10 @@ ObjectMaster* LoadTails()
 
 //Load Tails AI
 ObjectMaster* Load2PTails_r() {
-	if (!ForceAI)
-		FlagAI = CheckTailsAI_R();
-	else
-		FlagAI = 1;
 
+	FlagAI = CheckTailsAI_R();
 
-	if (FlagAI != 1 || EV_MainThread_ptr)
+	if (FlagAI != 1)
 	{
 		isAIActive = false;
 		return (ObjectMaster*)0x0;
@@ -166,7 +164,6 @@ ObjectMaster* Load2PTails_r() {
 			ObjectMaster* Chara = LoadTails(); //set the character
 			if (Chara) {
 				isAIActive = true;
-				ForceAI = false;
 				GetPlayerSidePos(&Chara->Data1->Position, AI->Data1, 10);
 
 			}
@@ -194,7 +191,7 @@ void LoadCharacterAndAI() {
 }
 
 
-void MilesAI_OnFrames() {
+void MilesAI_OnFrames() { //Only run when TailsAI_Main is active
 
 	if (GameState != 15 || !EntityData1Ptrs[0] || !EntityData1Ptrs[1] || EntityData1Ptrs[1]->CharID != Characters_Tails || !TailsAI_ptr)
 		return;
@@ -206,19 +203,14 @@ void MilesAI_OnFrames() {
 //Reset value when Tails AI is deleted
 void TailsAI_ResetValue() {
 	rngKill = 0;
+	isChaoPetByAI = false; //just to be safe
 	isAIActive = false;
-	ForceAI = false;
 	isRescued = false;
 	return FUN_0042ce20();
 }
 
 //Reset value when the player quit or soft reset
 void SoftReset_R() {
-	rngKill = 0;
-	isChaoPetByAI = false; //just to be safe
-	ForceAI = false;
-	isAIActive = false;
-	AICutsceneOk = 0;
 	FUN_00412ad0();
 }
 
