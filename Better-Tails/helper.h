@@ -16,7 +16,6 @@ extern bool isRescueAllowed;
 extern bool isRescued;
 
 
-VoidFunc(InitObjects, 0x49dd70);
 FunctionPointer(int, sub_42FB00, (), 0x42FB00); //Knuckles thing
 FunctionPointer(ObjectMaster*, CheckLoadBird, (), 0x4C6820);
 bool isTailsAIAllowed();
@@ -42,10 +41,8 @@ void moveAItoPlayer();
 bool isMilesSaving();
 void CheckAndLoadTailsTravelObjects(ObjectMaster* obj);
 void TailsAI_ResetValue();
-void AllowTailsAI_R();
 void CheckAndDeleteAI();
 void AI_Fixes();
-void DeleteTailsAI();
 void SnowboardRespawn();
 void AI_Improvement();
 int isCharacterPetting();
@@ -64,7 +61,6 @@ void PlayCharacterGrabAnimation(EntityData1* p1, CharObj2* co2);
 void FlySoundOnFrames();
 
 bool IsSpecificPlayerInSphere(NJS_VECTOR* center, float radius, uint8_t player);
-VoidFunc(OTaraiChild_Main, 0x52c8f0);
 void MilesAI_OnFrames();
 
 FunctionPointer(int, isHostelOpen, (), 0x630900);
@@ -73,12 +69,8 @@ FunctionPointer(int, isAngelIslandOpen, (), 0x534570);
 FunctionPointer(long, Chao_Pleasure, (ObjectMaster* Chao), 0x75db80);
 FunctionPointer(void, Chao_SetBehavior, (ObjectMaster* Chao, long* a2), 0x71EF10);
 
-//Sphere check functions
 
-//FunctionPointer(void, GetPlayerSidePos, (NJS_VECTOR* a1, EntityData1* a2, float m), 0x47dd50);
 void GetPlayerSidePos(NJS_VECTOR* v1, EntityData1* a2, float m);
-void __declspec() GetPlayerSidePos_asm(NJS_VECTOR* v1, EntityData1* a2, float m);
-
 
 VoidFunc(FUN_0042ce20, 0x42ce20); //Called with Delete Tails AI
 DataPointer(int, dword_3B2A304, 0x3B2A304);
@@ -106,7 +98,6 @@ DataArray(int, IslandDoor_Col, 0x111e010, 7);
 
 void CallTailsAI_R();
 void CallTailsAI_R2();
-void CallTailsAI_R3();
 VoidFunc(FUN_00412ad0, 0x412ad0); //called when you soft reset / quit
 
 

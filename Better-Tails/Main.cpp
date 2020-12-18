@@ -24,6 +24,10 @@ MilesAI_Spawn TailsArray[] { //Used to prevent Miles to be called in some very s
 	{ Characters_Gamma, LevelIDs_EggCarrierOutside, EventFlags_Gamma_EmeraldCoastClear, 0x0C2},
 };
 
+int LastStoryCutscene[4]{
+	0x0F4, 0x0F5, 0x0F9, 0x0FA
+};
+
 
 bool isTailsAIAllowed() {
 
@@ -77,9 +81,7 @@ int CheckTailsAI_R(void) {
 				return 0x0; //don't load Tails until we rescue him and don't load him after gamma's defeat
 
 			if (SonicSkyChaseAct1Clear == 1 && EventFlagArray[EventFlags_Sonic_RedMountainClear] == 0)
-			{
 				return 0x0;
-			}
 		}
 		else {
 			return 0x0;
@@ -115,9 +117,15 @@ int CheckTailsAI_R(void) {
 
 	if (SelectedCharacter == 6) //Super Sonic Story
 	{
-		if (!GetCutsceneFlagArray(0x0F4) && CurrentLevel == LevelIDs_MysticRuins)
-			return 0x0; //fix Super Sonic cutscene crash.
+		if (CurrentLevel == LevelIDs_MysticRuins)
+		{
+			for (int i = 0; i < LengthOfArray(LastStoryCutscene); i++) {
 
+				if (!GetCutsceneFlagArray(LastStoryCutscene[i]))
+					return 0x0; //fix Super Sonic cutscene crash.
+			}
+		}
+			
 		if (IsStoryIA && CurrentLevel == LevelIDs_Past)
 			return 0x0; //Don't load Tails in the past if story option is enabled.
 		
