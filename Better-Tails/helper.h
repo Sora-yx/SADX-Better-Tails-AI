@@ -29,7 +29,7 @@ void LoadAISnowBoard_R(); //Load Snowboard for Tails AI
 
 
 extern int rngKill;
-ObjectMaster* Load2PTails_r(); //Load Tails AI 
+ObjectMaster* Load2PTails_r();
 void RestoreAIControl();
 void FixAIHubTransition();
 void FixAIHubTransition2();
@@ -73,7 +73,7 @@ FunctionPointer(void, Chao_SetBehavior, (ObjectMaster* Chao, long* a2), 0x71EF10
 void GetPlayerSidePos(NJS_VECTOR* v1, EntityData1* a2, float m);
 
 VoidFunc(FUN_0042ce20, 0x42ce20); //Called with Delete Tails AI
-DataPointer(int, dword_3B2A304, 0x3B2A304);
+DataPointer(int, int_NPCMilesStandByFlag, 0x3B2A304);
 
 FunctionPointer(signed int, SetPlayerPosition, (unsigned __int8 playerNum, char a2, NJS_POINT3* a3, long* a4), 0x441a40);
 
@@ -97,11 +97,9 @@ FunctionPointer(void, KillPlayer, (int player), 0x440cd0);
 DataArray(int, IslandDoor_Col, 0x111e010, 7);
 
 void CallTailsAI_R();
-void CallTailsAI_R2();
 VoidFunc(FUN_00412ad0, 0x412ad0); //called when you soft reset / quit
 
 
-void SoftReset_R();
 void FlyTravel_Init();
 
 

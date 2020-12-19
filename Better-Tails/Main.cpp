@@ -47,7 +47,6 @@ bool isTailsAIAllowed() {
 //Tails AI Flag Check
 int CheckTailsAI_R(void) {
 
-	isAIActive = false;
 	HMODULE isSA2Mod = GetModuleHandle(L"sadx-sa2-mod");
 
 	if (CurrentLevel == LevelIDs_SkyChase1 || CurrentLevel == LevelIDs_SkyChase2 || !isSA2Mod && CurrentLevel == LevelIDs_ChaoRace || EV_MainThread_ptr) {
@@ -119,13 +118,11 @@ int CheckTailsAI_R(void) {
 	{
 		if (CurrentLevel == LevelIDs_MysticRuins)
 		{
-			for (int i = 0; i < LengthOfArray(LastStoryCutscene); i++) {
-
-				if (!GetCutsceneFlagArray(LastStoryCutscene[i]))
-					return 0x0; //fix Super Sonic cutscene crash.
+			if (!GetCutsceneFlagArray(0x0F4) || LastLevel == LevelIDs_Past && !GetCutsceneFlagArray(0x0F9)) {
+				return 0x0; //fix Super Sonic cutscene crash.
 			}
 		}
-			
+
 		if (IsStoryIA && CurrentLevel == LevelIDs_Past)
 			return 0x0; //Don't load Tails in the past if story option is enabled.
 		
@@ -136,7 +133,6 @@ int CheckTailsAI_R(void) {
 	isAIActive = true;
 	return 1; //Return Load AI
 }
-
 
 
 ObjectMaster* LoadTails()
@@ -176,7 +172,7 @@ ObjectMaster* Load2PTails_r() {
 
 			}
 			AI->Data1->Action = 0;
-			dword_3B2A304 = 0;
+			int_NPCMilesStandByFlag = 0;
 			return AI;
 		}
 	}
@@ -217,10 +213,6 @@ void TailsAI_ResetValue() {
 	return FUN_0042ce20();
 }
 
-//Reset value when the player quit or soft reset
-void SoftReset_R() {
-	FUN_00412ad0();
-}
 
 void TailsAI_Main_R(ObjectMaster* obj) {
 

@@ -38,7 +38,6 @@ extern "C" {
 			WriteCall((void*)0x415a25, LoadCharacterAndAI); //Call Tails AI when Load Character.
 
 			// Tails AI Reset Values  
-			WriteCall((void*)0x42ca4f, SoftReset_R); //Reset value and stuff properly when you Soft Reset and quit.
 			WriteJump((void*)0x47db1a, TailsAI_ResetValue); //Reset value and stuff properly when Tails AI is deleted by the game.
 
 			//Tails AI Stuff (Load, Fixes...)
@@ -52,8 +51,9 @@ extern "C" {
 	__declspec(dllexport) void __cdecl OnFrame()
 	{
 		//LoadAI_OnFrames();
-		if (EntityData1Ptrs[1])
+		/*if (EntityData1Ptrs[1]) {
 			DisplayDebugStringFormatted(NJM_LOCATION(2, 1), "is Miles here %d", isAIActive);
+		}*/
 		//DisplayDebugStringFormatted(NJM_LOCATION(2, 1), "Cutscene Active %d", EV_MainThread_ptr);
 	}
 

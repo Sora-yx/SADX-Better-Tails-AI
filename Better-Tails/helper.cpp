@@ -154,7 +154,7 @@ void FixAIHubTransition2() {
 }
 
 
-//Manually Call or Move Tails AI when necessary.
+//Manually Call Tails AI when necessary.
 void CallTailsAI_R() {
 
 	MusicIDs CurZic = MusicIDs_s_square;
@@ -166,71 +166,25 @@ void CallTailsAI_R() {
 		CurZic = MusicIDs_egcarer1;
 
 
-	//Sonic Amy cutscenes 
-	if (CurrentCharacter == Characters_Sonic && (SonicSkyChaseAct1Clear == 1 && SonicTPClear == 0) || (SonicTPClear == 1 && !EventFlagArray[EventFlags_Sonic_RedMountainClear]))
-	{
-		if (isAIActive)
-		{
-			moveAItoPlayer();
-		}
-	}
-
-	if (EntityData1Ptrs[1] || CharObj2Ptrs[1] || IsAdventureComplete(SelectedCharacter))
+	if (EntityData1Ptrs[1] || CharObj2Ptrs[1] || IsAdventureComplete(SelectedCharacter) && SelectedCharacter != 6)
 		return PlayMusic(CurZic);
 
 
-	if (isTailsAIAllowed()) {
-		Load2PTails_r();
-	}
+	Load2PTails_r();
 
 	return PlayMusic(CurZic);
-}
-
-void CallTailsAI_R2() {
-
-
-	if (isAIActive) {
-		if (isTailsAIAllowed()) {
-			moveAItoPlayer();
-			return PlayMusic(MusicIDs_mstcln);
-		}
-	}
-
-
-	if (EntityData1Ptrs[1] || CharObj2Ptrs[1] || IsAdventureComplete(SelectedCharacter) && SelectedCharacter != 6)
-		return PlayMusic(MusicIDs_mstcln);
-
-
-	//Super Sonic Story Cutscene
-	if (SelectedCharacter == 6 && CurrentLevel == LevelIDs_MysticRuins)
-	{
-		if (!isAIActive)
-		{
-			Load2PTails_r();
-			return PlayMusic(MusicIDs_mstcln);
-		}
-	}
-
-
-	if (isTailsAIAllowed()) {
-		Load2PTails_r();
-	}
-
-
-	return PlayMusic(MusicIDs_mstcln);
 }
 
 
 
 void CheckAndDeleteAI() {
 
-	if (isAIActive && EntityData1Ptrs[1] != nullptr)
+	if (EntityData1Ptrs[1] != nullptr)
 	{
-		ObjectMaster* AI = GetCharacterObject(1);
-
 		if (EntityData1Ptrs[1]->CharID == Characters_Tails) {
-			TailsAI_Delete(AI);
-			CheckThingButThenDeleteObject(AI); //delete AI completely
+			TailsAI_ptr = nullptr;
+			FUN_0042ce20();
+			DeleteObjectMaster(GetCharacterObject(1));
 		}
 	}
 
@@ -363,6 +317,8 @@ void __cdecl LoadCharacter_r() {
 	return;
 }
 
+
+
 void AI_Fixes() {
 
 	if (IsHubBanned)
@@ -373,9 +329,9 @@ void AI_Fixes() {
 	WriteCall((void*)0x417588, FixAIHubTransition2);
 
 	WriteCall((void*)0x42f72d, CallTailsAI_R); //Manually Call Tails AI After few early Cutscene to avoid crash.
-	WriteCall((void*)0x42f78c, CallTailsAI_R2);  //Move Tails to Sonic Position after Chaos 4 fight. Also call Tails AI in Super Sonic Story
-	WriteCall((void*)0x42f747, CallTailsAI_R); //Manually Call Tails AI After the cutscene SonicAndTails_LandEggCarrier
+	WriteCall((void*)0x42f78c, CallTailsAI_R); 
+	WriteCall((void*)0x42f747, CallTailsAI_R); 
 
 	WriteCall((void*)0x65f82f, CheckAndDeleteAI); //Remove Tails before "Sonic finds Knuckles cutscene" (super sonic)
-	WriteCall((void*)0x663d4a, CheckAndDeleteAI); //Remove Tails before "Sonic and Tails find tornado 2 cutscene" (super sonic)
+	WriteCall((void*)0x663d4a, CheckAndDeleteAI); //Remove Tails before "Sonic and Tails find tornado 2 cutscene" (super sonic)	
 }
