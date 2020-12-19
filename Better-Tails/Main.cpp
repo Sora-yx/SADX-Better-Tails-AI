@@ -24,10 +24,6 @@ MilesAI_Spawn TailsArray[] { //Used to prevent Miles to be called in some very s
 	{ Characters_Gamma, LevelIDs_EggCarrierOutside, EventFlags_Gamma_EmeraldCoastClear, 0x0C2},
 };
 
-int LastStoryCutscene[4]{
-	0x0F4, 0x0F5, 0x0F9, 0x0FA
-};
-
 
 bool isTailsAIAllowed() {
 
@@ -202,6 +198,7 @@ void MilesAI_OnFrames() { //Only run when TailsAI_Main is active
 
 	PreventTailsAIDamage();
 	SnowboardRespawn();
+	CheckMilesBossRescue();
 }
 
 //Reset value when Tails AI is deleted

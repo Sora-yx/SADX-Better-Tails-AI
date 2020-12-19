@@ -22,6 +22,7 @@ bool isTailsAIAllowed();
 bool isCharSelActive();
 bool isRandoActive();
 void __cdecl LoadCharacter_r();
+void CheckMilesBossRescue();
 
 int CheckTailsAI_R(void); //Tails flag spawn allowed
 void DisableTime_R(); //result screen Stuff
@@ -96,6 +97,8 @@ FunctionPointer(void, sub_541BF0, (unsigned __int16 a1, NJS_VECTOR* p1Pos), 0x54
 FunctionPointer(void, KillPlayer, (int player), 0x440cd0);
 DataArray(int, IslandDoor_Col, 0x111e010, 7);
 
+
+
 void CallTailsAI_R();
 VoidFunc(FUN_00412ad0, 0x412ad0); //called when you soft reset / quit
 
@@ -142,3 +145,90 @@ enum EMilesMap {
 	MRJungleLW,
 	MRJungleBig
 };
+
+
+struct _camcontwk
+{
+	char cammode;
+	char camsmode;
+	char bBlank;
+	char btimer;
+	unsigned __int16 wtimer;
+	__int16 ssFlag;
+	float tgtdist;
+	NJS_VECTOR pos;
+	NJS_VECTOR targetpos;
+	Rotation3 angle;
+	NJS_VECTOR oldcampos;
+	int angx_spd;
+	int angy_spd;
+	int angz_spd;
+	NJS_VECTOR speed;
+	NJS_VECTOR acceleration;
+};
+
+struct _OBJ_ADJUSTPARAM
+{
+	__int16 ssAdjustFlag;
+	int angSpeed[3];
+	float fSpeed;
+	int counter;
+};
+
+struct _OBJ_CAMERAPARAM
+{
+	unsigned __int16 xCamAng;
+	unsigned __int16 yCamAng;
+	float xCamPos;
+	float yCamPos;
+	float zCamPos;
+	float xDirPos;
+	float yDirPos;
+	float zDirPos;
+	float fDistance;
+	unsigned int ulTimer;
+};
+
+enum class CameraAdjustsIDs {
+	None,
+	Normal,
+	Normal_S,
+	Slow,
+	Slow_S,
+	Time,
+	Three1,
+	Three1C,
+	Three2,
+	Three2C,
+	Three3,
+	Three3C,
+	Three4,
+	Three4C,
+	Three5,
+	Three5C,
+	Relative1,
+	Relative1C,
+	Relative2,
+	Relative2C,
+	Relative3,
+	Relative3C,
+	Relative4,
+	Relative4C,
+	Relative5,
+	Relative5C,
+	Relative6,
+	FreeCam
+};
+
+enum class CameraDirectIDs {
+	Sonic,
+	Unknown,
+	Target
+};
+
+typedef void(__cdecl* CameraFuncPtr)(_OBJ_CAMERAPARAM*);
+typedef void(__cdecl* CamAdjustPtr)(EntityData1*, EntityData1*, _OBJ_ADJUSTPARAM*);
+
+FunctionPointer(void, SetCameraEvent, (CameraFuncPtr func, CameraAdjustsIDs adjust, CameraDirectIDs direct), 0x437D20);
+VoidFunc(RemoveCameraEvent, 0x436140);
+DataPointer(_camcontwk, CameraTask, 0x3B2C660);
