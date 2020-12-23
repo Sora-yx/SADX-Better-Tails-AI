@@ -45,7 +45,6 @@ extern "C" {
 
 			WriteCall((void*)0x415556, DisableTime_R); //While result screen, force Tails AI to victory pose.
 		}
-		
 	}
 
 	__declspec(dllexport) void __cdecl OnFrame()

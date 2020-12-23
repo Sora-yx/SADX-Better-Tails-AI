@@ -241,6 +241,14 @@ void FadeoutScreen(ObjectMaster* obj) {
 	}
 }
 
+bool isUIScale() {
+
+	if (HorizontalStretchPointer != &HorizontalStretch)
+		return true;
+
+	return false;
+}
+
 
 bool isCharSelActive() {
 

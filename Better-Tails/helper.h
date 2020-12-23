@@ -27,6 +27,7 @@ void CheckMilesBossRescue();
 int CheckTailsAI_R(void); //Tails flag spawn allowed
 void DisableTime_R(); //result screen Stuff
 void LoadAISnowBoard_R(); //Load Snowboard for Tails AI
+bool isUIScale();
 
 
 extern int rngKill;
@@ -86,6 +87,7 @@ DataPointer(unsigned char, SelectedCharacter, 0x3B2A2FD);
 DataPointer(char, SonicTPClear, 0x3B188B1);
 DataPointer(char, SonicSkyChaseAct1Clear, 0x3B188BD);
 DataPointer(char, SonicSkyChaseAct2Clear, 0x3B188BE);
+DataPointer(float*, HorizontalStretchPointer, 0x51285E);
 
 //SADX Map Stuff
 FunctionPointer(void, sub_62ECE0, (unsigned __int16 a1, NJS_VECTOR* p1Pos), 0x62ECE0);

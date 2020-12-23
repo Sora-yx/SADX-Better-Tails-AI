@@ -33,6 +33,16 @@ NJS_TEXLIST TravelMap_TEXLIST = { arrayptrandlength(TravelMap_TEXNAMES) };
 int Cursor = -1;
 int MilesCurTex = 0;
 
+const char* DestinationText[9] = {
+	"Station Square (Main)", "Station Square (Hostel Pool)", "Station Square Casino Area",
+	"Station Square City Hall", "Egg Carrier (Outside)", "Mystic Ruins (Station)", "Mystic Ruins (Angel Island)",
+	"Mystic Ruins (Jungle Temple)", "Mystic Ruins (Big's House)"
+};
+
+const char* getDestinationText() {
+	return DestinationText[Cursor];
+}
+
 //Tails Grab Fly abilities
 MilesAI_Fly DestinationArray[]{
 	{ LevelIDs_StationSquare, 3,  42.5287, 363.153, 1799.71, {300, 280}}, //Station (main)
@@ -81,6 +91,8 @@ void ReleaseAllTravelTexture() {
 	return;
 }
 
+
+
 int setCursorPos(int curLevel, int curAct) {
 	if (curLevel == LevelIDs_StationSquare)
 	{
@@ -116,6 +128,9 @@ int setCursorPos(int curLevel, int curAct) {
 }
 
 void DisplayCursorAnimation() {
+
+	if (!isUIScale())
+		return;
 
 	SetMaterialAndSpriteColor_Float(1, 1, 1, 1);
 
@@ -522,7 +537,6 @@ void TailsAI_Grab(ObjectMaster* obj) {
 		Cursor = setCursorPos(CurrentLevel, CurrentAct);
 		if (Cursor > -1) {
 			CheckAndLoadMapPVM();
-
 			data->Action = transitionMap;
 		}
 		else {
@@ -539,7 +553,7 @@ void TailsAI_Grab(ObjectMaster* obj) {
 		break;
 	case displayMap:
 		CheckAndForceLeavingGrab(data);
-		//DisplayDebugStringFormatted(NJM_LOCATION(2, 1), "Cursor Value %d", Cursor);
+		DisplayDebugStringFormatted(NJM_LOCATION(2, 1), "Destination: %s", getDestinationText());
 		UpdatePlayerCursorPos();
 		DrawModelCallback_Queue((void(__cdecl*)(void*))PauseMenu_Map_DisplayCallback, 0, 22047.998, QueuedModelFlagsB_EnableZWrite); //fix transparency issue
 

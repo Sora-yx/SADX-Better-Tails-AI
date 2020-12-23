@@ -11,9 +11,9 @@ int rngKill = 0;
 
 void CameraEvent_MilesRescue(_OBJ_CAMERAPARAM* camparam) {
 	CameraTask.pos = EntityData1Ptrs[1]->Position;
-	CameraTask.pos.x += 20;
-	CameraTask.pos.y += 20;
-	CameraTask.pos.z += 20;
+	CameraTask.pos.x += 30;
+	CameraTask.pos.y += 30;
+	CameraTask.pos.z += 30;
 	CameraTask.targetpos = EntityData1Ptrs[1]->Position;
 }
 
@@ -93,7 +93,6 @@ void TailsAI_Landing2(ObjectMaster* obj) {
 
 	switch (data->Action) {
 	case 0: {
-		SetCameraEvent(CameraEvent_MilesRescue, CameraAdjustsIDs::None, CameraDirectIDs::Target);
 		isRescued = true;
 		obj->DeleteSub = TailsAI_LandingDelete2;
 		CharObj2Ptrs[1]->AnimationThing.Index = 37;
@@ -118,14 +117,13 @@ void TailsAI_Landing2(ObjectMaster* obj) {
 		}
 
 		if (++data->InvulnerableTime == 90 || ((p1->Status & Status_Ground) == Status_Ground) || (p1->Status & Status_Unknown1) == Status_Unknown1) {
-			RemoveCameraEvent();
 			data->Index = 0;
 			data->Action = 2;
 		}
 		break;
 	case 2:
 		EnableController(0);
-		co2p1->Powerups &= Powerups_Invincibility;
+		co2p1->Powerups &= 0x100u;
 		PlayCharacterLeaveAnimation(p1, co2p1);
 		RestoreAIControl();	
 		if (++data->Index == 20) {
@@ -161,7 +159,7 @@ void MilesRescuesCharacterFall(ObjectMaster* obj) {
 	case 0:
 		p1co2->Powerups |= Powerups_Invincibility;
 		obj->DeleteSub = TailsAI_RescueDelete;
-		p1co2->Speed = { 0, 2, 0 };
+		//p1co2->Speed = { 0, 2, 0 };
 		p2->Position.x = p1->Position.x + 5;
 		p2->Position.y = p1->Position.y + 60;
 		p2->Position.z = p1->Position.z;
@@ -170,6 +168,7 @@ void MilesRescuesCharacterFall(ObjectMaster* obj) {
 		break;
 	case 1:
 		if (p2->Position.y - p1->Position.y <= GetCharacterPositionY(p1) + 5) {	
+			p1co2->Speed.y = 0;
 			p2->Status &= ~(Status_Attack | Status_Ball | Status_LightDash);
 			p2->Action = 15;
 			CharObj2Ptrs[1]->AnimationThing.Index = 37;
@@ -181,10 +180,8 @@ void MilesRescuesCharacterFall(ObjectMaster* obj) {
 		else {
 			p2->Status |= Status_Ball;
 			CharObj2Ptrs[1]->AnimationThing.Index = 15;
-			p1co2->Speed.y = 1.5;
-			CharObj2Ptrs[1]->Speed.y -= 0.2;
-			if (p2->Position.x > p1->Position.x)
-				CharObj2Ptrs[1]->Speed.x += 0.3;
+			p1co2->Speed.y = -2.5;
+			CharObj2Ptrs[1]->Speed.y = -4.5;
 		}
 		break;
 	case 2:
@@ -192,6 +189,7 @@ void MilesRescuesCharacterFall(ObjectMaster* obj) {
 			LoadObject(LoadObj_Data1, 1, FadeoutScreen);
 		}
 		if (++data->InvulnerableTime == 200) {
+			CharObj2Ptrs[1]->Speed.y = 2.5;
 			Controllers[1].HeldButtons = 0;
 			Controllers[1].PressedButtons = 0;
 			NJS_VECTOR getPos = CheckRescueArray();
@@ -240,7 +238,7 @@ void PlayCharacterDeathSound_r(ObjectMaster* a1, int pid) {
 
 		rngKill = rand() % 100 + 1;
 
-		if (!EntityData1Ptrs[1] || EntityData1Ptrs[1]->CharID != Characters_Tails || CurrentLevel == LevelIDs_SkyDeck && CurrentAct == 1 || isRescued && CurrentLevel < LevelIDs_StationSquare || rngKill < 40) {
+		if (!EntityData1Ptrs[1] || EntityData1Ptrs[1]->CharID != Characters_Tails || CurrentLevel == LevelIDs_SkyDeck && CurrentAct == 1 || isRescued && CurrentLevel < LevelIDs_StationSquare || rngKill < 60) {
 			PlayCharacterDeathSound(a1, pid); //kill the player
 			return;
 		}
@@ -278,7 +276,7 @@ void CheckMilesBossRescue() {
 
 		rngKill = rand() % 100 + 1;
 
-		if (!EntityData1Ptrs[1] || EntityData1Ptrs[1]->CharID != Characters_Tails || rngKill < 40) {
+		if (!EntityData1Ptrs[1] || EntityData1Ptrs[1]->CharID != Characters_Tails || rngKill < 60) {
 			return;
 		}
 	}
@@ -313,9 +311,9 @@ void MilesRescueFromEnemy(ObjectMaster* obj) {
 	{
 	case 0:
 		co2p1->Powerups |= Powerups_Invincibility;
+		obj->DeleteSub = MilesRescueEnemyDelete;
 		SetCameraEvent(CameraEvent_MilesRescue, CameraAdjustsIDs::None, CameraDirectIDs::Target);
 		p1->Action = 125;
-		obj->DeleteSub = MilesRescueEnemyDelete;
 		p2->Action = 125;
 		co2p2->AnimationThing.Index = 15;
 		data->Action = 1;	
@@ -329,28 +327,24 @@ void MilesRescueFromEnemy(ObjectMaster* obj) {
 	case 2:
 		p2->Status |= Status_Ball;
 		co2p2->AnimationThing.Index = 15;
-	
-		p2->Position.x+=6;
-		if (GetCollidingEntityA(p2) || ++data->InvulnerableTime == 80)
+		p2->Position.x += 5;
+		if (GetCollidingEntityA(p2) || ++data->InvulnerableTime == 50)
 			data->Action = 3;
 		break;
 	case 3:
-		co2p2->Speed = { 1, 0, 0 };
-		PlaySound(33, 0, 0, 0);
-
-		isRescued = true;
 		p2->Action = 4;
-		p1->Action = 8;
-		co2p1->Speed = { 2, 4, 0 };
+		co2p2->Speed = { 1, 0, 0 };
 		HurtCharacter(1);
-		co2p1->Powerups &= Powerups_Invincibility;
+		PlaySound(33, 0, 0, 0);
+		isRescued = true;
+		p1->Action = 8;
+		co2p1->Speed = { 1.5, 4, 0 };
+		co2p1->Powerups &= 0x100u;
 		data->Action = 4;
 		break;
 	case 4:
-		if (++data->Index == 20) {
-			RemoveCameraEvent();
-			CheckThingButThenDeleteObject(obj);
-		}
+		RemoveCameraEvent();
+		CheckThingButThenDeleteObject(obj);	
 		break;
 	}
 
@@ -358,19 +352,18 @@ void MilesRescueFromEnemy(ObjectMaster* obj) {
 
 void CheckPlayerDamage(unsigned __int8 player) {
 
+	if (isRescued || !EntityData1Ptrs[1] || EntityData1Ptrs[1]->CharID != Characters_Tails || player > 0)
+		KillPlayer(player);
 
-
-	if (isMilesSaving() || rngKill || player > 0)
+	if (isMilesSaving() || rngKill)
 		return;
 
-	if (isRescued || !EntityData1Ptrs[1] || EntityData1Ptrs[1]->CharID != Characters_Tails)
-		KillPlayer(player);
 
 	if (!MilesRescueEnemy && !rngKill && !isRescued) {
 
-		rngKill = 50; //rand() % 100 + 1;
+		rngKill = rand() % 100 + 1;
 
-		if (rngKill > 40)
+		if (rngKill > 70)
 			MilesRescueEnemy = LoadObject((LoadObj)2, 1, MilesRescueFromEnemy);
 		else
 			KillPlayer(player);
