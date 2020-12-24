@@ -136,6 +136,13 @@ enum ETailsGrab {
 	errorMove
 };
 
+enum ETailsRescue {
+	initMilesFalling,
+	catchPlayer,
+	playerGrabbed,
+	landingTransition,
+};
+
 enum EMilesMap {
 	Sstation,
 	ShostelPool,

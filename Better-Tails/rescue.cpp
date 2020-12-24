@@ -65,7 +65,7 @@ void TailsAI_RescueDelete(ObjectMaster* obj) {
 }
 
 const char* const Sonic_message01[] = {
-	"	 	 Thank you Tails!   \n",
+	"	 	 Thanks Tails!   \n",
 	NULL,
 };
 
@@ -156,17 +156,16 @@ void MilesRescuesCharacterFall(ObjectMaster* obj) {
 
 	switch (data->Action) {
 
-	case 0:
+	case initMilesFalling: //Set tails above player
+		p1co2->Speed = { 0, 0, 0 };
 		p1co2->Powerups |= Powerups_Invincibility;
 		obj->DeleteSub = TailsAI_RescueDelete;
-		//p1co2->Speed = { 0, 2, 0 };
-		p2->Position.x = p1->Position.x + 5;
-		p2->Position.y = p1->Position.y + 60;
-		p2->Position.z = p1->Position.z;
+		p2->Position = p1->Position;
+		p2->Position.y += 60;
 		p2->Action = 6;
 		data->Action = 1;
 		break;
-	case 1:
+	case catchPlayer: 
 		if (p2->Position.y - p1->Position.y <= GetCharacterPositionY(p1) + 5) {	
 			p1co2->Speed.y = 0;
 			p2->Status &= ~(Status_Attack | Status_Ball | Status_LightDash);
@@ -176,23 +175,21 @@ void MilesRescuesCharacterFall(ObjectMaster* obj) {
 			p1->Action = 125;
 			PlayCharacterGrabAnimation(p1, p1co2);
 			data->Action = 2;
-		}
-		else {
+		} 
+		else { //let AI Fall until he catches player 1.
 			p2->Status |= Status_Ball;
 			CharObj2Ptrs[1]->AnimationThing.Index = 15;
 			p1co2->Speed.y = -2.5;
 			CharObj2Ptrs[1]->Speed.y = -4.5;
 		}
 		break;
-	case 2:
+	case playerGrabbed:
 		if (++data->field_A == 140) {
 			LoadObject(LoadObj_Data1, 1, FadeoutScreen);
 		}
-		if (++data->InvulnerableTime == 200) {
-			CharObj2Ptrs[1]->Speed.y = 2.5;
-			Controllers[1].HeldButtons = 0;
-			Controllers[1].PressedButtons = 0;
-			NJS_VECTOR getPos = CheckRescueArray();
+		if (++data->InvulnerableTime == 200) { //get Altitude
+			CharObj2Ptrs[1]->Speed.y = 3.5;
+			NJS_VECTOR getPos = CheckRescueArray(); //move player to safe point (ie: last grabbed checkpoint or specific spot in hub world)
 			if (getPos.x != -1 && getPos.y != -1 && getPos.z != -1) {
 				p1->Position = getPos;
 			}
@@ -210,7 +207,7 @@ void MilesRescuesCharacterFall(ObjectMaster* obj) {
 			CharObj2Ptrs[1]->Speed.x += 0.3;
 		}
 		break;
-	case 3:
+	case landingTransition:
 		if (!TailsRescueLanding)
 			TailsRescueLanding = LoadObject((LoadObj)2, 1, TailsAI_Landing2);
 
@@ -238,7 +235,7 @@ void PlayCharacterDeathSound_r(ObjectMaster* a1, int pid) {
 
 		rngKill = rand() % 100 + 1;
 
-		if (!EntityData1Ptrs[1] || EntityData1Ptrs[1]->CharID != Characters_Tails || CurrentLevel == LevelIDs_SkyDeck && CurrentAct == 1 || isRescued && CurrentLevel < LevelIDs_StationSquare || rngKill < 60) {
+		if (!EntityData1Ptrs[1] || EntityData1Ptrs[1]->CharID != Characters_Tails || CurrentLevel == LevelIDs_SkyDeck && CurrentAct == 1 || CurrentLevel >= LevelIDs_TwinkleCircuit || isRescued && CurrentLevel < LevelIDs_StationSquare || rngKill < 60) {
 			PlayCharacterDeathSound(a1, pid); //kill the player
 			return;
 		}
@@ -296,7 +293,6 @@ void MilesRescueEnemyDelete(ObjectMaster* obj) {
 }
 
 
-
 void MilesRescueFromEnemy(ObjectMaster* obj) {
 
 	EntityData1* data = obj->Data1;
@@ -312,7 +308,8 @@ void MilesRescueFromEnemy(ObjectMaster* obj) {
 	case 0:
 		co2p1->Powerups |= Powerups_Invincibility;
 		obj->DeleteSub = MilesRescueEnemyDelete;
-		SetCameraEvent(CameraEvent_MilesRescue, CameraAdjustsIDs::None, CameraDirectIDs::Target);
+		if (CurrentLevel < LevelIDs_Chaos0)
+			SetCameraEvent(CameraEvent_MilesRescue, CameraAdjustsIDs::None, CameraDirectIDs::Target);
 		p1->Action = 125;
 		p2->Action = 125;
 		co2p2->AnimationThing.Index = 15;
@@ -343,7 +340,8 @@ void MilesRescueFromEnemy(ObjectMaster* obj) {
 		data->Action = 4;
 		break;
 	case 4:
-		RemoveCameraEvent();
+		if (CurrentLevel < LevelIDs_Chaos0)
+			RemoveCameraEvent();
 		CheckThingButThenDeleteObject(obj);	
 		break;
 	}
@@ -352,7 +350,7 @@ void MilesRescueFromEnemy(ObjectMaster* obj) {
 
 void CheckPlayerDamage(unsigned __int8 player) {
 
-	if (isRescued || !EntityData1Ptrs[1] || EntityData1Ptrs[1]->CharID != Characters_Tails || player > 0)
+	if (isRescued || !EntityData1Ptrs[1] || EntityData1Ptrs[1]->CharID != Characters_Tails || player > 0 || CurrentLevel >= LevelIDs_Chaos0)
 		KillPlayer(player);
 
 	if (isMilesSaving() || rngKill)
@@ -363,12 +361,14 @@ void CheckPlayerDamage(unsigned __int8 player) {
 
 		rngKill = rand() % 100 + 1;
 
-		if (rngKill > 70)
+		if (rngKill > 69)
 			MilesRescueEnemy = LoadObject((LoadObj)2, 1, MilesRescueFromEnemy);
 		else
 			KillPlayer(player);
 	}
 }
+
+
 
 void Rescue_Init() {
 	WriteCall((void*)0x44af87, PlayCharacterDeathSoundAsm);

@@ -326,7 +326,6 @@ void __cdecl LoadCharacter_r() {
 }
 
 
-
 void AI_Fixes() {
 
 	if (IsHubBanned)
