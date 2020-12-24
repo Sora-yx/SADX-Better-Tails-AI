@@ -226,6 +226,15 @@ void CheckAndCallMilesRescue() {
 }
 
 
+bool BannedRescueLevel() {
+	if (CurrentLevel == LevelIDs_SkyDeck && CurrentAct == 1 || CurrentLevel >= LevelIDs_TwinkleCircuit || CurrentLevel == LevelIDs_TwinklePark && CurrentAct == 0)
+	{
+		return true;
+	}
+
+	return false;
+}
+
 void PlayCharacterDeathSound_r(ObjectMaster* a1, int pid) {
 
 	if (isMilesSaving() || rngKill)
@@ -235,7 +244,7 @@ void PlayCharacterDeathSound_r(ObjectMaster* a1, int pid) {
 
 		rngKill = rand() % 100 + 1;
 
-		if (!EntityData1Ptrs[1] || EntityData1Ptrs[1]->CharID != Characters_Tails || CurrentLevel == LevelIDs_SkyDeck && CurrentAct == 1 || CurrentLevel >= LevelIDs_TwinkleCircuit || isRescued && CurrentLevel < LevelIDs_StationSquare || rngKill < 60) {
+		if (!EntityData1Ptrs[1] || EntityData1Ptrs[1]->CharID != Characters_Tails || BannedRescueLevel() || isRescued && CurrentLevel < LevelIDs_StationSquare || rngKill < 60) {
 			PlayCharacterDeathSound(a1, pid); //kill the player
 			return;
 		}
@@ -263,7 +272,7 @@ static void __declspec(naked) PlayCharacterDeathSoundAsm(ObjectMaster* eax, int 
 
 void CheckMilesBossRescue() {
 
-	if (CurrentLevel != LevelIDs_EggHornet && CurrentLevel != LevelIDs_EggViper || GameState != 15  || isMilesSaving() || rngKill || isRescued && CurrentLevel < LevelIDs_StationSquare)
+	if (CurrentLevel != LevelIDs_EggHornet && CurrentLevel != LevelIDs_EggViper || GameState != 15 || isMilesSaving() || rngKill || isRescued && CurrentLevel < LevelIDs_StationSquare)
 		return;
 
 	if (CurrentLevel == LevelIDs_EggHornet && EntityData1Ptrs[0]->Position.y > 94 || CurrentLevel == LevelIDs_EggViper && (EntityData1Ptrs[0]->Position.y > -150.0 || EggViper_Health < 3))

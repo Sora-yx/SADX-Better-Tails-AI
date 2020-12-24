@@ -26,6 +26,9 @@ void LoadAISnowBoard_R() {
 //Make Tails using snowboard again when trying to catch Sonic
 void SnowboardRespawn() {
 
+	if (GameState != 15)
+		return;
+
 	EntityData1* data = EntityData1Ptrs[1];
 
 	if (data->Action == 15) {

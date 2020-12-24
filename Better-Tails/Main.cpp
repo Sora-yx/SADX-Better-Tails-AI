@@ -193,7 +193,7 @@ void LoadCharacterAndAI() {
 
 void MilesAI_OnFrames() { //Only run when TailsAI_Main is active
 
-	if (GameState != 15 || !EntityData1Ptrs[0] || !EntityData1Ptrs[1] || EntityData1Ptrs[1]->CharID != Characters_Tails || !TailsAI_ptr)
+	if (GameState != 15 && GameState != 4 || !EntityData1Ptrs[0] || !EntityData1Ptrs[1] || EntityData1Ptrs[1]->CharID != Characters_Tails || !TailsAI_ptr)
 		return;
 
 	PreventTailsAIDamage();
