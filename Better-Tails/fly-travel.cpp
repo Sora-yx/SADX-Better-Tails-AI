@@ -414,7 +414,7 @@ void RestoreAIControl() {
 
 int CheckFastTravelStoryProgression() {
 
-	if (CurrentCharacter == Characters_Big && Cursor == 2)
+	if (CurrentCharacter >= Characters_Gamma && Cursor == 2)
 		return 0;
 
 	if (IsAdventureComplete(SelectedCharacter))
