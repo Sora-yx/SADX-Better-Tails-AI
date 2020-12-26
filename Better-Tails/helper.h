@@ -15,7 +15,6 @@ extern bool isFlyTravel;
 extern bool isRescueAllowed;
 extern bool isRescued;
 
-
 FunctionPointer(int, sub_42FB00, (), 0x42FB00); //Knuckles thing
 FunctionPointer(ObjectMaster*, CheckLoadBird, (), 0x4C6820);
 bool isTailsAIAllowed();
@@ -28,7 +27,8 @@ int CheckTailsAI_R(void); //Tails flag spawn allowed
 void DisableTime_R(); //result screen Stuff
 void LoadAISnowBoard_R(); //Load Snowboard for Tails AI
 bool isUIScale();
-
+bool isPlayerUsingSnowboard();
+void CatchUP();
 
 extern int rngKill;
 ObjectMaster* Load2PTails_r();
@@ -71,7 +71,6 @@ FunctionPointer(int, isAngelIslandOpen, (), 0x534570);
 FunctionPointer(long, Chao_Pleasure, (ObjectMaster* Chao), 0x75db80);
 FunctionPointer(void, Chao_SetBehavior, (ObjectMaster* Chao, long* a2), 0x71EF10);
 
-
 void GetPlayerSidePos(NJS_VECTOR* v1, EntityData1* a2, float m);
 
 VoidFunc(FUN_0042ce20, 0x42ce20); //Called with Delete Tails AI
@@ -99,14 +98,10 @@ FunctionPointer(void, sub_541BF0, (unsigned __int16 a1, NJS_VECTOR* p1Pos), 0x54
 FunctionPointer(void, KillPlayer, (int player), 0x440cd0);
 DataArray(int, IslandDoor_Col, 0x111e010, 7);
 
-
-
 void CallTailsAI_R();
 VoidFunc(FUN_00412ad0, 0x412ad0); //called when you soft reset / quit
 
-
 void FlyTravel_Init();
-
 
 struct MilesAI_Spawn {
 	int curCharacter;
@@ -115,14 +110,12 @@ struct MilesAI_Spawn {
 	int cutsceneFlag;
 };
 
-
 struct MilesAI_Fly {
 	uint8_t level;
 	uint8_t act;
 	NJS_VECTOR destination;
 	NJS_POINT2 cursor;
 };
-
 
 enum ETailsGrab {
 	initFly,
@@ -154,7 +147,6 @@ enum EMilesMap {
 	MRJungleLW,
 	MRJungleBig
 };
-
 
 struct _camcontwk
 {

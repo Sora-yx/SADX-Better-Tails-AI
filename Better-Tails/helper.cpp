@@ -1,9 +1,7 @@
 #include "stdafx.h"
 
-
-//teleport AI to Player 
+//teleport AI to Player
 void moveAItoPlayer() {
-
 	if (isAIActive)
 	{
 		if (EntityData1Ptrs[0] && EntityData1Ptrs[1])
@@ -21,6 +19,12 @@ void moveAItoPlayer() {
 	return;
 }
 
+bool isPlayerUsingSnowboard() {
+	if (CurrentCharacter == Characters_Sonic && EntityData1Ptrs[0]->Action >= 62 && EntityData1Ptrs[0]->Action <= 68)
+		return true;
+
+	return false;
+}
 
 NJS_VECTOR UnitMatrix_GetPoint(NJS_VECTOR* orig, Rotation3* rot, float x, float y, float z) {
 	NJS_VECTOR point;
@@ -38,7 +42,6 @@ NJS_VECTOR UnitMatrix_GetPoint(NJS_VECTOR* orig, Rotation3* rot, float x, float 
 float GetSquare(NJS_VECTOR* orig, NJS_VECTOR* dest) {
 	return powf(dest->x - orig->x, 2) + powf(dest->y - orig->y, 2) + powf(dest->z - orig->z, 2);
 }
-
 
 float CheckDistance(NJS_VECTOR* vec1, NJS_VECTOR* vec2) {
 	float x_dist = vec2->x - vec1->x;
@@ -77,7 +80,6 @@ void LookAt(NJS_VECTOR* from, NJS_VECTOR* to, Angle* outx, Angle* outy) {
 	}
 }
 
-
 void PlayerLookAt(NJS_VECTOR* from, NJS_VECTOR* to, Angle* outx, Angle* outy) {
 	LookAt(from, to, outx, outy);
 
@@ -113,11 +115,9 @@ bool IsSpecificPlayerInSphere(NJS_VECTOR* center, float radius, uint8_t player) 
 	return IsPlayerInsideSphere_(center, radius) == player + 1;
 }
 
-
 //Fix AI Start Position in hub world
 
 void FixAIHubTransition() {
-
 	ForcePlayerAction(0, 0x18);
 
 	if (!IsHubBanned && isAIActive)
@@ -126,14 +126,13 @@ void FixAIHubTransition() {
 			return;
 
 		if (CurrentLevel > LevelIDs_E101R && CurrentLevel < LevelIDs_TwinkleCircuit)
-			moveAItoPlayer(); 
+			moveAItoPlayer();
 	}
 
 	return;
 }
 
 void FixAIHubTransition2() {
-
 	HudDisplayRingTimeLife_Check();
 
 	if (!IsHubBanned && isAIActive)
@@ -141,22 +140,20 @@ void FixAIHubTransition2() {
 		if (CurrentCharacter != Characters_Big)
 		{
 			if (CurrentLevel == LevelIDs_StationSquare && (CurrentAct == 3 || CurrentAct == 1) || CurrentLevel >= LevelIDs_ECGarden && CurrentLevel < LevelIDs_ChaoRace)
-				moveAItoPlayer(); 
+				moveAItoPlayer();
 		}
 		else
 		{
 			if (CurrentLevel == LevelIDs_StationSquare && CurrentAct == 1 || CurrentLevel >= LevelIDs_ECGarden && CurrentLevel < LevelIDs_ChaoRace)
-				moveAItoPlayer(); 
+				moveAItoPlayer();
 		}
 	}
 
 	return;
 }
 
-
 //Manually Call Tails AI when necessary.
 void CallTailsAI_R() {
-
 	MusicIDs CurZic = MusicIDs_s_square;
 
 	if (CurrentLevel == LevelIDs_MysticRuins)
@@ -165,20 +162,15 @@ void CallTailsAI_R() {
 	if (CurrentLevel == LevelIDs_EggCarrierOutside || CurrentLevel == LevelIDs_EggCarrierInside)
 		CurZic = MusicIDs_egcarer1;
 
-
 	if (EntityData1Ptrs[1] || CharObj2Ptrs[1] || IsAdventureComplete(SelectedCharacter) && SelectedCharacter != 6)
 		return PlayMusic(CurZic);
-
 
 	Load2PTails_r();
 
 	return PlayMusic(CurZic);
 }
 
-
-
 void CheckAndDeleteAI() {
-
 	if (EntityData1Ptrs[1] != nullptr)
 	{
 		if (EntityData1Ptrs[1]->CharID == Characters_Tails) {
@@ -191,7 +183,6 @@ void CheckAndDeleteAI() {
 	isAIActive = false;
 	return DisableControl();
 }
-
 
 void GetPlayerSidePos(NJS_VECTOR* v1, EntityData1* a2, float m)
 {
@@ -210,11 +201,9 @@ void GetPlayerSidePos(NJS_VECTOR* v1, EntityData1* a2, float m)
 }
 
 void FadeoutScreen(ObjectMaster* obj) {
-
 	EntityData1* data = obj->Data1;
 
 	if (++data->InvulnerableTime > 80) {
-
 		int color = 0x00000000;
 		ScreenFade_Color = *(NJS_COLOR*)&color;
 		CheckThingButThenDeleteObject(obj);
@@ -242,16 +231,13 @@ void FadeoutScreen(ObjectMaster* obj) {
 }
 
 bool isUIScale() {
-
 	if (HorizontalStretchPointer != &HorizontalStretch)
 		return true;
 
 	return false;
 }
 
-
 bool isCharSelActive() {
-
 	HMODULE charSel = GetModuleHandle(L"SADXCharSel");
 
 	if (charSel)
@@ -261,7 +247,6 @@ bool isCharSelActive() {
 }
 
 bool isRandoActive() {
-
 	HMODULE Rando = GetModuleHandle(L"sadx-randomizer");
 
 	if (Rando)
@@ -289,7 +274,6 @@ ObjectFuncPtr charMainArray[] = {
 };
 
 void __cdecl LoadCharacter_r() {
-
 	ClearPlayerArrays();
 	ObjectMaster* obj = nullptr;
 	if (CurrentLevel == LevelIDs_SkyChase1 || CurrentLevel == LevelIDs_SkyChase2)
@@ -300,7 +284,7 @@ void __cdecl LoadCharacter_r() {
 	}
 
 	obj = LoadObject((LoadObj)(LoadObj_UnknownA | LoadObj_Data1 | LoadObj_Data2), 1, charMainArray[CurrentCharacter]);
-	
+
 	switch (CurrentCharacter)
 	{
 	case Characters_Tails:
@@ -309,7 +293,6 @@ void __cdecl LoadCharacter_r() {
 	case Characters_Knuckles:
 		if (sub_42FB00() != 1
 			&& (GameMode == GameModes_Adventure_ActionStg || GameMode == GameModes_Mission || GameMode == GameModes_Trial)) {
-
 			LoadObject(LoadObj_Data1, 6, EmeraldRadarHud_Load_Load);
 		}
 		break;
@@ -325,9 +308,7 @@ void __cdecl LoadCharacter_r() {
 	return;
 }
 
-
 void AI_Fixes() {
-
 	if (IsHubBanned)
 		return;
 
@@ -336,9 +317,9 @@ void AI_Fixes() {
 	WriteCall((void*)0x417588, FixAIHubTransition2);
 
 	WriteCall((void*)0x42f72d, CallTailsAI_R); //Manually Call Tails AI After few early Cutscene to avoid crash.
-	WriteCall((void*)0x42f78c, CallTailsAI_R); 
-	WriteCall((void*)0x42f747, CallTailsAI_R); 
+	WriteCall((void*)0x42f78c, CallTailsAI_R);
+	WriteCall((void*)0x42f747, CallTailsAI_R);
 
 	WriteCall((void*)0x65f82f, CheckAndDeleteAI); //Remove Tails before "Sonic finds Knuckles cutscene" (super sonic)
-	WriteCall((void*)0x663d4a, CheckAndDeleteAI); //Remove Tails before "Sonic and Tails find tornado 2 cutscene" (super sonic)	
+	WriteCall((void*)0x663d4a, CheckAndDeleteAI); //Remove Tails before "Sonic and Tails find tornado 2 cutscene" (super sonic)
 }

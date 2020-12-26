@@ -11,7 +11,6 @@ bool isRescueAllowed = true;
 time_t t;
 
 extern "C" {
-
 	__declspec(dllexport) void __cdecl Init(const char* path, const HelperFunctions& helperFunctions)
 	{
 		const IniFile* config = new IniFile(std::string(path) + "\\config.ini");
@@ -37,7 +36,7 @@ extern "C" {
 		if (!isRandoActive()) {
 			WriteCall((void*)0x415a25, LoadCharacterAndAI); //Call Tails AI when Load Character.
 
-			// Tails AI Reset Values  
+			// Tails AI Reset Values
 			WriteJump((void*)0x47db1a, TailsAI_ResetValue); //Reset value and stuff properly when Tails AI is deleted by the game.
 
 			//Tails AI Stuff (Load, Fixes...)
@@ -57,5 +56,4 @@ extern "C" {
 	}
 
 	__declspec(dllexport) ModInfo SADXModInfo = { ModLoaderVer };
-
 }
