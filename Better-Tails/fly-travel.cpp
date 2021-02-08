@@ -520,7 +520,6 @@ void TailsAI_Grab(ObjectMaster* obj) {
 
 		Cursor = setCursorPos(CurrentLevel, CurrentAct);
 		if (Cursor > -1) {
-			CheckAndLoadMapPVM();
 			data->Action = transitionMap;
 		}
 		else {
@@ -577,7 +576,7 @@ void TailsAI_Grab(ObjectMaster* obj) {
 	case leaving:
 		p2->Action = 10;
 		RestoreAIControl();
-		ReleaseAllTravelTexture();
+		Cursor = -1;
 		EnablePause();
 		PlayCharacterLeaveAnimation(p1, co2p1);
 		isMoving = 0;

@@ -128,6 +128,7 @@ ObjectMaster* LoadTails()
 	obj->Data1->CharIndex = (char)1;
 	EntityData1Ptrs[1] = (EntityData1*)obj->Data1;
 	EntityData2Ptrs[1] = (EntityData2*)obj->Data2;
+
 	return obj;
 }
 
@@ -166,13 +167,25 @@ ObjectMaster* Load2PTails_r() {
 }
 
 void LoadCharacterAndAI() {
+
+	if (isFlyTravel)
+		CheckAndLoadMapPVM();
+
+	if (isCharSelActive()) {
+		LoadCharacter_r();
+
+		if (banCharacter[CurrentCharacter] != true && !EV_MainThread_ptr && !EntityData1Ptrs[1])
+			Load2PTails_r();
+
+		return;
+	}
+
+	LoadCharacter(); //call original function
+
 	if (banCharacter[CurrentCharacter] != true && !EV_MainThread_ptr && !EntityData1Ptrs[1])
 		Load2PTails_r();
 
-	if (isCharSelActive())
-		return LoadCharacter_r();
-
-	return LoadCharacter(); //call original function
+	return;
 }
 
 void MilesAI_OnFrames() { //Only run when TailsAI_Main is active
@@ -182,15 +195,18 @@ void MilesAI_OnFrames() { //Only run when TailsAI_Main is active
 	PreventTailsAIDamage();
 	SnowboardRespawn();
 	CatchUP();
-	CheckMilesBossRescue();
+
+	if (isRescueAllowed)
+		CheckMilesBossRescue();
 }
 
 //Reset value when Tails AI is deleted
 void TailsAI_ResetValue() {
-	rngKill = 0;
+	rngDeathZoneRescue = 0;
 	isChaoPetByAI = false; //just to be safe
 	isAIActive = false;
 	isRescued = false;
+	rngRegularDeathRescue = 0;
 	return FUN_0042ce20();
 }
 

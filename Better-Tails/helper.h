@@ -30,7 +30,9 @@ bool isUIScale();
 bool isPlayerUsingSnowboard();
 void CatchUP();
 
-extern int rngKill;
+extern int rngDeathZoneRescue;
+extern int rngRegularDeathRescue;
+
 ObjectMaster* Load2PTails_r();
 void RestoreAIControl();
 void FixAIHubTransition();
@@ -233,3 +235,4 @@ typedef void(__cdecl* CamAdjustPtr)(EntityData1*, EntityData1*, _OBJ_ADJUSTPARAM
 FunctionPointer(void, SetCameraEvent, (CameraFuncPtr func, CameraAdjustsIDs adjust, CameraDirectIDs direct), 0x437D20);
 VoidFunc(RemoveCameraEvent, 0x436140);
 DataPointer(_camcontwk, CameraTask, 0x3B2C660);
+void CheckAndLoadMapPVM();

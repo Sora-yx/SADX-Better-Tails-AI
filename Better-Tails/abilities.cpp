@@ -231,6 +231,7 @@ void AI_Improvement() {
 
 	ReduceRespawnDelay();
 
+
 	//Reduce Tails AI's "Range out" check, so he can catch faster. (Changing the float value from 1000 to 500)
 	WriteData<1>((int*)0x47DC5F, 0x3);
 	WriteData<1>((int*)0x47DC5E, 0x8F);

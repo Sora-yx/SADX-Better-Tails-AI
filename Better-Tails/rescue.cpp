@@ -2,12 +2,13 @@
 
 //This is the rescue page, the idea here is to edit the deathzones and the death function to add code so Tails can save you.
 
-ObjectMaster* MilesRescue = nullptr;
+ObjectMaster* MilesRescueObj = nullptr;
 ObjectMaster* TailsRescueLanding = nullptr;
 ObjectMaster* MilesRescueEnemy = nullptr;
-Trampoline* KillPlayer_t;
+
 bool isRescued = false;
-int rngKill = 0;
+int rngDeathZoneRescue = 0;
+int rngRegularDeathRescue = 0;
 
 void CameraEvent_MilesRescue(_OBJ_CAMERAPARAM* camparam) {
 	CameraTask.pos = EntityData1Ptrs[1]->Position;
@@ -45,7 +46,7 @@ NJS_VECTOR CheckRescueArray() {
 }
 
 bool isMilesSaving() {
-	if (MilesRescue || TailsRescueLanding)
+	if (MilesRescueObj || TailsRescueLanding)
 		return true;
 
 	return false;
@@ -53,13 +54,13 @@ bool isMilesSaving() {
 
 //reset PTR when objects are deleted
 void TailsAI_LandingDelete2(ObjectMaster* obj) {
-	rngKill = 0;
+	rngDeathZoneRescue = 0;
 	TailsRescueLanding = nullptr;
-	MilesRescue = nullptr;
+	MilesRescueObj = nullptr;
 }
 
 void TailsAI_RescueDelete(ObjectMaster* obj) {
-	MilesRescue = nullptr;
+	MilesRescueObj = nullptr;
 }
 
 const char* const Sonic_message01[] = {
@@ -67,10 +68,6 @@ const char* const Sonic_message01[] = {
 	NULL,
 };
 
-const char* const Miles_message01[] = {
-	"	 	 Ahehehe...   \n",
-	NULL,
-};
 
 //Actually need a second separate object for the landing part, otherwise Tails AI behavior become dumb, idk, kill me, game sucks.
 void TailsAI_Landing2(ObjectMaster* obj) {
@@ -123,14 +120,6 @@ void TailsAI_Landing2(ObjectMaster* obj) {
 		PlayCharacterLeaveAnimation(p1, co2p1);
 		RestoreAIControl();
 		if (++data->Index == 20) {
-			if (p1->CharID == Characters_Sonic) {
-				if (data->NextAction != 0) {
-					if (TextLanguage == 1)
-						DisplayHintText(Miles_message01, 100);
-					if (VoiceLanguage)
-						PlayVoice(64872);
-				}
-			}
 
 			CheckThingButThenDeleteObject(obj);
 		}
@@ -213,11 +202,12 @@ void MilesRescuesCharacterFall(ObjectMaster* obj) {
 void CheckAndCallMilesRescue() {
 	DisableController(0);
 
-	if (!MilesRescue)
-		MilesRescue = LoadObject((LoadObj)2, 1, MilesRescuesCharacterFall);
+	if (!MilesRescueObj)
+		MilesRescueObj = LoadObject((LoadObj)2, 1, MilesRescuesCharacterFall);
 }
 
 bool BannedRescueLevel() {
+
 	if (CurrentLevel == LevelIDs_SpeedHighway && CurrentAct == 1 || CurrentLevel == LevelIDs_SkyDeck && CurrentAct == 1 || CurrentLevel == LevelIDs_IceCap && CurrentAct == 2 
 		|| CurrentLevel == LevelIDs_TwinklePark && CurrentAct == 0 || CurrentLevel >= LevelIDs_TwinkleCircuit) {
 		return true;
@@ -227,15 +217,24 @@ bool BannedRescueLevel() {
 }
 
 void PlayCharacterDeathSound_r(ObjectMaster* a1, int pid) {
-	if (isMilesSaving() || rngKill)
+
+
+	if (!EntityData1Ptrs[1] || EntityData1Ptrs[1]->CharID != Characters_Tails) {
+		PlayCharacterDeathSound(a1, pid); //kill the player
 		return;
+	}
+	
+	if (isMilesSaving() || rngDeathZoneRescue) {
+		return;
+	}
 
-	if (!MilesRescue && !TailsRescueLanding && !rngKill) {
-		rngKill = rand() % 100 + 1;
+	if (!MilesRescueObj && !TailsRescueLanding && !rngDeathZoneRescue) {
+		rngDeathZoneRescue = rand() % 100 + 1;
 
-		if (!EntityData1Ptrs[1] || EntityData1Ptrs[1]->CharID != Characters_Tails || BannedRescueLevel() || isRescued && CurrentLevel < LevelIDs_StationSquare || rngKill < 60) {
+		if (BannedRescueLevel() || isRescued && CurrentLevel < LevelIDs_StationSquare || rngDeathZoneRescue < 60) {
+
 			PlayCharacterDeathSound(a1, pid); //kill the player
-			return;
+			return;		
 		}
 	}
 
@@ -260,16 +259,16 @@ static void __declspec(naked) PlayCharacterDeathSoundAsm(ObjectMaster* eax, int 
 }
 
 void CheckMilesBossRescue() {
-	if (CurrentLevel != LevelIDs_EggHornet && CurrentLevel != LevelIDs_EggViper || GameState != 15 || isMilesSaving() || rngKill || isRescued && CurrentLevel < LevelIDs_StationSquare)
+	if (CurrentLevel != LevelIDs_EggHornet && CurrentLevel != LevelIDs_EggViper || GameState != 15 || isMilesSaving() || rngDeathZoneRescue || isRescued && CurrentLevel < LevelIDs_StationSquare)
 		return;
 
 	if (CurrentLevel == LevelIDs_EggHornet && EntityData1Ptrs[0]->Position.y > 94 || CurrentLevel == LevelIDs_EggViper && (EntityData1Ptrs[0]->Position.y > -150.0 || EggViper_Health < 3))
 		return;
 
-	if (!MilesRescue && !TailsRescueLanding && !rngKill) {
-		rngKill = rand() % 100 + 1;
+	if (!MilesRescueObj && !TailsRescueLanding && !rngDeathZoneRescue) {
+		rngDeathZoneRescue = rand() % 100 + 1;
 
-		if (!EntityData1Ptrs[1] || EntityData1Ptrs[1]->CharID != Characters_Tails || rngKill < 60) {
+		if (!EntityData1Ptrs[1] || EntityData1Ptrs[1]->CharID != Characters_Tails || rngDeathZoneRescue < 60) {
 			return;
 		}
 	}
@@ -280,7 +279,7 @@ void CheckMilesBossRescue() {
 }
 
 void MilesRescueEnemyDelete(ObjectMaster* obj) {
-	rngKill = 0;
+	rngDeathZoneRescue = 0;
 	MilesRescueEnemy = nullptr;
 
 	return;
@@ -340,16 +339,17 @@ void MilesRescueFromEnemy(ObjectMaster* obj) {
 }
 
 void CheckPlayerDamage(unsigned __int8 player) {
+
 	if (isRescued || !EntityData1Ptrs[1] || EntityData1Ptrs[1]->CharID != Characters_Tails || player > 0 || CurrentLevel >= LevelIDs_Chaos0 || BannedRescueLevel())
 		KillPlayer(player);
 
-	if (isMilesSaving() || rngKill)
+	if (isMilesSaving() || rngRegularDeathRescue)
 		return;
 
-	if (!MilesRescueEnemy && !rngKill && !isRescued) {
-		rngKill = rand() % 100 + 1;
+	if (!MilesRescueEnemy && !rngRegularDeathRescue && !isRescued) {
+		rngRegularDeathRescue = rand() % 100 + 1;
 
-		if (rngKill > 69)
+		if (rngRegularDeathRescue > 69)
 			MilesRescueEnemy = LoadObject((LoadObj)2, 1, MilesRescueFromEnemy);
 		else
 			KillPlayer(player);
