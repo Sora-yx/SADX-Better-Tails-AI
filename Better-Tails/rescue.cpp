@@ -231,7 +231,7 @@ void PlayCharacterDeathSound_r(ObjectMaster* a1, int pid) {
 	if (!MilesRescueObj && !TailsRescueLanding && !rngDeathZoneRescue) {
 		rngDeathZoneRescue = rand() % 100 + 1;
 
-		if (BannedRescueLevel() || isRescued && CurrentLevel < LevelIDs_StationSquare || rngDeathZoneRescue < 60) {
+		if (BannedRescueLevel() || isRescued && CurrentLevel < LevelIDs_StationSquare || rngDeathZoneRescue < 65) {
 
 			PlayCharacterDeathSound(a1, pid); //kill the player
 			return;		
@@ -268,7 +268,7 @@ void CheckMilesBossRescue() {
 	if (!MilesRescueObj && !TailsRescueLanding && !rngDeathZoneRescue) {
 		rngDeathZoneRescue = rand() % 100 + 1;
 
-		if (!EntityData1Ptrs[1] || EntityData1Ptrs[1]->CharID != Characters_Tails || rngDeathZoneRescue < 60) {
+		if (!EntityData1Ptrs[1] || EntityData1Ptrs[1]->CharID != Characters_Tails || rngDeathZoneRescue < 65) {
 			return;
 		}
 	}

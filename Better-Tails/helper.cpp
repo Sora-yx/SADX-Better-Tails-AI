@@ -255,60 +255,83 @@ bool isRandoActive() {
 	return false;
 }
 
-void SetCharaInfo(ObjectMaster* obj) {
+void SetCharaInfo(ObjectMaster* obj, int i) {
 	obj->Data1->CharID = (char)CurrentCharacter;
-	obj->Data1->CharIndex = 0;
-	EntityData1Ptrs[0] = obj->Data1;
-	EntityData2Ptrs[0] = (EntityData2*)obj->Data2;
+	obj->Data1->CharIndex = i;
+	EntityData1Ptrs[i] = obj->Data1;
+	EntityData2Ptrs[i] = (EntityData2*)obj->Data2;
 	MovePlayerToStartPoint(obj->Data1);
 	return;
 }
 
-ObjectFuncPtr charMainArray[] = {
-	Sonic_Main,
-	Tails_Main,
-	Knuckles_Main,
-	Amy_Main,
-	Gamma_Main,
-	Big_Main
-};
 
-void __cdecl LoadCharacter_r() {
+void __cdecl LoadCharacter_r()
+{
+
+	__int16 i; // di
+	ObjectMaster* object; // esi
+	ObjectMaster* v3; // eax
+	ObjectMaster* v4; // eax
+	ObjectMaster* player1 = nullptr;
+
 	ClearPlayerArrays();
-	ObjectMaster* obj = nullptr;
-	if (CurrentLevel == LevelIDs_SkyChase1 || CurrentLevel == LevelIDs_SkyChase2)
+	object = player1;
+	for (i = 0; i < 2; ++i)
 	{
-		obj = LoadObject((LoadObj)(LoadObj_UnknownA | LoadObj_Data1 | LoadObj_Data2), 1, Tornado_Main);
-		SetCharaInfo(obj);
-		return;
-	}
-
-	obj = LoadObject((LoadObj)(LoadObj_UnknownA | LoadObj_Data1 | LoadObj_Data2), 1, charMainArray[CurrentCharacter]);
-
-	switch (CurrentCharacter)
-	{
-	case Characters_Tails:
-		LoadTailsOpponent(CurrentCharacter, 1, CurrentLevel);
-		break;
-	case Characters_Knuckles:
-		if (sub_42FB00() != 1
-			&& (GameMode == GameModes_Adventure_ActionStg || GameMode == GameModes_Mission || GameMode == GameModes_Trial)) {
-			LoadObject(LoadObj_Data1, 6, EmeraldRadarHud_Load_Load);
+		if (i)
+		{
+			LoadTailsOpponent(CurrentCharacter, i, CurrentLevel);
 		}
-		break;
-	case Characters_Amy:
-		CheckLoadBird();
-		break;
-	case Characters_Big:
-		LoadObject(LoadObj_Data1, 6, BigHud_Main);
-		break;
-	}
+		else
+		{
+			if (!CurrentCharacter)
+			{
+				if (CurrentLevel == LevelIDs_SkyChase1 || CurrentLevel == LevelIDs_SkyChase2)
+				{
+					v3 = LoadObject((LoadObj)(LoadObj_UnknownA | LoadObj_Data1 | LoadObj_Data2), 1, Tornado_Main);
+				}
+				else
+				{
+					v3 = LoadObject((LoadObj)(LoadObj_UnknownA | LoadObj_Data1 | LoadObj_Data2), 1, Sonic_Main);
+				}
+				object = v3;
+			}
+			if (CurrentCharacter == Characters_Knuckles)
+			{
+				object = LoadObject((LoadObj)(LoadObj_UnknownA | LoadObj_Data1 | LoadObj_Data2), 1, Knuckles_Main);
+			}
+			if (CurrentCharacter == Characters_Tails)
+			{
+				if (CurrentLevel == LevelIDs_SkyChase1 || CurrentLevel == LevelIDs_SkyChase2)
+				{
+					v4 = LoadObject((LoadObj)(LoadObj_UnknownA | LoadObj_Data1 | LoadObj_Data2), 1, Tornado_Main);
+				}
+				else
+				{
+					v4 = LoadObject((LoadObj)(LoadObj_UnknownA | LoadObj_Data1 | LoadObj_Data2), 1, Tails_Main);
+				}
+				object = v4;
+			}
+			if (CurrentCharacter == Characters_Big)
+			{
+				object = LoadObject((LoadObj)(LoadObj_UnknownA | LoadObj_Data1 | LoadObj_Data2), 1, Big_Main);
+			}
+			if (CurrentCharacter == Characters_Amy)
+			{
+				object = LoadObject((LoadObj)(LoadObj_UnknownA | LoadObj_Data1 | LoadObj_Data2), 1, Amy_Main);
+			}
+			if (CurrentCharacter == Characters_Gamma)
+			{
+				object = LoadObject((LoadObj)(LoadObj_UnknownA | LoadObj_Data1 | LoadObj_Data2), 1, Gamma_Main);
+			}
 
-	SetCharaInfo(obj);
-	return;
+			SetCharaInfo(object, i);
+		}
+	}
 }
 
 void AI_Fixes() {
+
 	if (IsHubBanned)
 		return;
 

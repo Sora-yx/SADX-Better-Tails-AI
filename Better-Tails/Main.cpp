@@ -171,21 +171,14 @@ void LoadCharacterAndAI() {
 	if (isFlyTravel)
 		CheckAndLoadMapPVM();
 
-	if (isCharSelActive()) {
-		LoadCharacter_r();
-
-		if (banCharacter[CurrentCharacter] != true && !EV_MainThread_ptr && !EntityData1Ptrs[1])
-			Load2PTails_r();
-
-		return;
-	}
-
-	LoadCharacter(); //call original function
-
 	if (banCharacter[CurrentCharacter] != true && !EV_MainThread_ptr && !EntityData1Ptrs[1])
 		Load2PTails_r();
 
-	return;
+	if (isCharSelActive()) {
+		return LoadCharacter_r();
+	}
+
+	return LoadCharacter(); //call original function
 }
 
 void MilesAI_OnFrames() { //Only run when TailsAI_Main is active
