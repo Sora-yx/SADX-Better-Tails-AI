@@ -14,6 +14,7 @@ extern uint8_t isMoving;
 extern bool isFlyTravel;
 extern bool isRescueAllowed;
 extern bool isRescued;
+extern bool isMSBanned;
 
 FunctionPointer(int, sub_42FB00, (), 0x42FB00); //Knuckles thing
 FunctionPointer(ObjectMaster*, CheckLoadBird, (), 0x4C6820);

@@ -136,7 +136,7 @@
     <ClCompile Include="fly-travel.cpp" />
     <ClCompile Include="mod.cpp" />
     <ClCompile Include="helper.cpp" />
-    <ClCompile Include="main.cpp" />
+    <ClCompile Include="tails-ai.cpp" />
     <ClCompile Include="rescue.cpp" />
     <ClCompile Include="stdafx.cpp" />
   </ItemGroup>

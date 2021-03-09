@@ -212,13 +212,17 @@ void PreventTailsAIDamage() {
 		return;
 
 	EntityData1* data = EntityData1Ptrs[0];
+	CharObj2* co2 = CharObj2Ptrs[1];
+
+	if (co2->Upgrades & Upgrades_SuperSonic)
+		return;
 
 	if (GetCollidingEntityA(data)) {
-		CharObj2Ptrs[1]->Powerups |= Powerups_Invincibility;
+		co2->Powerups |= Powerups_Invincibility;
 	}
 	else {
-		if ((CharObj2Ptrs[1]->Powerups & Powerups_Invincibility) == Powerups_Invincibility) {
-			CharObj2Ptrs[1]->Powerups &= 0x100u; //Remove invincibility
+		if ((co2->Powerups & Powerups_Invincibility)) {
+			co2->Powerups &= 0x100u; //Remove invincibility
 		}
 	}
 }

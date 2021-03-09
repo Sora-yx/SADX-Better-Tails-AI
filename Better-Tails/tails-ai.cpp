@@ -43,6 +43,9 @@ int CheckTailsAI_R(void) {
 		return 0x0; //don't load AI
 	}
 
+	if (CurrentCharacter == Characters_Sonic && MetalSonicFlag && isMSBanned)
+		return 0x0;
+
 	//bug fixes (Disable AI if necessary to avoid crash
 	if (!isTailsAIAllowed())
 		return 0x0;
@@ -112,10 +115,10 @@ int CheckTailsAI_R(void) {
 
 		if (IsStoryIA && CurrentLevel == LevelIDs_Past)
 			return 0x0; //Don't load Tails in the past if story option is enabled.
-
-		if (CurrentLevel == LevelIDs_PerfectChaos)
-			return 0x0;  //Fight harder, for no reason.
 	}
+
+	if (CurrentLevel == LevelIDs_PerfectChaos)
+		return 0x0;  //Fight harder, for no reason.
 
 	isAIActive = true;
 	return 1; //Return Load AI
@@ -134,6 +137,7 @@ ObjectMaster* LoadTails()
 
 //Load Tails AI
 ObjectMaster* Load2PTails_r() {
+
 	FlagAI = CheckTailsAI_R();
 
 	if (FlagAI != 1)
@@ -173,7 +177,7 @@ void LoadCharacterAndAI() {
 
 	if (banCharacter[CurrentCharacter] != true && !EV_MainThread_ptr && !EntityData1Ptrs[1])
 		Load2PTails_r();
-
+		
 	if (isCharSelActive()) {
 		return LoadCharacter_r();
 	}

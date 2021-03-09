@@ -280,6 +280,9 @@ bool isTailsAI_GrabAllowed() {
 			return false;
 	}
 
+	if (CurrentLevel == LevelIDs_MysticRuins && CurrentAct == 3)
+		return false;
+
 	if (CurrentLevel == LevelIDs_StationSquare && (CurrentAct == 2 || CurrentAct == 5))
 		return false;
 

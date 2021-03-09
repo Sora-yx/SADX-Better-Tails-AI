@@ -8,6 +8,7 @@ bool IsStoryIA = false;
 bool banCharacter[8] = { -1 };
 bool isFlyTravel = true;
 bool isRescueAllowed = true;
+bool isMSBanned = false;
 time_t t;
 
 extern "C" {
@@ -20,6 +21,7 @@ extern "C" {
 		IsTCBanned = config->getBool("Stage", "IsTCBanned", false);
 
 		banCharacter[0] = config->getBool("Roster", "Sonic", false);
+		isMSBanned = config->getBool("Roster", "isMSBanned", false);
 		banCharacter[3] = config->getBool("Roster", "Knuckles", false);
 		banCharacter[5] = config->getBool("Roster", "Amy", false);
 		banCharacter[7] = config->getBool("Roster", "Big", false);
