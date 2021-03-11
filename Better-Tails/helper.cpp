@@ -1,5 +1,6 @@
 #include "stdafx.h"
 
+
 //teleport AI to Player
 void moveAItoPlayer() {
 	if (isAIActive)
@@ -93,26 +94,54 @@ float GetDistance(NJS_VECTOR* orig, NJS_VECTOR* dest) {
 	return sqrtf(powf(dest->x - orig->x, 2) + powf(dest->y - orig->y, 2) + powf(dest->z - orig->z, 2));
 }
 
-bool IsPointInsideSphere(NJS_VECTOR* center, NJS_VECTOR* pos, float radius) {
-	return GetDistance(center, pos) <= radius;
-}
 
-int IsPlayerInsideSphere_(NJS_VECTOR* center, float radius) {
-	for (uint8_t player = 0; player < MaxPlayers; ++player) {
-		if (!EntityData1Ptrs[player])
-			continue;
+int __cdecl IsMilesInsideSphere(NJS_VECTOR* x_1, float radius)
+{
+	float v2; // edx
+	float v3; // eax
+	int v4; // esi
+	EntityData1* v5; // eax
+	CollisionInfo* v6; // eax
+	float* v7; // eax
+	double v8; // st7
+	float v10; // [esp+4h] [ebp-14h]
+	float v11; // [esp+8h] [ebp-10h]
+	NJS_VECTOR v; // [esp+Ch] [ebp-Ch] BYREF
+	float v13; // [esp+1Ch] [ebp+4h]
 
-		NJS_VECTOR* pos = &EntityData1Ptrs[player]->Position;
-		if (IsPointInsideSphere(center, pos, radius)) {
-			return player + 1;
+	v2 = x_1->y;
+	v3 = x_1->z;
+	v13 = x_1->x;
+	v10 = v2;
+	v11 = v3;
+	v4 = 1;
+	while (1)
+	{
+		v5 = EntityData1Ptrs[v4];
+		if (v5)
+		{
+			v6 = v5->CollisionInfo;
+			if (v6)
+			{
+				v7 = (float*)&v6->CollisionArray->kind;
+				v8 = v7[2];
+				// pointer to Y of the first vector because sega hates everything
+				v7 += 3;
+				v.x = v8 - v13;
+				v.y = *v7 - v10;
+				v.z = v7[1] - v11;
+				if (njScalor(&v) - radius < 0.0)
+				{
+					break;
+				}
+			}
+		}
+		if (++v4 >= 2)
+		{
+			return 0;
 		}
 	}
-
-	return 0;
-}
-
-bool IsSpecificPlayerInSphere(NJS_VECTOR* center, float radius, uint8_t player) {
-	return IsPlayerInsideSphere_(center, radius) == player + 1;
+	return v4 + 1;
 }
 
 //Fix AI Start Position in hub world
@@ -267,7 +296,6 @@ void SetCharaInfo(ObjectMaster* obj, int i) {
 
 void __cdecl LoadCharacter_r()
 {
-
 	__int16 i; // di
 	ObjectMaster* object; // esi
 	ObjectMaster* v3; // eax
@@ -329,6 +357,7 @@ void __cdecl LoadCharacter_r()
 		}
 	}
 }
+
 
 void AI_Fixes() {
 

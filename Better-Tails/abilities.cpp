@@ -87,10 +87,17 @@ void SnowboardRespawn() {
 	}
 }
 
+
+float spawnDelay = 15.0;
+float* spawnDelayptr = &spawnDelay; 
+
 void ReduceRespawnDelay() {
-	WriteData<1>((int*)0x47EA74, 0x2C);
-	WriteData<1>((int*)0x47EA75, 0x01);
-	WriteData<1>((int*)0x47EA76, 0x7E);
+	spawnDelay = 15.0;
+	WriteData((float**)0x47EA74, spawnDelayptr);
+}
+
+void RestoreRespawnDelay() {
+	spawnDelay = 50.0;
 }
 
 int CharacterPetActionNumber[8] = { 72, 64, 64, 54, 54, 50, 56, 52 };
@@ -178,7 +185,7 @@ void MilesAI_VictoryPose(ObjectMaster* obj) {
 			p2->Position = UnitMatrix_GetPoint(&p1->Position, &p1->Rotation, 0.0f, 0.0f, 0.0f);
 			GetPlayerSidePos(&p2->Position, EntityData1Ptrs[0], 5.0);
 			SetPlayerPosition(1u, 0, &EntityData1Ptrs[1]->Position, 0);
-			p2->Position.x += 6;
+			p2->Position.x += 10;
 			if (++data->InvulnerableTime == 10)
 				data->Action = 1;
 		}
@@ -205,6 +212,26 @@ void DisableTime_R() {
 
 	LoadObject((LoadObj)(LoadObj_Data1 | LoadObj_Data2), 2, MilesAI_VictoryPose);
 	return;
+}
+
+
+void PreventTailsAIAction() {
+	if (EntityData1Ptrs[1]->CharID != Characters_Tails || !EntityData1Ptrs[1] || !CharObj2Ptrs[1])
+		return;
+
+	CharObj2* co2 = CharObj2Ptrs[1];
+
+	if (CurrentLevel == LevelIDs_MysticRuins && CurrentAct == 0)
+	{
+		if (EntityData1Ptrs[1]->Action == 38)
+		{
+			EntityData1Ptrs[1]->Action = 1;
+			EntityData1Ptrs[1]->Position.x += 5;
+		}
+	}
+
+	if (CurrentLevel == LevelIDs_TwinklePark)
+		RestoreRespawnDelay();
 }
 
 void PreventTailsAIDamage() {
@@ -234,7 +261,6 @@ void AI_Improvement() {
 	WriteCall((void*)0x4e9664, LoadAISnowBoard_R);
 
 	ReduceRespawnDelay();
-
 
 	//Reduce Tails AI's "Range out" check, so he can catch faster. (Changing the float value from 1000 to 700)
 	WriteData<1>((int*)0x47DC5E, 0x81);

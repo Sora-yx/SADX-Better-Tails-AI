@@ -23,6 +23,7 @@ bool isCharSelActive();
 bool isRandoActive();
 void __cdecl LoadCharacter_r();
 void CheckMilesBossRescue();
+void PreventTailsAIAction();
 
 int CheckTailsAI_R(void); //Tails flag spawn allowed
 void DisableTime_R(); //result screen Stuff
@@ -65,7 +66,8 @@ void Rescue_Init();
 void PlayCharacterGrabAnimation(EntityData1* p1, CharObj2* co2);
 void FlySoundOnFrames();
 
-bool IsSpecificPlayerInSphere(NJS_VECTOR* center, float radius, uint8_t player);
+void ReduceRespawnDelay();
+
 void MilesAI_OnFrames();
 
 FunctionPointer(int, isHostelOpen, (), 0x630900);
@@ -179,19 +181,7 @@ struct _OBJ_ADJUSTPARAM
 	int counter;
 };
 
-struct _OBJ_CAMERAPARAM
-{
-	unsigned __int16 xCamAng;
-	unsigned __int16 yCamAng;
-	float xCamPos;
-	float yCamPos;
-	float zCamPos;
-	float xDirPos;
-	float yDirPos;
-	float zDirPos;
-	float fDistance;
-	unsigned int ulTimer;
-};
+
 
 enum class CameraAdjustsIDs {
 	None,

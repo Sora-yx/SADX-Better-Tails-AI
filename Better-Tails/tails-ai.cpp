@@ -190,6 +190,7 @@ void MilesAI_OnFrames() { //Only run when TailsAI_Main is active
 		return;
 
 	PreventTailsAIDamage();
+	PreventTailsAIAction();
 	SnowboardRespawn();
 	CatchUP();
 
@@ -203,6 +204,7 @@ void TailsAI_ResetValue() {
 	isChaoPetByAI = false; //just to be safe
 	isAIActive = false;
 	isRescued = false;
+	ReduceRespawnDelay();
 	rngRegularDeathRescue = 0;
 	return FUN_0042ce20();
 }
@@ -214,6 +216,7 @@ void TailsAI_Main_R(ObjectMaster* obj) {
 	ObjectFunc(origin, TailsAI_Main_t->Target());
 	origin(obj);
 }
+
 
 void AI_Init(const HelperFunctions& helperFunctions) {
 	//Allow Tails AI to spawn in acton stages, hub world, bosses and chao garden + fixes

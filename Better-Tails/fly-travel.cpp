@@ -173,7 +173,7 @@ void UpdatePlayerCursorPos() {
 void __cdecl DisplayMilesMap_r()
 {
 	signed int v3; // ebx
-	int texId; // edi
+	int texId = 0; // edi
 	signed int v5; // esi
 	float a3; // ST10_4
 	float a2; // ST0C_4
@@ -261,7 +261,7 @@ void __cdecl PauseMenu_Map_Display_r() {
 		return;
 
 	DisplayMilesMap_r(),
-		DisplayCursorAnimation();
+	DisplayCursorAnimation();
 
 	return;
 }
