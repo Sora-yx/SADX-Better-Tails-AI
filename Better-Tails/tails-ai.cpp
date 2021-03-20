@@ -210,7 +210,10 @@ void TailsAI_ResetValue() {
 }
 
 void TailsAI_Main_R(ObjectMaster* obj) {
-	CheckAndLoadTailsTravelObjects(obj);
+
+	if (isFlyTravel)
+		CheckAndLoadTailsTravelObjects(obj);
+
 	MilesAI_OnFrames();
 
 	ObjectFunc(origin, TailsAI_Main_t->Target());
