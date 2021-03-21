@@ -75,7 +75,8 @@ int CheckTailsAI_R(void) {
 				return 0x0;
 		}
 		else {
-			return 0x0;
+			if (!IsAdventureComplete(SelectedCharacter))
+				return 0x0;
 		}
 	}
 
@@ -99,9 +100,15 @@ int CheckTailsAI_R(void) {
 		}
 	}
 
-	if (CurrentCharacter == Characters_Big && CurrentAct == 2 && CurrentLevel == LevelIDs_StationSquare) {
-		if (EventFlagArray[EventFlags_Big_TwinkleParkClear] == false)
-			return 0x0; //fix Sonic AI fight
+	if (CurrentCharacter == Characters_Big) {
+		if (CurrentLevel == LevelIDs_StationSquare) {
+
+			if (EventFlagArray[EventFlags_Big_TwinkleParkClear] == false)
+				return 0x0; //fix Sonic AI fight
+		}
+
+		if (CurrentLevel == LevelIDs_MysticRuins && EventFlagArray[EventFlags_Big_IceCapClear] == false)
+			return 0x0;
 	}
 
 	if (SelectedCharacter == 6) //Super Sonic Story
@@ -177,7 +184,7 @@ void LoadCharacterAndAI() {
 
 	if (banCharacter[CurrentCharacter] != true && !EV_MainThread_ptr && !EntityData1Ptrs[1])
 		Load2PTails_r();
-		
+
 	if (isCharSelActive()) {
 		return LoadCharacter_r();
 	}
