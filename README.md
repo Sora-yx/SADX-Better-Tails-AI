@@ -1,7 +1,5 @@
 # SADX Better Tails AI
 
-![alt text](https://i.imgur.com/6WSME6S.png)
-
 ![alt text](https://i.imgur.com/p5F78b7.png)
 
 1. Welcome to Better Tails AI v2.0!
@@ -51,10 +49,10 @@ Please note that you can turn off most of the features, so if you don't like tho
 
 2. Installation:
 
-    Make sure you have the latest version of SADX Mod Loader downloaded and installed from this link.
-    Download the latest version of Better Tails AI and place the entire folder in the mods folder.
-    If all the above steps have been done properly, you should be able to run SADX Mod Manager and select Better Tails AI in the list.
-    To configure options for Better Tails AI, select the mod in the Mod Manager and clic on 'Configure...' to see all the options.
-    Click on Save and play! 
+    1) Make sure you have the latest version of SADX Mod Loader downloaded and installed from this [link.](https://sadxmodinstaller.unreliable.network/)
+    2) Download the latest version of Better Tails AI and place the entire folder in the mods folder.
+    3) If all the above steps have been done properly, you should be able to run SADX Mod Manager and select Better Tails AI in the list.
+    4) To configure options for Better Tails AI, select the mod in the Mod Manager and clic on 'Configure...' to see all the options.
+    5) Click on Save and play! 
 
 Enjoy!
