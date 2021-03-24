@@ -284,6 +284,15 @@ bool isRandoActive() {
 	return false;
 }
 
+bool isInputModActive() {
+	HMODULE Input = GetModuleHandle(L"input-mod");
+
+	if (Input)
+		return true;
+
+	return false;
+}
+
 void SetCharaInfo(ObjectMaster* obj, int i) {
 	obj->Data1->CharID = (char)CurrentCharacter;
 	obj->Data1->CharIndex = i;

@@ -349,8 +349,9 @@ void PlayCharacterGrabAnimation(EntityData1* p1, CharObj2* co2) {
 }
 
 void PlayCharacterLeaveAnimation(EntityData1* p1, CharObj2* co2) {
-	if (p1->Action == 125)
-		p1->Status &= 0x100u; //remove any status
+
+	if (p1->Action < 100)
+		return;
 
 	switch (p1->CharID) {
 	case Characters_Sonic:
@@ -659,9 +660,10 @@ void CheckAndLoadTailsTravelObjects(ObjectMaster* obj) {
 	}
 
 	if (obj->Data1->Action > 0) {
-		if (ControllerPointers[0]->PressedButtons & Buttons_C)
+		if (isInputModActive() && ControllerPointers[0]->PressedButtons & Buttons_C || !isInputModActive() && ControllerPointers[0]->PressedButtons & Buttons_Y) 
 		{
 			if (EntityData1Ptrs[1]->CharID == Characters_Tails && EntityData1Ptrs[0]->Action < 3 && EntityData1Ptrs[1]->Action < 3) {
+
 				if (!TailsGrab)
 					TailsGrab = LoadObject((LoadObj)2, 1, TailsAI_Grab);
 			}

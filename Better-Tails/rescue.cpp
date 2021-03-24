@@ -92,7 +92,7 @@ void TailsAI_Landing2(ObjectMaster* obj) {
 		PlayCharacterGrabAnimation(p1, co2p1);
 		data->Action = 1;
 	}
-		  break;
+	break;
 	case 1:
 		UpdateP1Position(co2p1, co2p2, p1, p2);
 		CharObj2Ptrs[1]->Speed.y -= 0.4;
