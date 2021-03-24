@@ -54,8 +54,8 @@ extern "C" {
 		//LoadAI_OnFrames();
 		/*if (CharObj2Ptrs[1]) {
 			DisplayDebugStringFormatted(NJM_LOCATION(2, 1), "is Miles here %f", isAIActive);
-		}*/
-		//DisplayDebugStringFormatted(NJM_LOCATION(2, 1), "Cutscene Active %d", EV_MainThread_ptr);
+		}
+		//DisplayDebugStringFormatted(NJM_LOCATION(2, 1), "Cutscene Active %d", EV_MainThread_ptr);*/
 	}
 
 	__declspec(dllexport) ModInfo SADXModInfo = { ModLoaderVer };

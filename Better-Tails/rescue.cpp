@@ -292,7 +292,6 @@ void MilesRescueFromEnemy(ObjectMaster* obj) {
 	CharObj2* co2p2 = CharObj2Ptrs[1];
 	CharObj2* co2p1 = CharObj2Ptrs[0];
 
-	LookAt(&p2->Position, &p1->Position, nullptr, &p2->Rotation.y);
 
 	switch (data->Action)
 	{
@@ -303,7 +302,6 @@ void MilesRescueFromEnemy(ObjectMaster* obj) {
 			SetCameraEvent(CameraEvent_MilesRescue, CameraAdjustsIDs::None, CameraDirectIDs::Target);
 		p1->Action = 125;
 		p2->Action = 125;
-		co2p2->AnimationThing.Index = 15;
 		data->Action = 1;
 		break;
 	case 1:
@@ -313,9 +311,11 @@ void MilesRescueFromEnemy(ObjectMaster* obj) {
 		data->Action = 2;
 		break;
 	case 2:
+		LookAt(&p2->Position, &p1->Position, nullptr, &p2->Rotation.y);
 		p2->Status |= Status_Ball;
 		co2p2->AnimationThing.Index = 15;
-		p2->Position.x += 5;
+		p2->Position.x += 4;
+
 		if (GetCollidingEntityA(p2) || ++data->InvulnerableTime == 50)
 			data->Action = 3;
 		break;
@@ -340,8 +340,9 @@ void MilesRescueFromEnemy(ObjectMaster* obj) {
 
 void CheckPlayerDamage(unsigned __int8 player) {
 
-	if (isRescued || !EntityData1Ptrs[1] || EntityData1Ptrs[1]->CharID != Characters_Tails || player > 0 || CurrentLevel >= LevelIDs_Chaos0 || BannedRescueLevel())
-		KillPlayer(player);
+	if (isRescued || !EntityData1Ptrs[1] || EntityData1Ptrs[1]->CharID != Characters_Tails || player > 0 || CurrentLevel >= LevelIDs_Chaos0 || BannedRescueLevel()) {
+		return KillPlayer(player);
+	}
 
 	if (isMilesSaving() || rngRegularDeathRescue)
 		return;
@@ -349,10 +350,10 @@ void CheckPlayerDamage(unsigned __int8 player) {
 	if (!MilesRescueEnemy && !rngRegularDeathRescue && !isRescued) {
 		rngRegularDeathRescue = rand() % 100 + 1;
 
-		if (rngRegularDeathRescue > 69)
+		if (rngRegularDeathRescue > 69 && EntityData1Ptrs[1])
 			MilesRescueEnemy = LoadObject((LoadObj)2, 1, MilesRescueFromEnemy);
 		else
-			KillPlayer(player);
+			return KillPlayer(player);
 	}
 }
 
