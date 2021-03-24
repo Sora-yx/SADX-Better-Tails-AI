@@ -35,7 +35,7 @@ Ok that was just the intro, now let's talk about the REAL new features.
 
  ![alt text](https://i.imgur.com/ruyOrC9.png)
 
-- Probably the most unexpected feature, if you press LT/L1 in the Hub World, Miles will start flying and then you could grab him. This will open a map and allow you to fast travel everywhere in the hub. This was challenging to do but really fun. If you played a Pokémon game, this is very similar.
+- Probably the most unexpected feature, if you press LT/L1 in the Hub World, Miles will start flying and then you could grab him.  (Assuming you have Input Mod and/or didn't change the original configuration, otherwise this is gonna be a different button.) This will open a map and allow you to fast travel everywhere in the hub. This was challenging to do but really fun. If you played a Pokémon game, this is very similar.
 
 Note: Use the d-pad to change the destination, also you obviously can only use it if you are outside.
 
