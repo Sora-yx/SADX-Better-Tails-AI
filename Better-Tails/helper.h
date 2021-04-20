@@ -26,7 +26,6 @@ void CheckMilesBossRescue();
 void PreventTailsAIAction();
 
 int CheckTailsAI_R(void); //Tails flag spawn allowed
-void DisableTime_R(); //result screen Stuff
 void LoadAISnowBoard_R(); //Load Snowboard for Tails AI
 bool isUIScale();
 bool isPlayerUsingSnowboard();

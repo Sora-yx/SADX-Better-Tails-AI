@@ -336,6 +336,13 @@ void __cdecl LoadCharacter_r()
 			if (CurrentCharacter == Characters_Knuckles)
 			{
 				object = LoadObject((LoadObj)(LoadObj_UnknownA | LoadObj_Data1 | LoadObj_Data2), 1, Knuckles_Main);
+				if (sub_42FB00() != 1
+					&& (GameMode == GameModes_Adventure_ActionStg
+						|| GameMode == GameModes_Mission
+						|| GameMode == GameModes_Trial))
+				{
+					LoadObject(LoadObj_Data1, 6, EmeraldRadarHud_Load_Load);
+				}
 			}
 			if (CurrentCharacter == Characters_Tails)
 			{
@@ -352,10 +359,12 @@ void __cdecl LoadCharacter_r()
 			if (CurrentCharacter == Characters_Big)
 			{
 				object = LoadObject((LoadObj)(LoadObj_UnknownA | LoadObj_Data1 | LoadObj_Data2), 1, Big_Main);
+				LoadObject(LoadObj_Data1, 6, BigHud_Main);
 			}
 			if (CurrentCharacter == Characters_Amy)
 			{
 				object = LoadObject((LoadObj)(LoadObj_UnknownA | LoadObj_Data1 | LoadObj_Data2), 1, Amy_Main);
+				CheckLoadBird();
 			}
 			if (CurrentCharacter == Characters_Gamma)
 			{

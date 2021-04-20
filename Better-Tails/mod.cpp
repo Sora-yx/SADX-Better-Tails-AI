@@ -35,7 +35,8 @@ extern "C" {
 
 		srand((unsigned)time(&t));
 
-		if (!isRandoActive()) {
+		if (!isRandoActive()) { //rando already has its own stuff for AI.
+
 			WriteCall((void*)0x415a25, LoadCharacterAndAI); //Call Tails AI when Load Character.
 
 			// Tails AI Reset Values
@@ -43,8 +44,6 @@ extern "C" {
 
 			//Tails AI Stuff (Load, Fixes...)
 			AI_Init(helperFunctions);
-
-			WriteCall((void*)0x415556, DisableTime_R); //While result screen, force Tails AI to victory pose.
 		}
 	}
 

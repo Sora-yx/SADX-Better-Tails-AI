@@ -3,6 +3,7 @@
 //every improvement and new abilities for Tails go here.
 
 Trampoline* Chao_Main_t;
+Trampoline* ScoreDisplay_main_t;
 
 void CatchUP() {
 
@@ -96,9 +97,6 @@ void ReduceRespawnDelay() {
 	WriteData((float**)0x47EA74, spawnDelayptr);
 }
 
-void RestoreRespawnDelay() {
-	spawnDelay = 50.0;
-}
 
 int CharacterPetActionNumber[8] = { 72, 64, 64, 54, 54, 50, 56, 52 };
 
@@ -171,8 +169,11 @@ void Chao_Main_R(ObjectMaster* obj) {
 }
 
 void MilesAI_VictoryPose(ObjectMaster* obj) {
+
 	if (!EntityData1Ptrs[0] || !EntityData1Ptrs[1] || !isAIActive || EntityData1Ptrs[1]->CharID != Characters_Tails)
 		return;
+
+	SetTailsRaceVictory(); //Prevent Overwrite.
 
 	EntityData1* p1 = EntityData1Ptrs[0];
 	EntityData1* p2 = EntityData1Ptrs[1];
@@ -194,26 +195,57 @@ void MilesAI_VictoryPose(ObjectMaster* obj) {
 		if ((p2->Status & Status_Ground) == Status_Ground || p2->Action <= 2) { //fix floating victory pose
 			if (p2->Position.y >= p1->Position.y + 6 || p2->Position.y <= p1->Position.y - 6 || p1->Position.z == p2->Position.z) { //failsafe
 				p2->Rotation = p1->Rotation;
-				p2->Position = UnitMatrix_GetPoint(&p1->Position, &p1->Rotation, 0.0f, 0.0f, 6.0f);
+				p2->Position = UnitMatrix_GetPoint(&p1->Position, &p1->Rotation, 0.0f, 0.0f, 8.0f);
 			}
 			if (CurrentLevel == LevelIDs_IceCap && CurrentAct == 2 && IceCapFlag)
 				ForcePlayerAction(1, 24);
-			SetTailsRaceVictory(); //Fix Tails AI victory animation
+
 			ForcePlayerAction(1, 19); //Force AI to Victory pose
 		}
 		break;
 	}
 }
 
+
 //While load result: Teleport AI close to the player and Force Victory Pose.
+void ScoreDisplayMain_R(ObjectMaster* obj) {
 
-void DisableTime_R() {
-	TimeThing = 0;
+	if (obj->Data1->Action == 0) {
+		SetTailsRaceVictory(); //Prevent Overwrite.
+		LoadObject((LoadObj)(LoadObj_Data1 | LoadObj_Data2), 2, MilesAI_VictoryPose);
+	}
 
-	LoadObject((LoadObj)(LoadObj_Data1 | LoadObj_Data2), 2, MilesAI_VictoryPose);
-	return;
+	ObjectFunc(origin, ScoreDisplay_main_t->Target());
+	origin(obj);
 }
 
+
+
+
+void PreventTailsAIDamage() {
+	if (EntityData1Ptrs[1]->CharID != Characters_Tails || !EntityData1Ptrs[1] || !CharObj2Ptrs[1])
+		return;
+
+	EntityData1* data = EntityData1Ptrs[0];
+	CharObj2* co2 = CharObj2Ptrs[1];
+
+	if (co2->Upgrades & Upgrades_SuperSonic)
+		return;
+
+	if (GetCollidingEntityA(data)) { //There is actually a flag init in Tails AI that could be removed instead of doing this hacky thing, but this might create issue with AI fight, need to be tested.
+		co2->Powerups |= Powerups_Invincibility;
+	}
+	else {
+		if ((co2->Powerups & Powerups_Invincibility)) {
+			co2->Powerups &= 0x100u; //Remove invincibility
+		}
+	}
+}
+
+
+void RestoreRespawnDelay() {
+	spawnDelay = 50.0;
+}
 
 void PreventTailsAIAction() {
 	if (EntityData1Ptrs[1]->CharID != Characters_Tails || !EntityData1Ptrs[1] || !CharObj2Ptrs[1])
@@ -234,25 +266,6 @@ void PreventTailsAIAction() {
 		RestoreRespawnDelay();
 }
 
-void PreventTailsAIDamage() {
-	if (EntityData1Ptrs[1]->CharID != Characters_Tails || !EntityData1Ptrs[1] || !CharObj2Ptrs[1])
-		return;
-
-	EntityData1* data = EntityData1Ptrs[0];
-	CharObj2* co2 = CharObj2Ptrs[1];
-
-	if (co2->Upgrades & Upgrades_SuperSonic)
-		return;
-
-	if (GetCollidingEntityA(data)) {
-		co2->Powerups |= Powerups_Invincibility;
-	}
-	else {
-		if ((co2->Powerups & Powerups_Invincibility)) {
-			co2->Powerups &= 0x100u; //Remove invincibility
-		}
-	}
-}
 
 void AI_Improvement() {
 	//Miles General Improvement
@@ -274,4 +287,5 @@ void AI_Improvement() {
 		Rescue_Init();
 
 	Chao_Main_t = new Trampoline((int)Chao_Main, (int)Chao_Main + 0x6, Chao_Main_R);
+	ScoreDisplay_main_t = new Trampoline((int)ScoreDisplay_Main, (int)ScoreDisplay_Main + 0x5, ScoreDisplayMain_R);
 }
