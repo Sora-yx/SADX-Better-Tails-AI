@@ -173,8 +173,6 @@ void MilesAI_VictoryPose(ObjectMaster* obj) {
 	if (!EntityData1Ptrs[0] || !EntityData1Ptrs[1] || !isAIActive || EntityData1Ptrs[1]->CharID != Characters_Tails)
 		return;
 
-	SetTailsRaceVictory(); //Prevent Overwrite.
-
 	EntityData1* p1 = EntityData1Ptrs[0];
 	EntityData1* p2 = EntityData1Ptrs[1];
 	EntityData1* data = obj->Data1;
@@ -183,35 +181,52 @@ void MilesAI_VictoryPose(ObjectMaster* obj) {
 	{
 	case 0:
 		if (p1->NextAction == 0x13) {
-			p2->Position = UnitMatrix_GetPoint(&p1->Position, &p1->Rotation, 0.0f, 0.0f, 0.0f);
-			GetPlayerSidePos(&p2->Position, EntityData1Ptrs[0], 5.0);
-			SetPlayerPosition(1u, 0, &EntityData1Ptrs[1]->Position, 0);
-			p2->Position.x += 10;
+			p2->Position = UnitMatrix_GetPoint(&p1->Position, &p2->Rotation, 0.0f, 0.0f, 7.0f);
+			p2->Rotation = p1->Rotation;
 			if (++data->InvulnerableTime == 10)
 				data->Action = 1;
 		}
 		break;
 	case 1:
-		if ((p2->Status & Status_Ground) == Status_Ground || p2->Action <= 2) { //fix floating victory pose
-			if (p2->Position.y >= p1->Position.y + 6 || p2->Position.y <= p1->Position.y - 6 || p1->Position.z == p2->Position.z) { //failsafe
-				p2->Rotation = p1->Rotation;
-				p2->Position = UnitMatrix_GetPoint(&p1->Position, &p1->Rotation, 0.0f, 0.0f, 8.0f);
-			}
-			if (CurrentLevel == LevelIDs_IceCap && CurrentAct == 2 && IceCapFlag)
-				ForcePlayerAction(1, 24);
 
-			ForcePlayerAction(1, 19); //Force AI to Victory pose
+		if (CurrentLevel == LevelIDs_IceCap && CurrentAct == 2)
+			ForcePlayerAction(1, 24);
+
+		if ((p2->Status & Status_Ground) == 0 && (p2->Status & Status_Unknown1) == 0 || p2->Position.y > p1->Position.y + 2 || p2->Position.y < p1->Position.y - 2) 
+		{
+			p2->Position = UnitMatrix_GetPoint(&p1->Position, &p2->Rotation, 0.0f, 0.0f, 6.0f);  //fix floating victory pose
 		}
+
+		if (++data->Index == 5) {
+
+		if ((p2->Status & Status_Ground) == 0 && (p2->Status & Status_Unknown1) == 0) { //last failsafe
+			p2->Position = UnitMatrix_GetPoint(&p1->Position, &p2->Rotation, 0.0f, 0.0f, -6.0f); //try other side
+		}
+			data->Action = 2;
+		}
+		
+		break;
+	case 2:
+		p2->Rotation = p1->Rotation;
+		ForcePlayerAction(1, 19); //Force AI to Victory pose
 		break;
 	}
 }
 
+int GetRaceWinnerPlayer_r() {
+	if (CurrentCharacter != Characters_Tails && EntityData1Ptrs[1] != nullptr) {
+			if (EntityData1Ptrs[1]->CharID == Characters_Tails) {
+				return 1;
+			}
+	}
+
+	return RaceWinnerPlayer;
+}
 
 //While load result: Teleport AI close to the player and Force Victory Pose.
 void ScoreDisplayMain_R(ObjectMaster* obj) {
 
 	if (obj->Data1->Action == 0) {
-		SetTailsRaceVictory(); //Prevent Overwrite.
 		LoadObject((LoadObj)(LoadObj_Data1 | LoadObj_Data2), 2, MilesAI_VictoryPose);
 	}
 
@@ -279,6 +294,8 @@ void AI_Improvement() {
 	WriteData<1>((int*)0x47DC5E, 0x81);
 	WriteData<1>((int*)0x47DC5D, 0x36); 
 	WriteData<1>((int*)0x47DC5C, 0xb0);
+
+	WriteJump(GetRaceWinnerPlayer, GetRaceWinnerPlayer_r); //fix wrong victory pose for Tails AI.
 
 	if (isFlyTravel)
 		FlyTravel_Init();
