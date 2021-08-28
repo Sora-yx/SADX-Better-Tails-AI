@@ -69,6 +69,7 @@ void FlySoundOnFrames();
 void ReduceRespawnDelay();
 
 void MilesAI_OnFrames();
+bool isNewTricksActive();
 
 FunctionPointer(int, isHostelOpen, (), 0x630900);
 FunctionPointer(int, isAngelIslandOpen, (), 0x534570);

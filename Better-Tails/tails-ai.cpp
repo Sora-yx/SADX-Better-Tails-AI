@@ -37,7 +37,7 @@ bool isTailsAIAllowed() {
 
 //Tails AI Flag Check
 int CheckTailsAI_R(void) {
-	HMODULE isSA2Mod = GetModuleHandle(L"sadx-sa2-mod");
+	bool isSA2Mod = GetModuleHandle("sadx-sa2-mod");
 
 	if (CurrentLevel == LevelIDs_SkyChase1 || CurrentLevel == LevelIDs_SkyChase2 || !isSA2Mod && CurrentLevel == LevelIDs_ChaoRace || EV_MainThread_ptr) {
 		return 0x0; //don't load AI
@@ -185,6 +185,7 @@ void LoadCharacterAndAI() {
 	if (banCharacter[CurrentCharacter] != true && !EV_MainThread_ptr && !EntityData1Ptrs[1])
 		Load2PTails_r();
 
+
 	if (isCharSelActive()) {
 		return LoadCharacter_r();
 	}
@@ -192,14 +193,27 @@ void LoadCharacterAndAI() {
 	return LoadCharacter(); //call original function
 }
 
+void SpinDash_Check() {
+
+	if (!isNewTricksActive())
+		return;
+
+	EntityData1* data = EntityData1Ptrs[0];
+
+	if (data->CharID == Characters_Sonic && data->Action == 4 || data->CharID == Characters_Knuckles && data->Action == 59) {
+		PressedButtons[1] |= Buttons_B;
+		HeldButtons[1] |= Buttons_B;
+	}
+}
+
 void MilesAI_OnFrames() { //Only run when TailsAI_Main is active
 	if (GameState != 15 && GameState != 4 || !EntityData1Ptrs[0] || !EntityData1Ptrs[1] || EntityData1Ptrs[1]->CharID != Characters_Tails || !TailsAI_ptr)
 		return;
 
-	PreventTailsAIDamage();
 	PreventTailsAIAction();
 	SnowboardRespawn();
 	CatchUP();
+	SpinDash_Check();
 
 	if (isRescueAllowed)
 		CheckMilesBossRescue();
@@ -216,12 +230,33 @@ void TailsAI_ResetValue() {
 	return FUN_0042ce20();
 }
 
+void RemovePlayerCollision() {
+	if (!EntityData1Ptrs[0] || !EntityData1Ptrs[1] || EV_MainThread_ptr)
+		return;
+
+	EntityData1* data = EntityData1Ptrs[0];
+
+	if (data->CollisionInfo->nbInfo)
+	{
+		for (int8_t i = 0; i < data->CollisionInfo->nbInfo; i++) {
+
+			EntityData1Ptrs[0]->CollisionInfo->CollisionArray[i].damage &= ~0x20u; //Remove damage on other players
+		}
+	}
+}
+
 void TailsAI_Main_R(ObjectMaster* obj) {
+
+	EntityData1* data = obj->Data1;
 
 	if (isFlyTravel)
 		CheckAndLoadTailsTravelObjects(obj);
 
 	MilesAI_OnFrames();
+
+	if (data->Action == 0) {
+		RemovePlayerCollision();
+	}
 
 	ObjectFunc(origin, TailsAI_Main_t->Target());
 	origin(obj);
@@ -229,13 +264,17 @@ void TailsAI_Main_R(ObjectMaster* obj) {
 
 
 void AI_Init(const HelperFunctions& helperFunctions) {
-	//Allow Tails AI to spawn in acton stages, hub world, bosses and chao garden + fixes
-	WriteJump(CheckTailsAI, CheckTailsAI_R);
 
-	WriteData<5>((void*)0x415948, 0x90); //remove the original load2PTails in LoadCharacter as we use a custom one
+	if (!isRandoActive()) {
 
-	AI_Fixes();
-	AI_Improvement();
+		//Allow Tails AI to spawn in acton stages, hub world, bosses and chao garden + fixes
+		WriteJump(CheckTailsAI, CheckTailsAI_R);
+
+		WriteData<5>((void*)0x415948, 0x90); //remove the original load2PTails in LoadCharacter as we use a custom one
+		AI_Fixes();
+
+		AI_Improvement();
+	}
 
 	TailsAI_Main_t = new Trampoline((int)TailsAI_Main, (int)TailsAI_Main + 0x5, TailsAI_Main_R);
 

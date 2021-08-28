@@ -35,26 +35,30 @@ extern "C" {
 
 		srand((unsigned)time(&t));
 
-		if (!isRandoActive()) { //rando already has its own stuff for AI.
-
+		if (!isRandoActive())  //rando already has its own stuff for AI.
 			WriteCall((void*)0x415a25, LoadCharacterAndAI); //Call Tails AI when Load Character.
 
-			// Tails AI Reset Values
-			WriteJump((void*)0x47db1a, TailsAI_ResetValue); //Reset value and stuff properly when Tails AI is deleted by the game.
 
-			//Tails AI Stuff (Load, Fixes...)
-			AI_Init(helperFunctions);
-		}
+		// Tails AI Reset Values
+		WriteJump(TailsAI_Delete, TailsAI_ResetValue); //Reset value and stuff properly when Tails AI is deleted by the game.
+
+		//Tails AI Stuff (Load, Fixes...)
+		AI_Init(helperFunctions);
+
 	}
 
 	__declspec(dllexport) void __cdecl OnFrame()
 	{
 
+
+		//DisplayDebugStringFormatted(NJM_LOCATION(2, 1), "Cutscene Active %d", EV_MainThread_ptr);
+
 		//LoadAI_OnFrames();
 		/*if (CharObj2Ptrs[1]) {
 			DisplayDebugStringFormatted(NJM_LOCATION(2, 1), "is Miles here %f", isAIActive);
-		}
-		//DisplayDebugStringFormatted(NJM_LOCATION(2, 1), "Cutscene Active %d", EV_MainThread_ptr);*/
+		}*/
+
+
 	}
 
 	__declspec(dllexport) ModInfo SADXModInfo = { ModLoaderVer };

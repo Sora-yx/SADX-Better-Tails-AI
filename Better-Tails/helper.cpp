@@ -267,7 +267,7 @@ bool isUIScale() {
 }
 
 bool isCharSelActive() {
-	HMODULE charSel = GetModuleHandle(L"SADXCharSel");
+	bool charSel = GetModuleHandle("SADXCharSel");
 
 	if (charSel)
 		return true;
@@ -276,7 +276,7 @@ bool isCharSelActive() {
 }
 
 bool isRandoActive() {
-	HMODULE Rando = GetModuleHandle(L"sadx-randomizer");
+	bool Rando = GetModuleHandle("SADX-Randomizer");
 
 	if (Rando)
 		return true;
@@ -285,12 +285,22 @@ bool isRandoActive() {
 }
 
 bool isInputModActive() {
-	HMODULE Input = GetModuleHandle(L"input-mod");
+	bool Input = GetModuleHandle("input-mod");
 
 	if (Input)
 		return true;
 
 	return false;
+}
+
+bool isNewTricksActive() {
+	bool tricks = GetModuleHandle("sadx-new-tricks");
+
+	if (tricks)
+		return true;
+
+	return false;
+
 }
 
 void SetCharaInfo(ObjectMaster* obj, int i) {
@@ -376,8 +386,19 @@ void __cdecl LoadCharacter_r()
 	}
 }
 
+int GetRaceWinnerPlayer_r() {
+	if (CurrentCharacter != Characters_Tails && EntityData1Ptrs[1] != nullptr) {
+		if (EntityData1Ptrs[1]->CharID == Characters_Tails) {
+			return 1;
+		}
+	}
+
+	return RaceWinnerPlayer;
+}
 
 void AI_Fixes() {
+
+	WriteJump(GetRaceWinnerPlayer, GetRaceWinnerPlayer_r); //fix wrong victory pose for Tails AI.
 
 	if (IsHubBanned)
 		return;

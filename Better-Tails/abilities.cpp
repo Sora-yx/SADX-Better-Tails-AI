@@ -34,21 +34,20 @@ void CatchUP() {
 			P2->Position.z = P1->Position.z;
 		}
 		else if (P2->Position.y <= -18660 && P2->Action > 90) {
-			CharObj2Ptrs[1]->Powerups &= 0x100u; 
+			CharObj2Ptrs[1]->Powerups &= 0x100u;
 			P2->Action = 1;
 		}
 	}
-		
-	if (isPlayerUsingSnowboard()) { 
+
+	if (isPlayerUsingSnowboard()) {
 		if (CurrentLevel == LevelIDs_IceCap && CurrentAct == 2 && P1->Position.y > -3800) {
-			P1->Rotation = P1->Rotation;
 			if (P2->Status & Status_Ground)
-				CharObj2Ptrs[1]->Speed.x = CharObj2Ptrs[0]->Speed.x + 0.8;
+				CharObj2Ptrs[1]->Speed.x = CharObj2Ptrs[0]->Speed.x + 0.6;
 		}
 		else {
 			P2->Rotation = P1->Rotation;
 			if (P1->Status & Status_Ground)
-				CharObj2Ptrs[1]->Speed.x = CharObj2Ptrs[0]->Speed.x + 0.10;
+				CharObj2Ptrs[1]->Speed.x = CharObj2Ptrs[0]->Speed.x + 0.8;
 		}
 	}
 }
@@ -72,7 +71,7 @@ void LoadAISnowBoard_R() {
 
 //Make Tails using snowboard again when trying to catch Sonic
 void SnowboardRespawn() {
-	if (GameState != 15)
+	if (GameState != 15 || isRandoActive())
 		return;
 
 	EntityData1* data = EntityData1Ptrs[1];
@@ -90,7 +89,7 @@ void SnowboardRespawn() {
 
 
 float spawnDelay = 15.0;
-float* spawnDelayptr = &spawnDelay; 
+float* spawnDelayptr = &spawnDelay;
 
 void ReduceRespawnDelay() {
 	spawnDelay = 15.0;
@@ -105,6 +104,7 @@ int isCharacterPetting() {
 }
 
 bool isChaoPetByAI = false;
+int chaoHappyTimer = 0;
 
 void MakeAIPetChao(ObjectMaster* Chao) {
 	EntityData1* data = Chao->Data1;
@@ -132,6 +132,7 @@ void MakeAIPetChao(ObjectMaster* Chao) {
 		break;
 	case 1:
 		if (dist < 9) {
+			chaoHappyTimer = 0;
 			p2->Action = 64;
 			CharObj2Ptrs[1]->AnimationThing.Index = 133;
 			isChaoPetByAI = true;
@@ -149,18 +150,20 @@ void CheckAndMakeAIPetChao(ObjectMaster* Chao) {
 	}
 }
 
+
 void Chao_Main_R(ObjectMaster* obj) {
 	EntityData1* p1 = EntityData1Ptrs[0];
-	obj->Data1 = obj->Data1;
+
 
 	if (IsPlayerInsideSphere(&obj->Data1->Position, 10)) {
 		CheckAndMakeAIPetChao(obj);
 	}
 
 	if (p1->Action != isCharacterPetting() && isChaoPetByAI) {
-		if (++obj->Data1->InvulnerableTime == 120) {
+		if (++chaoHappyTimer == 120) {
 			Chao_SetBehavior(obj, (long*)Chao_Pleasure);
 			isChaoPetByAI = false;
+			chaoHappyTimer = 0;
 		}
 	}
 
@@ -192,19 +195,19 @@ void MilesAI_VictoryPose(ObjectMaster* obj) {
 		if (CurrentLevel == LevelIDs_IceCap && CurrentAct == 2)
 			ForcePlayerAction(1, 24);
 
-		if ((p2->Status & Status_Ground) == 0 && (p2->Status & Status_Unknown1) == 0 || p2->Position.y > p1->Position.y + 2 || p2->Position.y < p1->Position.y - 2) 
+		if ((p2->Status & Status_Ground) == 0 && (p2->Status & Status_Unknown1) == 0 || p2->Position.y > p1->Position.y + 2 || p2->Position.y < p1->Position.y - 2)
 		{
 			p2->Position = UnitMatrix_GetPoint(&p1->Position, &p2->Rotation, 0.0f, 0.0f, 6.0f);  //fix floating victory pose
 		}
 
 		if (++data->Index == 5) {
 
-		if ((p2->Status & Status_Ground) == 0 && (p2->Status & Status_Unknown1) == 0) { //last failsafe
-			p2->Position = UnitMatrix_GetPoint(&p1->Position, &p2->Rotation, 0.0f, 0.0f, -6.0f); //try other side
-		}
+			if ((p2->Status & Status_Ground) == 0 && (p2->Status & Status_Unknown1) == 0) { //last failsafe
+				p2->Position = UnitMatrix_GetPoint(&p1->Position, &p2->Rotation, 0.0f, 0.0f, -6.0f); //try other side
+			}
 			data->Action = 2;
 		}
-		
+
 		break;
 	case 2:
 		p2->Rotation = p1->Rotation;
@@ -213,15 +216,7 @@ void MilesAI_VictoryPose(ObjectMaster* obj) {
 	}
 }
 
-int GetRaceWinnerPlayer_r() {
-	if (CurrentCharacter != Characters_Tails && EntityData1Ptrs[1] != nullptr) {
-			if (EntityData1Ptrs[1]->CharID == Characters_Tails) {
-				return 1;
-			}
-	}
 
-	return RaceWinnerPlayer;
-}
 
 //While load result: Teleport AI close to the player and Force Victory Pose.
 void ScoreDisplayMain_R(ObjectMaster* obj) {
@@ -238,7 +233,7 @@ void ScoreDisplayMain_R(ObjectMaster* obj) {
 
 
 void PreventTailsAIDamage() {
-	if (EntityData1Ptrs[1]->CharID != Characters_Tails || !EntityData1Ptrs[1] || !CharObj2Ptrs[1])
+	if (!EntityData1Ptrs[1] || !CharObj2Ptrs[1] || EntityData1Ptrs[1]->CharID != Characters_Tails)
 		return;
 
 	EntityData1* data = EntityData1Ptrs[0];
@@ -283,6 +278,7 @@ void PreventTailsAIAction() {
 
 
 void AI_Improvement() {
+
 	//Miles General Improvement
 	WriteCall((void*)0x597b14, LoadAISnowBoard_R);  //Load AI Snowboard when playing Sand Hill
 	WriteCall((void*)0x4ea091, LoadAISnowBoard_R);  //Load AI Snowboard when playing Ice Cap.
@@ -292,10 +288,9 @@ void AI_Improvement() {
 
 	//Reduce Tails AI's "Range out" check, so he can catch faster. (Changing the float value from 1000 to 700)
 	WriteData<1>((int*)0x47DC5E, 0x81);
-	WriteData<1>((int*)0x47DC5D, 0x36); 
+	WriteData<1>((int*)0x47DC5D, 0x36);
 	WriteData<1>((int*)0x47DC5C, 0xb0);
 
-	WriteJump(GetRaceWinnerPlayer, GetRaceWinnerPlayer_r); //fix wrong victory pose for Tails AI.
 
 	if (isFlyTravel)
 		FlyTravel_Init();
