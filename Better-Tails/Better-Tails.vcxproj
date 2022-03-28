@@ -90,6 +90,9 @@
       <SubSystem>Console</SubSystem>
       <AdditionalDependencies>$(ProjectDir)..\bin\ModLoaderCommon.lib;$(ProjectDir)..\bin\libmodutils.lib;%(AdditionalDependencies)$(ProjectDir)..\bin\libmodutils.lib;$(SolutionDir)sadx-mod-loader\extlib\bass\bass.lib;$(SolutionDir)sadx-mod-loader\extlib\bass\bass_vgmstream.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy "$(SolutionDir)bin\Better-Tails-AI.dll" "D:\Jeux\SONICADVENTUREDX\mods\Better Tails AI" /s /y</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -141,15 +144,17 @@
     <ClCompile Include="abilities.cpp" />
     <ClCompile Include="fly-travel.cpp" />
     <ClCompile Include="mod.cpp" />
-    <ClCompile Include="helper.cpp" />
+    <ClCompile Include="ai-helper.cpp" />
     <ClCompile Include="tails-ai.cpp" />
     <ClCompile Include="rescue.cpp" />
     <ClCompile Include="stdafx.cpp" />
+    <ClCompile Include="util.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="helper.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="util.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

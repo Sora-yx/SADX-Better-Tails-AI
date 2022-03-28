@@ -4,6 +4,7 @@ Trampoline* MovePlayerToStartPoint_t;
 ObjectMaster* TailsGrab = nullptr;
 uint8_t isMoving = 0;
 ObjectMaster* TailsLanding = nullptr;
+const int8_t cursorMaxPos = 8;
 
 NJS_TEXANIM	MilesCursor_TEXANIM[]{
 	{ 0x10, 0x10, 0, 0, 0, 0, 0x100, 0x100, 0, 0x20 },
@@ -56,10 +57,10 @@ MilesAI_Fly DestinationArray[]{
 	{ LevelIDs_MysticRuins, 2,  1307.67, 284.549, -814.303, {455, 195}}, //jungle big's house
 };
 
-void LoadDestination() {
-	ControllerPointers[1]->PressedButtons = 0;
-	ControllerPointers[1]->HeldButtons = 0;
-	DisableController(1);
+void LoadDestination(int playerID) {
+	ControllerPointers[playerID]->PressedButtons = 0;
+	ControllerPointers[playerID]->HeldButtons = 0;
+	DisableController(playerID);
 	LastLevel = CurrentLevel;
 	LastAct = CurrentAct;
 	SetNextLevelAndAct_CutsceneMode(DestinationArray[Cursor].level, DestinationArray[Cursor].act);
@@ -151,8 +152,8 @@ void DisplayCursorAnimation() {
 }
 
 void UpdatePlayerCursorPos() {
-	if (ControllerPointers[0]->PressedButtons & Buttons_Up) {
-		if (Cursor >= 8)
+	if (PressedButtons[0] & Buttons_Up) {
+		if (Cursor >= cursorMaxPos)
 			Cursor = 0;
 		else
 			Cursor++;
@@ -160,9 +161,9 @@ void UpdatePlayerCursorPos() {
 		PlaySound(1, NULL, 0, NULL);
 	}
 
-	if (ControllerPointers[0]->PressedButtons & Buttons_Down) {
+	if (PressedButtons[0] & Buttons_Down) {
 		if (Cursor <= 0)
-			Cursor = 8;
+			Cursor = cursorMaxPos;
 		else
 			Cursor--;
 
@@ -311,17 +312,17 @@ void CheckAndForceLeavingGrab(EntityData1* data) {
 	}
 }
 
-void FlySoundOnFrames() {
-	if (GameState != 15 || !EntityData1Ptrs[1] || !TailsAI_ptr)
+void FlySoundOnFrames(int playerID) {
+	if (GameState != 15 || !EntityData1Ptrs[playerID] || !TailsAI_ptr)
 		return;
 
-	if (EntityData1Ptrs[1]->CharID == Characters_Tails && EntityData1Ptrs[0]->CharID <= Characters_Tails) {
-		if (EntityData1Ptrs[1]->Unknown == 0)
+	if (EntityData1Ptrs[playerID]->CharID == Characters_Tails && EntityData1Ptrs[0]->CharID <= Characters_Tails) {
+		if (EntityData1Ptrs[playerID]->Unknown == 0)
 			PlaySound(0x302, NULL, 0, NULL);
 
-		if (++EntityData1Ptrs[1]->Unknown == 31) {
+		if (++EntityData1Ptrs[playerID]->Unknown == 31) {
 			PlaySound(0x302, NULL, 0, NULL);
-			EntityData1Ptrs[1]->Unknown = 1;
+			EntityData1Ptrs[playerID]->Unknown = 1;
 		}
 	}
 }
@@ -348,7 +349,7 @@ void PlayCharacterGrabAnimation(EntityData1* p1, CharObj2* co2) {
 	return;
 }
 
-void PlayCharacterLeaveAnimation(EntityData1* p1, CharObj2* co2) {
+void PlayCharacterLeaveAnimation(EntityData1* p1, CharObj2* co2, int playerID) {
 
 	if (p1->Action < 100)
 		return;
@@ -361,7 +362,7 @@ void PlayCharacterLeaveAnimation(EntityData1* p1, CharObj2* co2) {
 		}
 		else {
 			p1->Action = 12;
-			CharObj2Ptrs[1]->AnimationThing.Index = 18;
+			CharObj2Ptrs[playerID]->AnimationThing.Index = 18;
 		}
 
 		break;
@@ -409,14 +410,17 @@ void UpdateP1Position(CharObj2* co2p1, CharObj2* co2p2, EntityData1* p1, EntityD
 	return;
 }
 
-void RestoreAIControl() {
-	ControllerPointers[1]->PressedButtons = 0;
-	ControllerPointers[1]->HeldButtons = 0;
-	DisableController(1);
+void RestoreAIControl(unsigned char ID) {
+	ControllerPointers[ID]->PressedButtons = 0;
+	ControllerPointers[ID]->HeldButtons = 0;
+	DisableController(ID);
 	return;
 }
 
 int CheckFastTravelStoryProgression() {
+
+	if (DestinationArray[Cursor].level == CurrentLevel && CurrentAct == DestinationArray[Cursor].act)
+		return 0;
 
 	if (CurrentCharacter >= Characters_Gamma && Cursor == 2)
 		return 0;
@@ -450,6 +454,7 @@ int CheckFastTravelStoryProgression() {
 		return 0;
 	}
 
+
 	return 1;
 }
 
@@ -460,23 +465,28 @@ void TailsAI_GrabDelete(ObjectMaster* obj) {
 }
 
 void TailsAI_Grab(ObjectMaster* obj) {
-	if (obj->Data1->Action != movetoDestination && (!EntityData1Ptrs[0]
-		|| !EntityData1Ptrs[1] || GameState != 15 || TailsLanding || isMilesSaving())) {
-		if (EntityData1Ptrs[1]) {
-			if (EntityData1Ptrs[1]->Action == 125) //failsafe if the player start fly travel but leave the level/act
-				EntityData1Ptrs[1]->Action = 1;
+
+	EntityData1* data = obj->Data1;
+	EntityData1* p1 = EntityData1Ptrs[0];
+	EntityData1* p2 = EntityData1Ptrs[data->CharIndex];
+
+	CharObj2* co2p1 = CharObj2Ptrs[0];
+	CharObj2* co2p2 = CharObj2Ptrs[data->CharIndex];
+
+	if (data->Action != movetoDestination && (!p1
+		|| !p2 || GameState != 15 || TailsLanding || isMilesSaving())) {
+
+		if (p2) {
+			if (p2->Action == 125) //failsafe if the player start fly travel but leave the level/act
+				p2->Action = 1;
 		}
 		TailsGrab = nullptr;
 		CheckThingButThenDeleteObject(obj);
 	}
 
-	EntityData1* p1 = EntityData1Ptrs[0];
-	EntityData1* p2 = EntityData1Ptrs[1];
-	EntityData1* data = obj->Data1;
-	CharObj2* co2p1 = CharObj2Ptrs[0];
-	CharObj2* co2p2 = CharObj2Ptrs[1];
 
-	if ((++data->field_A == 230 && data->Action > 0 && data->Action < 3) || p2->CharID != Characters_Tails) {
+
+	if ((++data->field_A == 230 && data->Action > initFly && data->Action < grabbed) || p2->CharID != Characters_Tails) {
 		data->Action = leaving;
 	}
 
@@ -495,13 +505,13 @@ void TailsAI_Grab(ObjectMaster* obj) {
 		break;
 	case getAltitude:
 		if ((p1->CharID <= Characters_Amy && p2->Position.y < p1->Position.y + 15) || (p1->CharID >= Characters_Gamma && p2->Position.y < p1->Position.y + 25)) {
-			Controllers[1].HeldButtons |= JumpButtons;
-			Controllers[1].PressedButtons |= JumpButtons;
+			Controllers[data->CharIndex].HeldButtons |= JumpButtons;
+			Controllers[data->CharIndex].PressedButtons |= JumpButtons;
 		}
 		else {
 			p2->Status &= 0x100u;
 			p2->Action = 125;
-			CharObj2Ptrs[1]->AnimationThing.Index = 37;
+			co2p2->AnimationThing.Index = 37;
 			data->Action = checkGrab;
 		}
 		break;
@@ -539,7 +549,9 @@ void TailsAI_Grab(ObjectMaster* obj) {
 		}
 		break;
 	case displayMap:
+
 		CheckAndForceLeavingGrab(data);
+		SetDebugFontSize(20);
 		DisplayDebugStringFormatted(NJM_LOCATION(2, 1), "Destination: %s", getDestinationText());
 		UpdatePlayerCursorPos();
 		DrawModelCallback_Queue((void(__cdecl*)(void*))PauseMenu_Map_DisplayCallback, 0, 22047.998, QueuedModelFlagsB_EnableZWrite); //fix transparency issue
@@ -563,15 +575,15 @@ void TailsAI_Grab(ObjectMaster* obj) {
 		}
 		break;
 	case movetoDestination:
-		FlySoundOnFrames();
+		FlySoundOnFrames(data->CharIndex);
 		p2->Action = 15; //fly mode
 		UpdateP1Position(co2p1, co2p2, p1, p2);
 
-		CharObj2Ptrs[1]->Speed.y += 0.7;
-		CharObj2Ptrs[1]->Speed.x += 1.2;
+		co2p2->Speed.y += 0.4;
+		co2p2->Speed.x += 0.8;
 
 		if (++data->InvulnerableTime == 180) {
-			LoadDestination();
+			LoadDestination(data->CharIndex);
 			if (isMoving == 2) //object isn't deleted between act transition unlike with level changes.
 				CheckThingButThenDeleteObject(obj);
 		}
@@ -579,19 +591,22 @@ void TailsAI_Grab(ObjectMaster* obj) {
 		break;
 	case leaving:
 		p2->Action = 10;
-		RestoreAIControl();
+		RestoreAIControl(data->CharIndex);
 		Cursor = -1;
 		EnablePause();
-		PlayCharacterLeaveAnimation(p1, co2p1);
+		PlayCharacterLeaveAnimation(p1, co2p1, data->CharIndex);
 		isMoving = 0;
 		CheckThingButThenDeleteObject(obj);
 		break;
 	case errorMove:
-		DisplayDebugStringFormatted(NJM_LOCATION(2, 8), "You cannot fly here at the moment.");
+		SetDebugFontSize(23);
+		SetDebugFontColor(0xFF0000);
+		DisplayDebugStringFormatted(NJM_LOCATION(12, 12), "You cannot fly here at the moment.");
 		if (++data->Index == 60) {
 			data->Unknown = 0;
 			data->InvulnerableTime = 0;
 			data->Action = displayMap;
+			SetDebugFontColor(0xFFFFFFFF);
 		}
 	}
 }
@@ -605,67 +620,85 @@ void TailsAI_LandingDelete(ObjectMaster* obj) {
 }
 
 void TailsAI_Landing(ObjectMaster* obj) {
-	if (!EntityData1Ptrs[0] || !EntityData1Ptrs[1] || GameState != 15 && GameState != 4) {
+
+	EntityData1* data = obj->Data1;
+	EntityData1* p1 = EntityData1Ptrs[0];
+	EntityData1* p2 = EntityData1Ptrs[data->CharIndex];
+
+	CharObj2* co2p1 = CharObj2Ptrs[0];
+	CharObj2* co2p2 = CharObj2Ptrs[data->CharIndex];
+
+	if (!p1 || !p2 || GameState != 15 && GameState != 4) {
 		return;
 	}
 
-	EntityData1* p1 = EntityData1Ptrs[0];
-	EntityData1* p2 = EntityData1Ptrs[1];
-	EntityData1* data = obj->Data1;
-	CharObj2* co2p1 = CharObj2Ptrs[0];
-	CharObj2* co2p2 = CharObj2Ptrs[1];
+	if (EV_MainThread_ptr)
+	{
+		TailsAI_LandingDelete(obj);
+		CheckThingButThenDeleteObject(obj);
+		return;
+	}
+
 
 	LookAt(&p2->Position, &data->Position, nullptr, &p2->Rotation.y);
-	FlySoundOnFrames();
+	FlySoundOnFrames(data->CharIndex);
 
 	switch (data->Action) {
 	case 0:
 		obj->DeleteSub = TailsAI_LandingDelete;
 		data->Position = DestinationArray[Cursor].destination;
 		p1->Rotation = p2->Rotation;
-		DisableController(0);
 		p1->Action = 125;
 		p2->Action = 15;
-		CharObj2Ptrs[1]->AnimationThing.Index = 37;
+		co2p2->AnimationThing.Index = 37;
 		PlayCharacterGrabAnimation(p1, co2p1);
-		data->Action = 1;
+		data->Action++;
 		break;
 	case 1:
 		UpdateP1Position(co2p1, co2p2, p1, p2);
-		CharObj2Ptrs[1]->Speed.y -= 0.8;
-		CharObj2Ptrs[1]->Speed.z += 0.8;
+		co2p2->Speed.y -= 0.8;
+		co2p2->Speed.z += 0.8;
 
-		if (++data->InvulnerableTime == 140 || ((p1->Status & Status_Ground) == Status_Ground) || (p1->Status & Status_Unknown1) == Status_Unknown1) {
-			data->Action = 2;
+		if (++data->InvulnerableTime == 140 || ((p1->Status & Status_Ground)) || (p1->Status & Status_Unknown1)) {
+			data->Action++;
 		}
 		break;
 	case 2:
-		EnableController(0);
-		EnableController(1);
+
+		PlayCharacterLeaveAnimation(p1, co2p1, data->CharIndex);
+		RestoreAIControl(data->CharIndex);
+		ForcePlayerAction(0, 24);
+		EnableController(data->CharIndex);
+		EnableControl();
 		EnablePause();
-		PlayCharacterLeaveAnimation(p1, co2p1);
-		RestoreAIControl();
 		CheckThingButThenDeleteObject(obj);
 		break;
 	}
 }
 
 void CheckAndLoadTailsTravelObjects(ObjectMaster* obj) {
+
+	EntityData1* data = obj->Data1;
+
 	if (!EntityData1Ptrs[1])
 		return;
 
-	if (obj->Data1->Action == 0 && isMoving == 1 || obj->Data1->Action > 0 && isMoving == 2) {
-		if (!TailsGrab && !TailsLanding)
+	if (data->Action == 0 && isMoving == 1 || data->Action > 0 && isMoving == 2) {
+		if (!TailsGrab && !TailsLanding) {
 			TailsLanding = LoadObject((LoadObj)2, 1, TailsAI_Landing);
+			TailsLanding->Data1->CharIndex = data->CharIndex;
+		}
 	}
 
-	if (obj->Data1->Action > 0) {
+	if (data->Action > 0) {
 		if (isInputModActive() && ControllerPointers[0]->PressedButtons & Buttons_C || !isInputModActive() && ControllerPointers[0]->PressedButtons & Buttons_Y) 
 		{
 			if (EntityData1Ptrs[1]->CharID == Characters_Tails && EntityData1Ptrs[0]->Action < 3 && EntityData1Ptrs[1]->Action < 3) {
 
-				if (!TailsGrab)
+				if (!TailsGrab) {
 					TailsGrab = LoadObject((LoadObj)2, 1, TailsAI_Grab);
+					TailsGrab->Data1->CharIndex = 1;
+				}
 			}
 		}
 	}

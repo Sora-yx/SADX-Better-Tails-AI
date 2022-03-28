@@ -1,14 +1,28 @@
 #include "stdafx.h"
 
 
+unsigned char getAI_ID() {
+
+	for (uint8_t i = 1; i < MaxPlayers; i++) {
+		if (!EntityData1Ptrs[i])
+			continue;
+
+		if (EntityData1Ptrs[i]->CharID == Characters_Tails && TailsAI_ptr) {
+			return i;
+		}
+	}
+
+	return 0;
+}
+
 //teleport AI to Player
-void moveAItoPlayer() {
+void moveAItoPlayer(unsigned char playerID) {
 	if (isAIActive)
 	{
-		if (EntityData1Ptrs[0] && EntityData1Ptrs[1])
+		if (EntityData1Ptrs[0] && EntityData1Ptrs[playerID])
 		{
 			EntityData1* p1 = EntityData1Ptrs[0];
-			EntityData1* p2 = EntityData1Ptrs[1];
+			EntityData1* p2 = EntityData1Ptrs[playerID];
 
 			if (CurrentCharacter != Characters_Big && CurrentCharacter != Characters_Gamma)
 				p2->Position = UnitMatrix_GetPoint(&p1->Position, &p1->Rotation, -7.0f, 0.0f, 5.0f);
@@ -27,76 +41,11 @@ bool isPlayerUsingSnowboard() {
 	return false;
 }
 
-NJS_VECTOR UnitMatrix_GetPoint(NJS_VECTOR* orig, Rotation3* rot, float x, float y, float z) {
-	NJS_VECTOR point;
-
-	njPushMatrix(_nj_unit_matrix_);
-	njTranslateV(0, orig);
-	if (rot) njRotateXYZ(0, rot->x, rot->y, rot->z);
-	njTranslate(0, x, y, z);
-	njGetTranslation(_nj_current_matrix_ptr_, &point);
-	njPopMatrix(1u);
-
-	return point;
-}
-
-float GetSquare(NJS_VECTOR* orig, NJS_VECTOR* dest) {
-	return powf(dest->x - orig->x, 2) + powf(dest->y - orig->y, 2) + powf(dest->z - orig->z, 2);
-}
-
-float CheckDistance(NJS_VECTOR* vec1, NJS_VECTOR* vec2) {
-	float x_dist = vec2->x - vec1->x;
-	float y_dist = vec2->y - vec1->y;
-	float z_dist = vec2->z - vec1->z;
-
-	float len = y_dist * y_dist + x_dist * x_dist + z_dist * z_dist;
-
-	if (len < 0.02500000037252903)
-	{
-		return 0.0f;
-	}
-
-	return sqrt(len);
-}
-
-void LookAt(NJS_VECTOR* from, NJS_VECTOR* to, Angle* outx, Angle* outy) {
-	NJS_VECTOR unit = *to;
-
-	njSubVector(&unit, from);
-
-	if (outy) {
-		*outy = static_cast<Angle>(atan2f(unit.x, unit.z) * 65536.0f * 0.1591549762031479f);
-	}
-
-	if (outx) {
-		if (from->y == to->y) {
-			*outx = 0;
-		}
-		else {
-			Float len = 1.0f / squareroot(unit.z * unit.z + unit.x * unit.x + unit.y * unit.y);
-
-			*outx = static_cast<Angle>((acos(len * 3.3499999f) * 65536.0f * 0.1591549762031479f)
-				- (acos(-(len * unit.y)) * 65536.0f * 0.1591549762031479f));
-		}
-	}
-}
-
-void PlayerLookAt(NJS_VECTOR* from, NJS_VECTOR* to, Angle* outx, Angle* outy) {
-	LookAt(from, to, outx, outy);
-
-	if (outy) {
-		*outy = -(*outy) + 0x4000;
-	}
-}
-
-//Sphere check functions
-float GetDistance(NJS_VECTOR* orig, NJS_VECTOR* dest) {
-	return sqrtf(powf(dest->x - orig->x, 2) + powf(dest->y - orig->y, 2) + powf(dest->z - orig->z, 2));
-}
-
-
 int __cdecl IsMilesInsideSphere(NJS_VECTOR* x_1, float radius)
 {
+
+	unsigned char ID = getAI_ID();
+
 	float v2; // edx
 	float v3; // eax
 	int v4; // esi
@@ -154,8 +103,13 @@ void FixAIHubTransition() {
 		if (CurrentLevel == LevelIDs_StationSquare && (CurrentAct == 3 || CurrentAct == 1))
 			return;
 
+		unsigned char ID = getAI_ID();
+
+		if (!ID)
+			return;
+
 		if (CurrentLevel > LevelIDs_E101R && CurrentLevel < LevelIDs_TwinkleCircuit)
-			moveAItoPlayer();
+			moveAItoPlayer(ID);
 	}
 
 	return;
@@ -164,17 +118,22 @@ void FixAIHubTransition() {
 void FixAIHubTransition2() {
 	HudDisplayRingTimeLife_Check();
 
+	unsigned char ID = getAI_ID();
+
+	if (!ID)
+		return;
+
 	if (!IsHubBanned && isAIActive)
 	{
 		if (CurrentCharacter != Characters_Big)
 		{
 			if (CurrentLevel == LevelIDs_StationSquare && (CurrentAct == 3 || CurrentAct == 1) || CurrentLevel >= LevelIDs_ECGarden && CurrentLevel < LevelIDs_ChaoRace)
-				moveAItoPlayer();
+				moveAItoPlayer(ID);
 		}
 		else
 		{
 			if (CurrentLevel == LevelIDs_StationSquare && CurrentAct == 1 || CurrentLevel >= LevelIDs_ECGarden && CurrentLevel < LevelIDs_ChaoRace)
-				moveAItoPlayer();
+				moveAItoPlayer(ID);
 		}
 	}
 
@@ -191,7 +150,10 @@ void CallTailsAI_R() {
 	if (CurrentLevel == LevelIDs_EggCarrierOutside || CurrentLevel == LevelIDs_EggCarrierInside)
 		CurZic = MusicIDs_egcarer1;
 
-	if (EntityData1Ptrs[1] || CharObj2Ptrs[1] || IsAdventureComplete(SelectedCharacter) && SelectedCharacter != 6)
+
+	unsigned char ID = getAI_ID();
+
+	if (ID > 0 && EntityData1Ptrs[ID] || ID > 0 && CharObj2Ptrs[ID] || IsAdventureComplete(SelectedCharacter) && SelectedCharacter != 6)
 		return PlayMusic(CurZic);
 
 	Load2PTails_r();
@@ -200,12 +162,17 @@ void CallTailsAI_R() {
 }
 
 void CheckAndDeleteAI() {
-	if (EntityData1Ptrs[1] != nullptr)
+	unsigned char ID = getAI_ID();
+
+	if (!ID)
+		return DisableControl();
+
+	if (EntityData1Ptrs[ID] != nullptr)
 	{
-		if (EntityData1Ptrs[1]->CharID == Characters_Tails) {
+		if (EntityData1Ptrs[ID]->CharID == Characters_Tails) {
 			TailsAI_ptr = nullptr;
 			FUN_0042ce20();
-			DeleteObjectMaster(GetCharacterObject(1));
+			DeleteObjectMaster(GetCharacterObject(ID));
 		}
 	}
 
@@ -259,49 +226,7 @@ void FadeoutScreen(ObjectMaster* obj) {
 	}
 }
 
-bool isUIScale() {
-	if (HorizontalStretchPointer != &HorizontalStretch)
-		return true;
 
-	return false;
-}
-
-bool isCharSelActive() {
-	bool charSel = GetModuleHandle("SADXCharSel");
-
-	if (charSel)
-		return true;
-
-	return false;
-}
-
-bool isRandoActive() {
-	bool Rando = GetModuleHandle("SADX-Randomizer");
-
-	if (Rando)
-		return true;
-
-	return false;
-}
-
-bool isInputModActive() {
-	bool Input = GetModuleHandle("input-mod");
-
-	if (Input)
-		return true;
-
-	return false;
-}
-
-bool isNewTricksActive() {
-	bool tricks = GetModuleHandle("sadx-new-tricks");
-
-	if (tricks)
-		return true;
-
-	return false;
-
-}
 
 void SetCharaInfo(ObjectMaster* obj, int i) {
 	obj->Data1->CharID = (char)CurrentCharacter;
@@ -387,13 +312,27 @@ void __cdecl LoadCharacter_r()
 }
 
 int GetRaceWinnerPlayer_r() {
-	if (CurrentCharacter != Characters_Tails && EntityData1Ptrs[1] != nullptr) {
-		if (EntityData1Ptrs[1]->CharID == Characters_Tails) {
+
+	unsigned char ID = getAI_ID();
+
+
+	if (ID > 0 && CurrentCharacter != Characters_Tails && EntityData1Ptrs[ID] != nullptr) {
+		if (EntityData1Ptrs[ID]->CharID == Characters_Tails) {
 			return 1;
 		}
 	}
 
 	return RaceWinnerPlayer;
+}
+
+void MoveForward(EntityData1* entity, float speed) {
+	njPushMatrix(_nj_unit_matrix_);
+	njTranslateEx(&entity->Position);
+	njRotateY(0, entity->Rotation.y);
+	njRotateX(0, entity->Rotation.x);
+	njTranslate(0, 0, 0, speed);
+	njGetTranslation(0, &entity->Position);
+	njPopMatrix(1u);
 }
 
 void AI_Fixes() {

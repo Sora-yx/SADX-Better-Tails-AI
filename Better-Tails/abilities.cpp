@@ -5,36 +5,36 @@
 Trampoline* Chao_Main_t;
 Trampoline* ScoreDisplay_main_t;
 
-void CatchUP() {
+void CatchUP(unsigned char playerID) {
 
 	if (CurrentCharacter != Characters_Sonic)
 		return;
 
 	EntityData1* P1 = EntityData1Ptrs[0];
-	EntityData1* P2 = EntityData1Ptrs[1];
+	EntityData1* P2 = EntityData1Ptrs[playerID];
 
 	if (CurrentLevel == LevelIDs_SpeedHighway && CurrentAct == 1 && (P1->Action >= 46 && P1->Action <= 50))
 	{
 		P2->Rotation = P1->Rotation;
 
-		CharObj2Ptrs[1]->Powerups |= Powerups_Invincibility;
+		CharObj2Ptrs[playerID]->Powerups |= Powerups_Invincibility;
 		if (P2->Position.y > -10790)
 		{
-			CharObj2Ptrs[1]->AnimationThing.Index = 37;
+			CharObj2Ptrs[playerID]->AnimationThing.Index = 37;
 			P2->Action = 125;
 			P2->Position.x = P1->Position.x + 10;
 			P2->Position.y = P1->Position.y + 2;
 			P2->Position.z = P1->Position.z + 10;
 		}
 		else if (P2->Position.y <= -10791 && P2->Position.y > -18659) {
-			CharObj2Ptrs[1]->AnimationThing.Index = 12;
+			CharObj2Ptrs[playerID]->AnimationThing.Index = 12;
 			P2->Action = 125;
 			P2->Position.x = P1->Position.x;
 			P2->Position.y = P1->Position.y - 7;
 			P2->Position.z = P1->Position.z;
 		}
 		else if (P2->Position.y <= -18660 && P2->Action > 90) {
-			CharObj2Ptrs[1]->Powerups &= 0x100u;
+			CharObj2Ptrs[playerID]->Powerups &= 0x100u;
 			P2->Action = 1;
 		}
 	}
@@ -42,12 +42,12 @@ void CatchUP() {
 	if (isPlayerUsingSnowboard()) {
 		if (CurrentLevel == LevelIDs_IceCap && CurrentAct == 2 && P1->Position.y > -3800) {
 			if (P2->Status & Status_Ground)
-				CharObj2Ptrs[1]->Speed.x = CharObj2Ptrs[0]->Speed.x + 0.6;
+				CharObj2Ptrs[playerID]->Speed.x = CharObj2Ptrs[0]->Speed.x + 0.6;
 		}
 		else {
 			P2->Rotation = P1->Rotation;
 			if (P1->Status & Status_Ground)
-				CharObj2Ptrs[1]->Speed.x = CharObj2Ptrs[0]->Speed.x + 0.8;
+				CharObj2Ptrs[playerID]->Speed.x = CharObj2Ptrs[0]->Speed.x + 0.8;
 		}
 	}
 }
@@ -56,33 +56,38 @@ void CatchUP() {
 void LoadAISnowBoard_R() {
 	ForcePlayerAction(0, 0x2c);
 
+	unsigned char ID = getAI_ID();
+
+	if (!ID)
+		return;
+
 	if (CurrentCharacter == Characters_Sonic && isAIActive)
 	{
-		ForcePlayerAction(1, 44); //Force AI to use Snowboard
+		ForcePlayerAction(ID, 44); //Force AI to use Snowboard
 		ObjectMaster* v1 = LoadObject((LoadObj)(LoadObj_Data1 | LoadObj_Data2), 2, Snowboard_Tails_Load);
 		if (v1 != nullptr)
 		{
-			v1->Data1->CharID = 1;
-			v1->Data1->CharIndex = 1;
+			v1->Data1->CharID = ID;
+			v1->Data1->CharIndex = ID;
 			return;
 		}
 	}
 }
 
 //Make Tails using snowboard again when trying to catch Sonic
-void SnowboardRespawn() {
+void SnowboardRespawn(unsigned char playerID) {
 	if (GameState != 15 || isRandoActive())
 		return;
 
-	EntityData1* data = EntityData1Ptrs[1];
+	EntityData1* data = EntityData1Ptrs[playerID];
 
 	if (data->Action == 15) {
 		if (isPlayerUsingSnowboard()) {
-			EntityData1Ptrs[1]->Status &= ~(Status_Attack | Status_Ball | Status_LightDash);
-			CharObj2Ptrs[1]->PhysicsData.CollisionSize = PhysicsArray[Characters_Tails].CollisionSize; //Reset Miles physic properly
-			CharObj2Ptrs[1]->PhysicsData.YOff = PhysicsArray[Characters_Tails].YOff;
-			CharObj2Ptrs[1]->PhysicsData.JumpSpeed = PhysicsArray[Characters_Tails].JumpSpeed;
-			ForcePlayerAction(1, 44);
+			EntityData1Ptrs[playerID]->Status &= ~(Status_Attack | Status_Ball | Status_LightDash);
+			CharObj2Ptrs[playerID]->PhysicsData.CollisionSize = PhysicsArray[Characters_Tails].CollisionSize; //Reset Miles physic properly
+			CharObj2Ptrs[playerID]->PhysicsData.YOff = PhysicsArray[Characters_Tails].YOff;
+			CharObj2Ptrs[playerID]->PhysicsData.JumpSpeed = PhysicsArray[Characters_Tails].JumpSpeed;
+			ForcePlayerAction(playerID, 44);
 		}
 	}
 }
@@ -109,7 +114,14 @@ int chaoHappyTimer = 0;
 void MakeAIPetChao(ObjectMaster* Chao) {
 	EntityData1* data = Chao->Data1;
 	EntityData1* p1 = EntityData1Ptrs[0];
-	EntityData1* p2 = EntityData1Ptrs[1];
+
+
+	unsigned char ID = getAI_ID();
+
+	if (!ID)
+		return;
+
+	EntityData1* p2 = EntityData1Ptrs[ID];
 
 	if (p1->Action != isCharacterPetting()) {
 		if (p2->Action > 40) {
@@ -134,7 +146,7 @@ void MakeAIPetChao(ObjectMaster* Chao) {
 		if (dist < 9) {
 			chaoHappyTimer = 0;
 			p2->Action = 64;
-			CharObj2Ptrs[1]->AnimationThing.Index = 133;
+			CharObj2Ptrs[ID]->AnimationThing.Index = 133;
 			isChaoPetByAI = true;
 		}
 		break;
@@ -142,7 +154,13 @@ void MakeAIPetChao(ObjectMaster* Chao) {
 }
 
 void CheckAndMakeAIPetChao(ObjectMaster* Chao) {
-	if (IsChaoGardenBanned || !EntityData1Ptrs[1])
+
+	unsigned char ID = getAI_ID();
+
+	if (!ID)
+		return;
+
+	if (IsChaoGardenBanned || !EntityData1Ptrs[ID])
 		return;
 
 	if (CurrentLevel >= LevelIDs_SSGarden && CurrentLevel <= LevelIDs_MRGarden) {
@@ -173,14 +191,16 @@ void Chao_Main_R(ObjectMaster* obj) {
 
 void MilesAI_VictoryPose(ObjectMaster* obj) {
 
-	if (!EntityData1Ptrs[0] || !EntityData1Ptrs[1] || !isAIActive || EntityData1Ptrs[1]->CharID != Characters_Tails)
+	EntityData1* data = obj->Data1;
+
+	if (!EntityData1Ptrs[0] || !EntityData1Ptrs[data->CharIndex] || !isAIActive || EntityData1Ptrs[data->CharIndex]->CharID != Characters_Tails)
 		return;
 
 	EntityData1* p1 = EntityData1Ptrs[0];
-	EntityData1* p2 = EntityData1Ptrs[1];
-	EntityData1* data = obj->Data1;
+	EntityData1* p2 = EntityData1Ptrs[data->CharIndex];
 
-	switch (obj->Data1->Action)
+
+	switch (data->Action)
 	{
 	case 0:
 		if (p1->NextAction == 0x13) {
@@ -193,7 +213,7 @@ void MilesAI_VictoryPose(ObjectMaster* obj) {
 	case 1:
 
 		if (CurrentLevel == LevelIDs_IceCap && CurrentAct == 2)
-			ForcePlayerAction(1, 24);
+			ForcePlayerAction(data->CharIndex, 24);
 
 		if ((p2->Status & Status_Ground) == 0 && (p2->Status & Status_Unknown1) == 0 || p2->Position.y > p1->Position.y + 2 || p2->Position.y < p1->Position.y - 2)
 		{
@@ -211,7 +231,7 @@ void MilesAI_VictoryPose(ObjectMaster* obj) {
 		break;
 	case 2:
 		p2->Rotation = p1->Rotation;
-		ForcePlayerAction(1, 19); //Force AI to Victory pose
+		ForcePlayerAction(data->CharIndex, 19); //Force AI to Victory pose
 		break;
 	}
 }
@@ -221,8 +241,15 @@ void MilesAI_VictoryPose(ObjectMaster* obj) {
 //While load result: Teleport AI close to the player and Force Victory Pose.
 void ScoreDisplayMain_R(ObjectMaster* obj) {
 
-	if (obj->Data1->Action == 0) {
-		LoadObject((LoadObj)(LoadObj_Data1 | LoadObj_Data2), 2, MilesAI_VictoryPose);
+
+	unsigned char ID = getAI_ID();
+
+	if (ID > 0) {
+
+		if (obj->Data1->Action == 0) {
+			ObjectMaster* victory = LoadObject((LoadObj)(LoadObj_Data1 | LoadObj_Data2), 2, MilesAI_VictoryPose);
+			victory->Data1->CharIndex = ID;
+		}
 	}
 
 	ObjectFunc(origin, ScoreDisplay_main_t->Target());
@@ -230,50 +257,92 @@ void ScoreDisplayMain_R(ObjectMaster* obj) {
 }
 
 
-
-
-void PreventTailsAIDamage() {
-	if (!EntityData1Ptrs[1] || !CharObj2Ptrs[1] || EntityData1Ptrs[1]->CharID != Characters_Tails)
-		return;
-
-	EntityData1* data = EntityData1Ptrs[0];
-	CharObj2* co2 = CharObj2Ptrs[1];
-
-	if (co2->Upgrades & Upgrades_SuperSonic)
-		return;
-
-	if (GetCollidingEntityA(data)) { //There is actually a flag init in Tails AI that could be removed instead of doing this hacky thing, but this might create issue with AI fight, need to be tested.
-		co2->Powerups |= Powerups_Invincibility;
-	}
-	else {
-		if ((co2->Powerups & Powerups_Invincibility)) {
-			co2->Powerups &= 0x100u; //Remove invincibility
-		}
-	}
-}
-
-
 void RestoreRespawnDelay() {
 	spawnDelay = 50.0;
 }
 
-void PreventTailsAIAction() {
-	if (EntityData1Ptrs[1]->CharID != Characters_Tails || !EntityData1Ptrs[1] || !CharObj2Ptrs[1])
+int copyDebugAction = 110;
+
+void PreventTailsAIAction(unsigned char playerID) {
+	if (EntityData1Ptrs[playerID]->CharID != Characters_Tails || !EntityData1Ptrs[playerID] || !CharObj2Ptrs[playerID])
 		return;
 
-	CharObj2* co2 = CharObj2Ptrs[1];
+	CharObj2* co2 = CharObj2Ptrs[playerID];
+	EntityData1* data = EntityData1Ptrs[playerID];
 
 	if (CurrentLevel == LevelIDs_MysticRuins && CurrentAct == 0)
 	{
-		if (EntityData1Ptrs[1]->Action == 38)
+		if (data->Action == 38)
 		{
-			EntityData1Ptrs[1]->Action = 1;
-			EntityData1Ptrs[1]->Position.x += 5;
+			data->Action = 1;
+			data->Position.x += 5;
 		}
 	}
 
 	if (CurrentLevel == LevelIDs_TwinklePark)
 		RestoreRespawnDelay();
+
+	if (DebugMode)
+	{
+		copyDebugAction = data->Action;
+	}
+	else {
+		if (data->Action == copyDebugAction)
+		{
+			data->Status & ~Status_Ball;
+			data->Action = 1;
+		}
+	}
+}
+
+bool isFollowing = false;
+
+void Force_MilesToFollow(unsigned char playerID) {
+
+	if (!EntityData1Ptrs[playerID])
+		return;
+
+	EntityData1* P1 = EntityData1Ptrs[0];
+	EntityData1* P2 = EntityData1Ptrs[playerID];
+
+	if (P1->NextAction == 0x13 && isFollowing) {
+		P2->Action = 1;
+		isFollowing = false;
+	}
+
+	if ((ControllerPointers[0]->HeldButtons & Buttons_Y)) {
+
+		if (!isFollowing || P2->Action != 105) {
+			P2->Status = 0;
+			P2->Action = 105;
+			CharObj2Ptrs[playerID]->AnimationThing.Index = 37;
+			return;
+		}
+		else {
+			if (P2->Action == 105) {
+				isFollowing = false;
+				P2->Action = 1;
+			}
+		}
+	}
+
+
+	if (P2->Action != 105)
+		return;
+
+	P2->Rotation = P1->Rotation;
+
+	CharObj2Ptrs[playerID]->Powerups |= Powerups_Invincibility;
+	P2->Position.x = P1->Position.x + 15;
+	P2->Position.y = P1->Position.y + 10;
+	P2->Position.z = P1->Position.z + 15;
+}
+
+void FixCollision(EntityData1* entity) {
+	if (isFollowing)
+		return;
+
+	AddToCollisionList(entity);
 }
 
 
@@ -290,6 +359,8 @@ void AI_Improvement() {
 	WriteData<1>((int*)0x47DC5E, 0x81);
 	WriteData<1>((int*)0x47DC5D, 0x36);
 	WriteData<1>((int*)0x47DC5C, 0xb0);
+
+	WriteCall((void*)0x462490, FixCollision);
 
 
 	if (isFlyTravel)

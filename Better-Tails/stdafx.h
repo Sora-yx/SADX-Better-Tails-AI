@@ -15,6 +15,7 @@
 #include "IniFile.hpp"
 
 #include "helper.h"
+#include "util.h"
 
 #include <fstream>
 #include <iostream>

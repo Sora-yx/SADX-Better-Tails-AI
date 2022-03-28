@@ -11,11 +11,16 @@ int rngDeathZoneRescue = 0;
 int rngRegularDeathRescue = 0;
 
 void CameraEvent_MilesRescue(_OBJ_CAMERAPARAM* camparam) {
-	CameraTask.pos = EntityData1Ptrs[1]->Position;
+
+	unsigned char ID = getAI_ID();
+
+	if (!ID)
+		return;
+	CameraTask.pos = EntityData1Ptrs[ID]->Position;
 	CameraTask.pos.x += 30;
 	CameraTask.pos.y += 30;
 	CameraTask.pos.z += 30;
-	CameraTask.targetpos = EntityData1Ptrs[1]->Position;
+	CameraTask.targetpos = EntityData1Ptrs[ID]->Position;
 }
 
 MilesAI_Fly RescueArray[]{
@@ -71,31 +76,34 @@ const char* const Sonic_message01[] = {
 
 //Actually need a second separate object for the landing part, otherwise Tails AI behavior become dumb, idk, kill me, game sucks.
 void TailsAI_Landing2(ObjectMaster* obj) {
-	if (!EntityData1Ptrs[0] || !EntityData1Ptrs[1] || GameState != 15 && GameState != 4) {
+
+	EntityData1* data = obj->Data1;
+	EntityData1* p1 = EntityData1Ptrs[0];
+	EntityData1* p2 = EntityData1Ptrs[data->CharIndex];
+
+	CharObj2* co2p1 = CharObj2Ptrs[0];
+	CharObj2* co2p2 = CharObj2Ptrs[data->CharIndex];
+
+	if (!p1|| !p2 || GameState != 15 && GameState != 4) {
 		return;
 	}
 
-	EntityData1* p1 = EntityData1Ptrs[0];
-	EntityData1* p2 = EntityData1Ptrs[1];
-	EntityData1* data = obj->Data1;
-	CharObj2* co2p1 = CharObj2Ptrs[0];
-	CharObj2* co2p2 = CharObj2Ptrs[1];
 
 	LookAt(&p2->Position, &data->Position, nullptr, &p2->Rotation.y);
-	FlySoundOnFrames();
+	FlySoundOnFrames(data->CharIndex);
 
 	switch (data->Action) {
 	case 0: {
 		isRescued = true;
 		obj->DeleteSub = TailsAI_LandingDelete2;
-		CharObj2Ptrs[1]->AnimationThing.Index = 37;
+		CharObj2Ptrs[data->CharIndex]->AnimationThing.Index = 37;
 		PlayCharacterGrabAnimation(p1, co2p1);
 		data->Action = 1;
 	}
 	break;
 	case 1:
 		UpdateP1Position(co2p1, co2p2, p1, p2);
-		CharObj2Ptrs[1]->Speed.y -= 0.4;
+		CharObj2Ptrs[data->CharIndex]->Speed.y -= 0.4;
 
 		if (++data->Index == 30) {
 			data->NextAction = rand() % 2;
@@ -117,8 +125,8 @@ void TailsAI_Landing2(ObjectMaster* obj) {
 	case 2:
 		EnableController(0);
 		co2p1->Powerups &= 0x100u;
-		PlayCharacterLeaveAnimation(p1, co2p1);
-		RestoreAIControl();
+		PlayCharacterLeaveAnimation(p1, co2p1, data->CharIndex);
+		RestoreAIControl(data->CharIndex);
 		if (++data->Index == 20) {
 
 			CheckThingButThenDeleteObject(obj);
@@ -128,14 +136,16 @@ void TailsAI_Landing2(ObjectMaster* obj) {
 }
 
 void MilesRescuesCharacterFall(ObjectMaster* obj) {
-	EntityData1* p1 = EntityData1Ptrs[0];
-	EntityData1* p2 = EntityData1Ptrs[1];
-	CharObj2* p1co2 = CharObj2Ptrs[0];
-	CharObj2* p2co2 = CharObj2Ptrs[1];
 	EntityData1* data = obj->Data1;
 
+	EntityData1* p1 = EntityData1Ptrs[0];
+	EntityData1* p2 = EntityData1Ptrs[data->CharIndex];
+	CharObj2* p1co2 = CharObj2Ptrs[0];
+	CharObj2* p2co2 = CharObj2Ptrs[data->CharIndex];
+
+
 	if (data->Action >= 2)
-		FlySoundOnFrames();
+		FlySoundOnFrames(data->CharIndex);
 
 	switch (data->Action) {
 	case initMilesFalling: //Set tails above player
@@ -152,7 +162,7 @@ void MilesRescuesCharacterFall(ObjectMaster* obj) {
 			p1co2->Speed.y = 0;
 			p2->Status &= ~(Status_Attack | Status_Ball | Status_LightDash);
 			p2->Action = 15;
-			CharObj2Ptrs[1]->AnimationThing.Index = 37;
+			p2co2->AnimationThing.Index = 37;
 			p1->Status &= ~(Status_Attack | Status_Ball | Status_LightDash);
 			p1->Action = 125;
 			PlayCharacterGrabAnimation(p1, p1co2);
@@ -160,9 +170,9 @@ void MilesRescuesCharacterFall(ObjectMaster* obj) {
 		}
 		else { //let AI Fall until he catches player 1.
 			p2->Status |= Status_Ball;
-			CharObj2Ptrs[1]->AnimationThing.Index = 15;
+			p2co2->AnimationThing.Index = 15;
 			p1co2->Speed.y = -2.5;
-			CharObj2Ptrs[1]->Speed.y = -4.5;
+			p2co2->Speed.y = -4.5;
 		}
 		break;
 	case playerGrabbed:
@@ -170,7 +180,7 @@ void MilesRescuesCharacterFall(ObjectMaster* obj) {
 			LoadObject(LoadObj_Data1, 1, FadeoutScreen);
 		}
 		if (++data->InvulnerableTime == 200) { //get Altitude
-			CharObj2Ptrs[1]->Speed.y = 3.5;
+			p2co2->Speed.y = 3.5;
 			NJS_VECTOR getPos = CheckRescueArray(); //move player to safe point (ie: last grabbed checkpoint or specific spot in hub world)
 			if (getPos.x != -1 && getPos.y != -1 && getPos.z != -1) {
 				p1->Position = getPos;
@@ -185,8 +195,8 @@ void MilesRescuesCharacterFall(ObjectMaster* obj) {
 		}
 		else {
 			UpdateP1Position(p1co2, p2co2, p1, p2);
-			CharObj2Ptrs[1]->Speed.y += 0.5;
-			CharObj2Ptrs[1]->Speed.x += 0.3;
+			p2co2->Speed.y += 0.5;
+			p2co2->Speed.x += 0.3;
 		}
 		break;
 	case landingTransition:
@@ -199,11 +209,13 @@ void MilesRescuesCharacterFall(ObjectMaster* obj) {
 	}
 }
 
-void CheckAndCallMilesRescue() {
+void CheckAndCallMilesRescue(int playerID) {
 	DisableController(0);
 
-	if (!MilesRescueObj)
+	if (!MilesRescueObj) {
 		MilesRescueObj = LoadObject((LoadObj)2, 1, MilesRescuesCharacterFall);
+		MilesRescueObj->Data1->CharIndex = playerID;
+	}
 }
 
 bool BannedRescueLevel() {
@@ -218,8 +230,9 @@ bool BannedRescueLevel() {
 
 void PlayCharacterDeathSound_r(ObjectMaster* a1, int pid) {
 
+	unsigned char ID = getAI_ID();
 
-	if (!EntityData1Ptrs[1] || EntityData1Ptrs[1]->CharID != Characters_Tails) {
+	if (ID > 0 && (!EntityData1Ptrs[ID] || EntityData1Ptrs[ID]->CharID != Characters_Tails)) {
 		PlayCharacterDeathSound(a1, pid); //kill the player
 		return;
 	}
@@ -238,7 +251,9 @@ void PlayCharacterDeathSound_r(ObjectMaster* a1, int pid) {
 		}
 	}
 
-	CheckAndCallMilesRescue();
+	if (ID > 0)
+		CheckAndCallMilesRescue(ID);
+
 	return;
 }
 
@@ -258,7 +273,7 @@ static void __declspec(naked) PlayCharacterDeathSoundAsm(ObjectMaster* eax, int 
 	}
 }
 
-void CheckMilesBossRescue() {
+void CheckMilesBossRescue(unsigned char ID) {
 	if (CurrentLevel != LevelIDs_EggHornet && CurrentLevel != LevelIDs_EggViper || GameState != 15 || isMilesSaving() || rngDeathZoneRescue || isRescued && CurrentLevel < LevelIDs_StationSquare)
 		return;
 
@@ -268,13 +283,13 @@ void CheckMilesBossRescue() {
 	if (!MilesRescueObj && !TailsRescueLanding && !rngDeathZoneRescue) {
 		rngDeathZoneRescue = rand() % 100 + 1;
 
-		if (!EntityData1Ptrs[1] || EntityData1Ptrs[1]->CharID != Characters_Tails || rngDeathZoneRescue < 65) {
+		if (!EntityData1Ptrs[ID] || EntityData1Ptrs[ID]->CharID != Characters_Tails || rngDeathZoneRescue < 65) {
 			return;
 		}
 	}
 
 	EntityData1Ptrs[0]->Action = 125;
-	CheckAndCallMilesRescue();
+	CheckAndCallMilesRescue(ID);
 	return;
 }
 
@@ -288,8 +303,8 @@ void MilesRescueEnemyDelete(ObjectMaster* obj) {
 void MilesRescueFromEnemy(ObjectMaster* obj) {
 	EntityData1* data = obj->Data1;
 	EntityData1* p1 = EntityData1Ptrs[0];
-	EntityData1* p2 = EntityData1Ptrs[1];
-	CharObj2* co2p2 = CharObj2Ptrs[1];
+	EntityData1* p2 = EntityData1Ptrs[data->CharIndex ];
+	CharObj2* co2p2 = CharObj2Ptrs[data->CharIndex];
 	CharObj2* co2p1 = CharObj2Ptrs[0];
 
 
@@ -322,7 +337,7 @@ void MilesRescueFromEnemy(ObjectMaster* obj) {
 	case 3:
 		p2->Action = 4;
 		co2p2->Speed = { 1, 0, 0 };
-		HurtCharacter(1);
+		HurtCharacter(data->CharIndex);
 		PlaySound(33, 0, 0, 0);
 		isRescued = true;
 		p1->Action = 8;
@@ -340,7 +355,12 @@ void MilesRescueFromEnemy(ObjectMaster* obj) {
 
 void CheckPlayerDamage(unsigned __int8 player) {
 
-	if (isRescued || !EntityData1Ptrs[1] || EntityData1Ptrs[1]->CharID != Characters_Tails || player > 0 || CurrentLevel >= LevelIDs_Chaos0 || BannedRescueLevel()) {
+	unsigned char ID = getAI_ID();
+
+	if (ID == 0)
+		return KillPlayer(player);
+
+	if (isRescued || !EntityData1Ptrs[ID] || EntityData1Ptrs[ID]->CharID != Characters_Tails || player > 0 || CurrentLevel >= LevelIDs_Chaos0 || BannedRescueLevel()) {
 		return KillPlayer(player);
 	}
 
@@ -350,8 +370,10 @@ void CheckPlayerDamage(unsigned __int8 player) {
 	if (!MilesRescueEnemy && !rngRegularDeathRescue && !isRescued) {
 		rngRegularDeathRescue = rand() % 100 + 1;
 
-		if (rngRegularDeathRescue > 69 && EntityData1Ptrs[1])
+		if (rngRegularDeathRescue > 69 && EntityData1Ptrs[ID]) {
 			MilesRescueEnemy = LoadObject((LoadObj)2, 1, MilesRescueFromEnemy);
+			MilesRescueEnemy->Data1->CharIndex = ID;
+		}
 		else
 			return KillPlayer(player);
 	}

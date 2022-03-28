@@ -47,7 +47,7 @@ int CheckTailsAI_R(void) {
 		return 0x0;
 
 	//bug fixes (Disable AI if necessary to avoid crash
-	if (!isTailsAIAllowed())
+	if (!isTailsAIAllowed() && !IsAdventureComplete(SelectedCharacter))
 		return 0x0;
 
 	//Player Settings
@@ -193,30 +193,33 @@ void LoadCharacterAndAI() {
 	return LoadCharacter(); //call original function
 }
 
-void SpinDash_Check() {
+void SpinDash_Check(unsigned char ID) {
 
 	if (!isNewTricksActive())
 		return;
 
+
 	EntityData1* data = EntityData1Ptrs[0];
 
 	if (data->CharID == Characters_Sonic && data->Action == 4 || data->CharID == Characters_Knuckles && data->Action == 59) {
-		PressedButtons[1] |= Buttons_B;
-		HeldButtons[1] |= Buttons_B;
+		PressedButtons[ID] |= Buttons_B;
+		HeldButtons[ID] |= Buttons_B;
 	}
 }
 
-void MilesAI_OnFrames() { //Only run when TailsAI_Main is active
-	if (GameState != 15 && GameState != 4 || !EntityData1Ptrs[0] || !EntityData1Ptrs[1] || EntityData1Ptrs[1]->CharID != Characters_Tails || !TailsAI_ptr)
+void MilesAI_OnFrames(unsigned char playerID) { //Only run when TailsAI_Main is active
+
+	if (GameState != 15 && GameState != 4 || !EntityData1Ptrs[0] || !EntityData1Ptrs[playerID] || EntityData1Ptrs[playerID]->CharID != Characters_Tails || !TailsAI_ptr)
 		return;
 
-	PreventTailsAIAction();
-	SnowboardRespawn();
-	CatchUP();
-	SpinDash_Check();
+	PreventTailsAIAction(playerID);
+	SnowboardRespawn(playerID);
+	CatchUP(playerID);
+	SpinDash_Check(playerID);
+	//Force_MilesToFollow(playerID);
 
 	if (isRescueAllowed)
-		CheckMilesBossRescue();
+		CheckMilesBossRescue(playerID);
 }
 
 //Reset value when Tails AI is deleted
@@ -230,17 +233,20 @@ void TailsAI_ResetValue() {
 	return FUN_0042ce20();
 }
 
-void RemovePlayerCollision() {
-	if (!EntityData1Ptrs[0] || !EntityData1Ptrs[1] || EV_MainThread_ptr)
+void RemovePlayerCollision(unsigned char ID) {
+
+	if (!EntityData1Ptrs[0] || ID > 0 && !EntityData1Ptrs[ID] || EV_MainThread_ptr)
 		return;
 
 	EntityData1* data = EntityData1Ptrs[0];
 
-	if (data->CollisionInfo->nbInfo)
+	if (data->CollisionInfo)
 	{
-		for (int8_t i = 0; i < data->CollisionInfo->nbInfo; i++) {
+		if (data->CollisionInfo->nbInfo) {
+			for (int8_t i = 0; i < data->CollisionInfo->nbInfo; i++) {
 
-			EntityData1Ptrs[0]->CollisionInfo->CollisionArray[i].damage &= ~0x20u; //Remove damage on other players
+				EntityData1Ptrs[0]->CollisionInfo->CollisionArray[i].damage &= ~0x20u; //Remove damage on other players
+			}
 		}
 	}
 }
@@ -249,14 +255,16 @@ void TailsAI_Main_R(ObjectMaster* obj) {
 
 	EntityData1* data = obj->Data1;
 
+
 	if (isFlyTravel)
 		CheckAndLoadTailsTravelObjects(obj);
 
-	MilesAI_OnFrames();
+	MilesAI_OnFrames(1);
 
 	if (data->Action == 0) {
-		RemovePlayerCollision();
+		RemovePlayerCollision(1);
 	}
+
 
 	ObjectFunc(origin, TailsAI_Main_t->Target());
 	origin(obj);

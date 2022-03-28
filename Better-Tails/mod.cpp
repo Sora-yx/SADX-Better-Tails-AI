@@ -12,6 +12,7 @@ bool isMSBanned = false;
 time_t t;
 
 extern "C" {
+
 	__declspec(dllexport) void __cdecl Init(const char* path, const HelperFunctions& helperFunctions)
 	{
 		const IniFile* config = new IniFile(std::string(path) + "\\config.ini");
