@@ -153,34 +153,6 @@ enum EMilesMap {
 	MRJungleBig
 };
 
-struct _camcontwk
-{
-	char cammode;
-	char camsmode;
-	char bBlank;
-	char btimer;
-	unsigned __int16 wtimer;
-	__int16 ssFlag;
-	float tgtdist;
-	NJS_VECTOR pos;
-	NJS_VECTOR targetpos;
-	Rotation3 angle;
-	NJS_VECTOR oldcampos;
-	int angx_spd;
-	int angy_spd;
-	int angz_spd;
-	NJS_VECTOR speed;
-	NJS_VECTOR acceleration;
-};
-
-struct _OBJ_ADJUSTPARAM
-{
-	__int16 ssAdjustFlag;
-	int angSpeed[3];
-	float fSpeed;
-	int counter;
-};
-
 
 
 enum class CameraAdjustsIDs {
@@ -221,7 +193,6 @@ enum class CameraDirectIDs {
 };
 
 typedef void(__cdecl* CameraFuncPtr)(_OBJ_CAMERAPARAM*);
-typedef void(__cdecl* CamAdjustPtr)(EntityData1*, EntityData1*, _OBJ_ADJUSTPARAM*);
 
 FunctionPointer(void, SetCameraEvent, (CameraFuncPtr func, CameraAdjustsIDs adjust, CameraDirectIDs direct), 0x437D20);
 VoidFunc(RemoveCameraEvent, 0x436140);

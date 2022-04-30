@@ -215,14 +215,14 @@ void MilesAI_VictoryPose(ObjectMaster* obj) {
 		if (CurrentLevel == LevelIDs_IceCap && CurrentAct == 2)
 			ForcePlayerAction(data->CharIndex, 24);
 
-		if ((p2->Status & Status_Ground) == 0 && (p2->Status & Status_Unknown1) == 0 || p2->Position.y > p1->Position.y + 2 || p2->Position.y < p1->Position.y - 2)
+		if ((p2->Status & Status_Ground) == 0 && (p2->Status & Status_OnColli) == 0 || p2->Position.y > p1->Position.y + 2 || p2->Position.y < p1->Position.y - 2)
 		{
 			p2->Position = UnitMatrix_GetPoint(&p1->Position, &p2->Rotation, 0.0f, 0.0f, 6.0f);  //fix floating victory pose
 		}
 
 		if (++data->Index == 5) {
 
-			if ((p2->Status & Status_Ground) == 0 && (p2->Status & Status_Unknown1) == 0) { //last failsafe
+			if ((p2->Status & Status_Ground) == 0 && (p2->Status & Status_OnColli) == 0) { //last failsafe
 				p2->Position = UnitMatrix_GetPoint(&p1->Position, &p2->Rotation, 0.0f, 0.0f, -6.0f); //try other side
 			}
 			data->Action = 2;

@@ -91,7 +91,9 @@
       <AdditionalDependencies>$(ProjectDir)..\bin\ModLoaderCommon.lib;$(ProjectDir)..\bin\libmodutils.lib;%(AdditionalDependencies)$(ProjectDir)..\bin\libmodutils.lib;$(SolutionDir)sadx-mod-loader\extlib\bass\bass.lib;$(SolutionDir)sadx-mod-loader\extlib\bass\bass_vgmstream.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy "$(SolutionDir)bin\Better-Tails-AI.dll" "D:\Jeux\SONICADVENTUREDX\mods\Better Tails AI" /s /y</Command>
+      <Command>
+      </Command>
+      <Message>xcopy "$(SolutionDir)bin\Better-Tails-AI.dll" "D:\Jeux\SONICADVENTUREDX\mods\Better Tails AI" /s /y</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">

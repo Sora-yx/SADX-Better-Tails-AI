@@ -16,11 +16,16 @@ void CameraEvent_MilesRescue(_OBJ_CAMERAPARAM* camparam) {
 
 	if (!ID)
 		return;
-	CameraTask.pos = EntityData1Ptrs[ID]->Position;
-	CameraTask.pos.x += 30;
-	CameraTask.pos.y += 30;
-	CameraTask.pos.z += 30;
-	CameraTask.targetpos = EntityData1Ptrs[ID]->Position;
+
+	CameraTask.camxpos = EntityData1Ptrs[ID]->Position.x;	
+	CameraTask.camypos = EntityData1Ptrs[ID]->Position.y;	
+	CameraTask.camzpos = EntityData1Ptrs[ID]->Position.z;
+	CameraTask.camxpos += 30;
+	CameraTask.camypos += 30;
+	CameraTask.camzpos += 30;
+	CameraTask.tgtxpos = EntityData1Ptrs[ID]->Position.x;	
+	CameraTask.tgtypos = EntityData1Ptrs[ID]->Position.y;	
+	CameraTask.tgtzpos = EntityData1Ptrs[ID]->Position.z;
 }
 
 MilesAI_Fly RescueArray[]{
@@ -117,7 +122,7 @@ void TailsAI_Landing2(ObjectMaster* obj) {
 			}
 		}
 
-		if (++data->InvulnerableTime == 90 || ((p1->Status & Status_Ground) == Status_Ground) || (p1->Status & Status_Unknown1) == Status_Unknown1) {
+		if (++data->InvulnerableTime == 90 || ((p1->Status & Status_Ground)) || (p1->Status & Status_OnColli)) {
 			data->Index = 0;
 			data->Action = 2;
 		}

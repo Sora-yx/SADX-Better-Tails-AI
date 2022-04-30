@@ -659,7 +659,7 @@ void TailsAI_Landing(ObjectMaster* obj) {
 		co2p2->Speed.y -= 0.8;
 		co2p2->Speed.z += 0.8;
 
-		if (++data->InvulnerableTime == 140 || ((p1->Status & Status_Ground)) || (p1->Status & Status_Unknown1)) {
+		if (++data->InvulnerableTime == 140 || ((p1->Status & Status_Ground)) || (p1->Status & Status_OnColli)) {
 			data->Action++;
 		}
 		break;
