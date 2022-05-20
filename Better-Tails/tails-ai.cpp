@@ -285,6 +285,4 @@ void AI_Init(const HelperFunctions& helperFunctions) {
 	}
 
 	TailsAI_Main_t = new Trampoline((int)TailsAI_Main, (int)TailsAI_Main + 0x5, TailsAI_Main_R);
-
-	ReplaceSound("P_SONICTAILS_BANK03", "P_SONICTAILS_BANK03");
 }

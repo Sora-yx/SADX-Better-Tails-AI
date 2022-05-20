@@ -352,4 +352,6 @@ void AI_Fixes() {
 
 	WriteCall((void*)0x65f82f, CheckAndDeleteAI); //Remove Tails before "Sonic finds Knuckles cutscene" (super sonic)
 	WriteCall((void*)0x663d4a, CheckAndDeleteAI); //Remove Tails before "Sonic and Tails find tornado 2 cutscene" (super sonic)
+
+	WriteData<6>((int*)0x460fcf, 0x90); //restore Miles's tail effect when AI
 }

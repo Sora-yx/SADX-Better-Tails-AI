@@ -392,10 +392,8 @@ float GetCharacterPositionY(EntityData1* p1) {
 	case Characters_Sonic:
 	case Characters_Knuckles:
 		return 6.5f;
-		break;
 	case Characters_Amy:
 		return 5.5f;
-		break;
 	case Characters_Gamma:
 	case Characters_Big:
 		return 18.5f;
