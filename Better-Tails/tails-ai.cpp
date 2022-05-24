@@ -3,51 +3,35 @@
 #define ReplaceSound(C, D) helperFunctions.ReplaceFile("system\\sounddata\\se\\" C ".dat", "system\\" D ".dat")
 
 bool isAIActive = false;
+bool FlagDeleteMilesAI = false;
 int FlagAI = 0;
 Trampoline* TailsAI_Main_t;
 
-MilesAI_Spawn TailsArray[]{ //Used to prevent Miles to be called in some very specfic places/cutscenes where the game will crash.
-	{ Characters_Sonic, LevelIDs_StationSquare, EventFlags_Sonic_EmeraldCoastClear, 0x006 },
-	{ Characters_Sonic, LevelIDs_StationSquare, EventFlags_Sonic_CasinopolisClear, 0x009 },
-	{ Characters_Sonic, LevelIDs_MysticRuins, EventFlags_Sonic_Chaos4Clear, 0x00B },
-	{ Characters_Sonic, LevelIDs_StationSquare, EventFlags_Sonic_SpeedHighwayClear, 0x014 },
-	{ Characters_Sonic, LevelIDs_MysticRuins, EventFlags_Sonic_SpeedHighwayClear, 0x016 },
-	{ Characters_Sonic, LevelIDs_EggCarrierOutside, EventFlags_Sonic_RedMountainClear, 0x100},
-	{ Characters_Sonic, LevelIDs_EggCarrierInside, EventFlags_Sonic_SkyDeckClear, 0x01B},
-	{ Characters_Sonic, LevelIDs_EggCarrierOutside, EventFlags_Sonic_SkyDeckClear, 0x01B},
-	{ Characters_Knuckles, LevelIDs_MysticRuins, EventFlags_Knuckles_RedMountainClear, 0x08B },
-	{ Characters_Amy, LevelIDs_StationSquare,  EventFlags_Amy_HotShelterClear, 0x06D},
-	{ Characters_Amy, LevelIDs_EggCarrierOutside,  EventFlags_Amy_HotShelterClear, 0x06D},
-	{ Characters_Big, LevelIDs_MysticRuins, EventFlags_Big_IceCapClear, 0x0D3 },
-	{ Characters_Big, LevelIDs_EmeraldCoast, EventFlags_Big_IceCapClear, 0x0D4},
-	{ Characters_Gamma, LevelIDs_EggCarrierOutside, EventFlags_Gamma_EmeraldCoastClear, 0x0C2},
-};
+void DeleteMilesAI()
+{
+	char id = getAI_ID();
 
-bool isTailsAIAllowed() {
-	for (uint8_t i = 0; i < LengthOfArray(TailsArray); i++) {
-		if (CurrentCharacter == TailsArray[i].curCharacter && CurrentLevel == TailsArray[i].curLevel && EventFlagArray[TailsArray[i].eventFlag] == 1)
-		{
-			if (!GetCutsceneFlagArray(TailsArray[i].cutsceneFlag)) //if the cutscene didn't play, don't call Tails
-				return false;
-		}
+	if (id > 0) {
+		FlagDeleteMilesAI = true;
+		CheckThingButThenDeleteObject(GetCharacterObject(id));
 	}
-
-	return true;
 }
+
 
 //Tails AI Flag Check
 int CheckTailsAI_R(void) {
 	bool isSA2Mod = GetModuleHandle("sadx-sa2-mod");
 
-	if (CurrentLevel == LevelIDs_SkyChase1 || CurrentLevel == LevelIDs_SkyChase2 || !isSA2Mod && CurrentLevel == LevelIDs_ChaoRace || EV_MainThread_ptr) {
+	if (NPCMilesStandByFlag || EV_MainThread_ptr || CurrentLevel == LevelIDs_SkyChase1 || CurrentLevel == LevelIDs_SkyChase2 || !isSA2Mod && CurrentLevel == LevelIDs_ChaoRace) {
 		return 0x0; //don't load AI
 	}
+
 
 	if (CurrentCharacter == Characters_Sonic && MetalSonicFlag && isMSBanned)
 		return 0x0;
 
 	//bug fixes (Disable AI if necessary to avoid crash
-	if (!isTailsAIAllowed() && !IsAdventureComplete(SelectedCharacter))
+	if (CurrentCharacter == Characters_Big && !GetCutsceneFlagArray(0x0D3))
 		return 0x0;
 
 	//Player Settings
@@ -80,26 +64,6 @@ int CheckTailsAI_R(void) {
 		}
 	}
 
-	if (CurrentCharacter == Characters_Sonic)
-	{
-		switch (CurrentLevel)
-		{
-		case LevelIDs_MysticRuins:
-			if (!GetCutsceneFlagArray(0x00B) && IceCapFlag)
-				return 0x0; //Fix Knuckles AI behavior.
-
-			if (EventFlagArray[EventFlags_Sonic_EggViperClear] == 1 && !EventFlagArray[EventFlags_SonicAdventureComplete])
-				return 0x0; //fix funny ending crash
-
-			break;
-		case LevelIDs_RedMountain:
-			if (!EventFlagArray[EventFlags_Sonic_RedMountainClear] && CurrentAct >= 1)
-				return 0x0; //Tornado cutscene
-
-			break;
-		}
-	}
-
 	if (CurrentCharacter == Characters_Big) {
 		if (CurrentLevel == LevelIDs_StationSquare) {
 
@@ -113,13 +77,6 @@ int CheckTailsAI_R(void) {
 
 	if (SelectedCharacter == 6) //Super Sonic Story
 	{
-		if (CurrentLevel == LevelIDs_MysticRuins)
-		{
-			if (!GetCutsceneFlagArray(0x0F4) || LastLevel == LevelIDs_Past && !GetCutsceneFlagArray(0x0F9)) {
-				return 0x0; //fix Super Sonic cutscene crash.
-			}
-		}
-
 		if (IsStoryIA && CurrentLevel == LevelIDs_Past)
 			return 0x0; //Don't load Tails in the past if story option is enabled.
 	}
@@ -131,13 +88,16 @@ int CheckTailsAI_R(void) {
 	return 1; //Return Load AI
 }
 
+unsigned char AIIndex = 1;
+
 ObjectMaster* LoadTails()
 {
+	char pnum = (char)AIIndex;
 	ObjectMaster* obj = LoadObject((LoadObj)(LoadObj_UnknownA | LoadObj_Data1 | LoadObj_Data2), 1, Tails_Main);
 	obj->Data1->CharID = Characters_Tails;
-	obj->Data1->CharIndex = (char)1;
-	EntityData1Ptrs[1] = (EntityData1*)obj->Data1;
-	EntityData2Ptrs[1] = (EntityData2*)obj->Data2;
+	obj->Data1->CharIndex = pnum;
+	EntityData1Ptrs[pnum] = (EntityData1*)obj->Data1;
+	EntityData2Ptrs[pnum] = (EntityData2*)obj->Data2;
 
 	return obj;
 }
@@ -154,22 +114,23 @@ ObjectMaster* Load2PTails_r() {
 	}
 	else
 	{
-		ObjectMaster* AI = LoadObject(LoadObj_Data1, 0, TailsAI_Main);  //load AI
-		TailsAI_ptr = AI;
+		task* AI = (task*)LoadObject(LoadObj_Data1, 0, TailsAI_Main);  //load AI
+		TailsAI_ptr = (ObjectMaster*)AI;
 
 		if (AI)
 		{
-			AI->Data1->CharID = Characters_Tails;
-			AI->Data1->CharIndex = (char)1;
-			AI->DeleteSub = TailsAI_Delete;
+			AIIndex = (char)CharacterBossActive ? 2 : 1;
+			AI->twp->counter.b[1] = Characters_Tails;
+			AI->twp->counter.b[0] = AIIndex;
+			AI->dest = (TaskFuncPtr)TailsAI_Delete;
 			ObjectMaster* Chara = LoadTails(); //set the character
 			if (Chara) {
 				isAIActive = true;
-				GetPlayerSidePos(&Chara->Data1->Position, AI->Data1, 10);
+				GetPlayerSidePos(&Chara->Data1->Position, (EntityData1*)AI->twp, 10);
 			}
-			AI->Data1->Action = 0;
-			int_NPCMilesStandByFlag = 0;
-			return AI;
+			AI->twp->mode = 0;
+			NPCMilesStandByFlag = 0;
+			return (ObjectMaster*)AI;
 		}
 	}
 
@@ -182,9 +143,8 @@ void LoadCharacterAndAI() {
 	if (isFlyTravel)
 		CheckAndLoadMapPVM();
 
-	if (banCharacter[CurrentCharacter] != true && !EV_MainThread_ptr && !EntityData1Ptrs[1])
+	if (banCharacter[CurrentCharacter] != true && !EntityData1Ptrs[AIIndex])
 		Load2PTails_r();
-
 
 	if (isCharSelActive()) {
 		return LoadCharacter_r();
@@ -198,7 +158,6 @@ void SpinDash_Check(unsigned char ID) {
 	if (!isNewTricksActive())
 		return;
 
-
 	EntityData1* data = EntityData1Ptrs[0];
 
 	if (data->CharID == Characters_Sonic && data->Action == 4 || data->CharID == Characters_Knuckles && data->Action == 59) {
@@ -207,15 +166,25 @@ void SpinDash_Check(unsigned char ID) {
 	}
 }
 
+void InvincibilityCheck(unsigned char playerID)
+{
+	if (CharacterBossActive)
+	{
+		CharObj2Ptrs[playerID]->Powerups |= Powerups_Invincibility;
+	}
+
+}
+
 void MilesAI_OnFrames(unsigned char playerID) { //Only run when TailsAI_Main is active
 
-	if (GameState != 15 && GameState != 4 || !EntityData1Ptrs[0] || !EntityData1Ptrs[playerID] || EntityData1Ptrs[playerID]->CharID != Characters_Tails || !TailsAI_ptr)
+	if (!IsIngame() || !EntityData1Ptrs[0] || !EntityData1Ptrs[playerID] || EntityData1Ptrs[playerID]->CharID != Characters_Tails || !TailsAI_ptr)
 		return;
 
 	PreventTailsAIAction(playerID);
 	SnowboardRespawn(playerID);
 	CatchUP(playerID);
 	SpinDash_Check(playerID);
+	InvincibilityCheck(playerID);
 	//Force_MilesToFollow(playerID);
 
 	if (isRescueAllowed)
@@ -224,53 +193,44 @@ void MilesAI_OnFrames(unsigned char playerID) { //Only run when TailsAI_Main is 
 
 //Reset value when Tails AI is deleted
 void TailsAI_ResetValue() {
+	TailsAI_ptr = nullptr;
+	AIIndex = 1;
 	rngDeathZoneRescue = 0;
 	isChaoPetByAI = false; //just to be safe
 	isAIActive = false;
 	isRescued = false;
+	FlagDeleteMilesAI = false;
 	ReduceRespawnDelay();
 	rngRegularDeathRescue = 0;
 	return FUN_0042ce20();
 }
 
-void RemovePlayerCollision(unsigned char ID) {
 
-	if (!EntityData1Ptrs[0] || ID > 0 && !EntityData1Ptrs[ID] || EV_MainThread_ptr)
-		return;
+void TailsAI_Main_R(task* obj) {
 
-	EntityData1* data = EntityData1Ptrs[0];
+	taskwk* data = obj->twp;
 
-	if (data->CollisionInfo)
+	char pid = AIIndex;
+
+	if (FlagDeleteMilesAI && IsIngame())
 	{
-		if (data->CollisionInfo->nbInfo) {
-			for (int8_t i = 0; i < data->CollisionInfo->nbInfo; i++) {
-
-				EntityData1Ptrs[0]->CollisionInfo->CollisionArray[i].damage &= ~0x20u; //Remove damage on other players
-			}
-		}
+		CheckThingButThenDeleteObject((ObjectMaster*)obj);
+		return;
 	}
-}
-
-void TailsAI_Main_R(ObjectMaster* obj) {
-
-	EntityData1* data = obj->Data1;
-
 
 	if (isFlyTravel)
 		CheckAndLoadTailsTravelObjects(obj);
 
-	MilesAI_OnFrames(1);
+	MilesAI_OnFrames(pid);
 
-	if (data->Action == 0) {
-		RemovePlayerCollision(1);
+	if (data->mode == 0) {
+		RemovePlayerCollision(pid);
 	}
 
-
-	ObjectFunc(origin, TailsAI_Main_t->Target());
+	TaskFunc(origin, TailsAI_Main_t->Target());
 	origin(obj);
 }
-
-
+		
 void AI_Init(const HelperFunctions& helperFunctions) {
 
 	if (!isRandoActive()) {

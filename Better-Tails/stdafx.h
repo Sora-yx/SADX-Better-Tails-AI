@@ -15,6 +15,7 @@
 #include "IniFile.hpp"
 
 #include "helper.h"
+#include "SADX-Util.h"
 #include "util.h"
 
 #include <fstream>

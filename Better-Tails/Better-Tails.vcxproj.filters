@@ -24,7 +24,7 @@
     <ClCompile Include="abilities.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ai-helper.cpp">
+    <ClCompile Include="patches.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="fly-travel.cpp">
@@ -51,6 +51,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="util.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SADX-Util.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -1,18 +1,85 @@
 #include "stdafx.h"
 
+Trampoline* EventCutscene_Load2_t = nullptr;
+Trampoline* LoadCharacterBoss_t = nullptr;
+
+void __cdecl DisableTailsAI_Controller(Uint8 index)
+{
+	ControllerEnabled[index] = 0;
+}
+
+void __cdecl EnableTailsAI_Controller(Uint8 index)
+{
+	ControllerEnabled[index] = 1;
+}
 
 unsigned char getAI_ID() {
 
-	for (uint8_t i = 1; i < MaxPlayers; i++) {
-		if (!EntityData1Ptrs[i])
-			continue;
+	if (!EntityData1Ptrs[AIIndex])
+		return 0;
 
-		if (EntityData1Ptrs[i]->CharID == Characters_Tails && TailsAI_ptr) {
-			return i;
-		}
+	if (EntityData1Ptrs[AIIndex]->CharID == Characters_Tails && TailsAI_ptr) {
+		return AIIndex;
 	}
 
 	return 0;
+}
+
+void RemovePlayerCollision(unsigned char ID) {
+
+	if (!EntityData1Ptrs[0] || ID > 0 && !EntityData1Ptrs[ID] || EV_MainThread_ptr || CharacterBossActive || AIIndex > 1)
+		return;
+
+	EntityData1* data = EntityData1Ptrs[0];
+
+	if (data->CollisionInfo)
+	{
+		if (data->CollisionInfo->nbInfo) {
+
+			for (int8_t i = 0; i < data->CollisionInfo->nbInfo; i++) {
+
+				EntityData1Ptrs[0]->CollisionInfo->CollisionArray[i].damage &= ~0x20u; //Remove damage on other players
+			}
+		}
+	}
+}
+
+void RestorePlayerCollision(unsigned char ID) {
+
+	if (!EntityData1Ptrs[ID])
+		return;
+
+	EntityData1* data = EntityData1Ptrs[ID];
+
+	if (data->CollisionInfo)
+	{
+		if (data->CollisionInfo->nbInfo) {
+			for (int8_t i = 0; i < data->CollisionInfo->nbInfo; i++) {
+
+				EntityData1Ptrs[ID]->CollisionInfo->CollisionArray[i].damage |= 0x20u; //Remstore damage on other players
+			}
+		}
+	}
+}
+
+//remove AI when cutscene start
+void __cdecl EventCutscene_Load2_r(int a2)
+{
+	DeleteMilesAI();
+
+	FunctionPointer(void, origin, (int a2), EventCutscene_Load2_t->Target());
+	origin(a2);
+}
+
+void __cdecl LoadCharacterBoss_r(int boss_id)
+{
+	FunctionPointer(void, origin, (int boss_id), LoadCharacterBoss_t->Target());
+	origin(boss_id);
+
+	for (uint8_t i = 0; i < MaxPlayers; i++) {
+
+		RestorePlayerCollision(i);
+	}
 }
 
 //teleport AI to Player
@@ -46,17 +113,17 @@ int __cdecl IsMilesInsideSphere(NJS_VECTOR* x_1, float radius)
 
 	unsigned char ID = getAI_ID();
 
-	float v2; // edx
-	float v3; // eax
-	int v4; // esi
-	EntityData1* v5; // eax
-	CollisionInfo* v6; // eax
-	float* v7; // eax
-	double v8; // st7
-	float v10; // [esp+4h] [ebp-14h]
-	float v11; // [esp+8h] [ebp-10h]
-	NJS_VECTOR v; // [esp+Ch] [ebp-Ch] BYREF
-	float v13; // [esp+1Ch] [ebp+4h]
+	float v2;
+	float v3;
+	int v4;
+	EntityData1* v5;
+	CollisionInfo* v6;
+	float* v7;
+	double v8;
+	float v10;
+	float v11;
+	NJS_VECTOR v;
+	float v13;
 
 	v2 = x_1->y;
 	v3 = x_1->z;
@@ -161,28 +228,10 @@ void CallTailsAI_R() {
 	return PlayMusic(CurZic);
 }
 
-void CheckAndDeleteAI() {
-	unsigned char ID = getAI_ID();
-
-	if (!ID)
-		return DisableControl();
-
-	if (EntityData1Ptrs[ID] != nullptr)
-	{
-		if (EntityData1Ptrs[ID]->CharID == Characters_Tails) {
-			TailsAI_ptr = nullptr;
-			FUN_0042ce20();
-			DeleteObjectMaster(GetCharacterObject(ID));
-		}
-	}
-
-	isAIActive = false;
-	return DisableControl();
-}
 
 void GetPlayerSidePos(NJS_VECTOR* v1, EntityData1* a2, float m)
 {
-	Float _sin; // ST00_4
+	Float _sin; 
 
 	if (a2)
 	{
@@ -227,7 +276,6 @@ void FadeoutScreen(ObjectMaster* obj) {
 }
 
 
-
 void SetCharaInfo(ObjectMaster* obj, int i) {
 	obj->Data1->CharID = (char)CurrentCharacter;
 	obj->Data1->CharIndex = i;
@@ -236,7 +284,6 @@ void SetCharaInfo(ObjectMaster* obj, int i) {
 	MovePlayerToStartPoint(obj->Data1);
 	return;
 }
-
 
 void __cdecl LoadCharacter_r()
 {
@@ -335,9 +382,13 @@ void MoveForward(EntityData1* entity, float speed) {
 	njPopMatrix(1u);
 }
 
+
 void AI_Fixes() {
 
 	WriteJump(GetRaceWinnerPlayer, GetRaceWinnerPlayer_r); //fix wrong victory pose for Tails AI.
+
+	EventCutscene_Load2_t = new Trampoline((int)0x42FA30, (int)0x42FA38, EventCutscene_Load2_r);
+	LoadCharacterBoss_t = new Trampoline((int)LoadCharacterBoss, (int)LoadCharacterBoss + 0xc, LoadCharacterBoss_r);
 
 	if (IsHubBanned)
 		return;
@@ -349,9 +400,6 @@ void AI_Fixes() {
 	WriteCall((void*)0x42f72d, CallTailsAI_R); //Manually Call Tails AI After few early Cutscene to avoid crash.
 	WriteCall((void*)0x42f78c, CallTailsAI_R);
 	WriteCall((void*)0x42f747, CallTailsAI_R);
-
-	WriteCall((void*)0x65f82f, CheckAndDeleteAI); //Remove Tails before "Sonic finds Knuckles cutscene" (super sonic)
-	WriteCall((void*)0x663d4a, CheckAndDeleteAI); //Remove Tails before "Sonic and Tails find tornado 2 cutscene" (super sonic)
 
 	WriteData<6>((int*)0x460fcf, 0x90); //restore Miles's tail effect when AI
 }

@@ -60,7 +60,7 @@ MilesAI_Fly DestinationArray[]{
 void LoadDestination(int playerID) {
 	ControllerPointers[playerID]->PressedButtons = 0;
 	ControllerPointers[playerID]->HeldButtons = 0;
-	DisableController(playerID);
+	DisableTailsAI_Controller(playerID);
 	LastLevel = CurrentLevel;
 	LastAct = CurrentAct;
 	SetNextLevelAndAct_CutsceneMode(DestinationArray[Cursor].level, DestinationArray[Cursor].act);
@@ -411,7 +411,7 @@ void UpdateP1Position(CharObj2* co2p1, CharObj2* co2p2, EntityData1* p1, EntityD
 void RestoreAIControl(unsigned char ID) {
 	ControllerPointers[ID]->PressedButtons = 0;
 	ControllerPointers[ID]->HeldButtons = 0;
-	DisableController(ID);
+	DisableTailsAI_Controller(ID);
 	return;
 }
 
@@ -666,7 +666,7 @@ void TailsAI_Landing(ObjectMaster* obj) {
 		PlayCharacterLeaveAnimation(p1, co2p1, data->CharIndex);
 		RestoreAIControl(data->CharIndex);
 		ForcePlayerAction(0, 24);
-		EnableController(data->CharIndex);
+		EnableTailsAI_Controller(data->CharIndex);
 		EnableControl();
 		EnablePause();
 		CheckThingButThenDeleteObject(obj);
@@ -674,28 +674,31 @@ void TailsAI_Landing(ObjectMaster* obj) {
 	}
 }
 
-void CheckAndLoadTailsTravelObjects(ObjectMaster* obj) {
+extern unsigned char AIIndex;
+void CheckAndLoadTailsTravelObjects(task* obj) {
 
-	EntityData1* data = obj->Data1;
+	taskwk* data = obj->twp;
 
-	if (!EntityData1Ptrs[1])
+	char pid = AIIndex;
+
+	if (!EntityData1Ptrs[pid])
 		return;
 
-	if (data->Action == 0 && isMoving == 1 || data->Action > 0 && isMoving == 2) {
+	if (data->mode == 0 && isMoving == 1 || data->mode > 0 && isMoving == 2) {
 		if (!TailsGrab && !TailsLanding) {
 			TailsLanding = LoadObject((LoadObj)2, 1, TailsAI_Landing);
-			TailsLanding->Data1->CharIndex = data->CharIndex;
+			TailsLanding->Data1->CharIndex = pid;
 		}
 	}
 
-	if (data->Action > 0) {
+	if (data->mode > 0) {
 		if (isInputModActive() && ControllerPointers[0]->PressedButtons & Buttons_C || !isInputModActive() && ControllerPointers[0]->PressedButtons & Buttons_Y) 
 		{
-			if (EntityData1Ptrs[1]->CharID == Characters_Tails && EntityData1Ptrs[0]->Action < 3 && EntityData1Ptrs[1]->Action < 3) {
+			if (EntityData1Ptrs[pid]->CharID == Characters_Tails && EntityData1Ptrs[0]->Action < 3 && EntityData1Ptrs[pid]->Action < 3) {
 
 				if (!TailsGrab) {
 					TailsGrab = LoadObject((LoadObj)2, 1, TailsAI_Grab);
-					TailsGrab->Data1->CharIndex = 1;
+					TailsGrab->Data1->CharIndex = pid;
 				}
 			}
 		}
