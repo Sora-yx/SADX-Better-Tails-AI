@@ -5,7 +5,7 @@ bool IsHubBanned = false;
 bool IsBossBanned = false;
 bool IsTCBanned = false;
 bool IsStoryIA = false;
-bool banCharacter[8] = { -1 };
+bool banCharacter[8] = { false };
 bool isFlyTravel = true;
 bool isRescueAllowed = true;
 bool isMSBanned = false;
@@ -50,7 +50,6 @@ extern "C" {
 
 	__declspec(dllexport) void __cdecl OnFrame()
 	{
-
 
 
 		//LoadAI_OnFrames();

@@ -22,7 +22,7 @@ void DeleteMilesAI()
 int CheckTailsAI_R(void) {
 	bool isSA2Mod = GetModuleHandle("sadx-sa2-mod");
 
-	if (EV_MainThread_ptr || CurrentLevel == LevelIDs_SkyChase1 || CurrentLevel == LevelIDs_SkyChase2 || !isSA2Mod && CurrentLevel == LevelIDs_ChaoRace) {
+	if (NPCMilesStandByFlag || EV_MainThread_ptr || CurrentLevel == LevelIDs_SkyChase1 || CurrentLevel == LevelIDs_SkyChase2 || !isSA2Mod && CurrentLevel == LevelIDs_ChaoRace) {
 		return 0x0; //don't load AI
 	}
 
@@ -152,40 +152,14 @@ void LoadCharacterAndAI() {
 	return LoadCharacter(); //call original function
 }
 
-void SpinDash_Check(unsigned char ID) {
-
-	if (!isNewTricksActive())
-		return;
-
-	EntityData1* data = EntityData1Ptrs[0];
-
-	if (data->CharID == Characters_Sonic && data->Action == 4 || data->CharID == Characters_Knuckles && data->Action == 59) {
-		PressedButtons[ID] |= Buttons_B;
-		HeldButtons[ID] |= Buttons_B;
-	}
-}
-
-void InvincibilityCheck(unsigned char playerID)
-{
-	if (CharacterBossActive)
-	{
-		CharObj2Ptrs[playerID]->Powerups |= Powerups_Invincibility;
-	}
-
-}
 
 void MilesAI_OnFrames(unsigned char playerID) { //Only run when TailsAI_Main is active
 
 	if (!IsIngame() || !EntityData1Ptrs[0] || !EntityData1Ptrs[playerID] || EntityData1Ptrs[playerID]->CharID != Characters_Tails || !TailsAI_ptr)
 		return;
 
-	PreventTailsAIAction(playerID);
-	SnowboardRespawn(playerID);
-	CatchUP(playerID);
-	SpinDash_Check(playerID);
-	InvincibilityCheck(playerID);
-	MoveAI_Vehicle();
-	//Force_MilesToFollow(playerID);
+
+	Miles_AbilitiesOnFrames(playerID);
 
 	if (isRescueAllowed)
 		CheckMilesBossRescue(playerID);
@@ -200,7 +174,6 @@ void TailsAI_ResetValue() {
 	isAIActive = false;
 	isRescued = false;
 	FlagDeleteMilesAI = false;
-	ReduceRespawnDelay();
 	rngRegularDeathRescue = 0;
 	return FUN_0042ce20();
 }
@@ -222,6 +195,8 @@ void TailsAI_Main_R(task* obj) {
 		CheckAndLoadTailsTravelObjects(obj);
 
 	MilesAI_OnFrames(pid);
+
+	DisplayDebugStringFormatted(NJM_LOCATION(2, 1), "AI Distance: % f", getMilesDistance(EntityData1Ptrs[0], EntityData1Ptrs[AIIndex]));
 
 	if (data->mode == 0) {
 		RemovePlayerCollision(pid);

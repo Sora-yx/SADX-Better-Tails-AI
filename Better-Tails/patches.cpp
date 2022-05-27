@@ -13,6 +13,7 @@ void __cdecl EnableTailsAI_Controller(Uint8 index)
 	ControllerEnabled[index] = 1;
 }
 
+
 unsigned char getAI_ID() {
 
 	if (!EntityData1Ptrs[AIIndex])
@@ -164,7 +165,7 @@ int __cdecl IsMilesInsideSphere(NJS_VECTOR* x_1, float radius)
 				v.x = v8 - v13;
 				v.y = *v7 - v10;
 				v.z = v7[1] - v11;
-				if (njScalor(&v) - radius < 0.0)
+				if (njScalor(&v) - radius < 0.0f)
 				{
 					break;
 				}
@@ -390,15 +391,6 @@ int GetRaceWinnerPlayer_r() {
 	return RaceWinnerPlayer;
 }
 
-void MoveForward(EntityData1* entity, float speed) {
-	njPushMatrix(_nj_unit_matrix_);
-	njTranslateEx(&entity->Position);
-	njRotateY(0, entity->Rotation.y);
-	njRotateX(0, entity->Rotation.x);
-	njTranslate(0, 0, 0, speed);
-	njGetTranslation(0, &entity->Position);
-	njPopMatrix(1u);
-}
 
 void FixTailsAI_Train(int ID, void* a2, int a3, void* a4)
 {
@@ -407,88 +399,32 @@ void FixTailsAI_Train(int ID, void* a2, int a3, void* a4)
 }
 
 
-void AI_SitInCart(EntityData1* p1, EntityData1* milesData, task* miles, CharObj2* co2Miles)
-{
-	if (CurrentLevel == LevelIDs_TwinklePark && CurrentAct == 1 && NPCMilesStandByFlag)
-	{
-		if (p1->Action == 45)
-		{
-			if (milesData->Action != passengerCart) {
-				isFollowing = true;
-				EV_SetAction(miles, &action_m_m9002_miles, &MILES_TEXLIST, 1.0f, 3, 0);
-				milesData->Action = passengerCart;
-			}
-			else
-			{
-				milesData->Rotation = p1->Rotation;
-				milesData->Position = UnitMatrix_GetPoint_Player(&p1->Position, &p1->Rotation, 10.0f, 5.5f, 0.0f);
-			}
-		}
-		else
-		{
-			ForcePlayerAction(milesData->CharIndex, 24);
-			EV_ClrAction(miles);
-			milesData->Action = 1;
-			co2Miles->AnimationThing.Index = 1;
-		}
+void FixTailsAI_Standing(task* obj)
+{	
+	EntityData1* p2 = EntityData1Ptrs[AIIndex];
+	CharObj2* co2Miles = CharObj2Ptrs[AIIndex];
+	CharObj2* p1 = CharObj2Ptrs[0];
 
+	if (p2->Action <= 2 && co2Miles->Speed.x == 0.0f && co2Miles->Speed.y == 0.0f && co2Miles->Speed.z == 0.0f
+		&& p1->Speed.x == 0.0f && p1->Speed.y == 0.0f && p1->Speed.z == 0.0f) {
+
+		NormalizedAnalogs[AIIndex].direction = 0;
+		NormalizedAnalogs[AIIndex].magnitude = 0.0f;
 	}
-	else
-	{
-		if (p1->Action == 45 && milesData->Action != passengerCart)
-		{
-
-			isFollowing = true;
-			EV_SetAction(miles, &action_m_m9002_miles, &MILES_TEXLIST, 1.0f, 3, 0);
-			milesData->Action = passengerCart;
-		}
-		else if (milesData->Action == passengerCart)
-		{
-			if (p1->Action == 45)
-			{
-				milesData->Rotation = p1->Rotation;
-				milesData->Position = UnitMatrix_GetPoint_Player(&p1->Position, &p1->Rotation, -4.5f, 4.5f, 2.0f);
-			}
-			else
-			{
-				isFollowing = false;
-				ForcePlayerAction(milesData->CharIndex, 24);
-				EV_ClrAction(miles);
-				milesData->Action = 1;
-				co2Miles->AnimationThing.Index = 1;
-			}
-		}
+	else {
+		TailsAI_WriteInput((ObjectMaster*)obj);
 	}
 }
 
-void MoveAI_Vehicle()
+static void __declspec(naked) TailsAI_WriteInputASM()
 {
-	if (!EntityData1Ptrs[0])
-		return;
-
-	EntityData1* milesData = EntityData1Ptrs[AIIndex];
-	task* miles = (task*)PlayerPtrs[AIIndex];
-	EntityData1* p1 = EntityData1Ptrs[0];
-	CharObj2* co2Miles = CharObj2Ptrs[AIIndex];
-
-	AI_SitInCart(p1, milesData, miles, co2Miles);
-
-	if (p1->NextAction == 12)
+	__asm
 	{
-		moveAItoPlayer(AIIndex, -5.0, 0.0f);
-		ForcePlayerAction(AIIndex, 12);
-		milesData->Rotation = p1->Rotation;
-
-		if (isInHubWorld()) {
-			EV_SetAction(miles, &action_m_m9002_miles, &MILES_TEXLIST, 1.0f, 3, 0);
-		}
+		push eax
+		call FixTailsAI_Standing
+		pop eax 
+		retn
 	}
-	else if (p1->NextAction == 24 && milesData->Action == 18)
-	{
-		EV_ClrAction(miles);
-		ForcePlayerAction(AIIndex, 24);
-	}
-
 }
 
 
@@ -497,6 +433,11 @@ void AI_Patches() {
 	WriteJump(GetRaceWinnerPlayer, GetRaceWinnerPlayer_r); //fix wrong victory pose for Tails AI.
 	EventCutscene_Load2_t = new Trampoline((int)0x42FA30, (int)0x42FA38, EventCutscene_Load2_r); //remove AI when cutscene starts (fix crash)
 	LoadCharacterBoss_t = new Trampoline((int)LoadCharacterBoss, (int)LoadCharacterBoss + 0xc, LoadCharacterBoss_r);
+
+	WriteCall((void*)0x47EB59, TailsAI_WriteInputASM);
+	WriteCall((void*)0x47EB80, TailsAI_WriteInputASM);
+
+	WriteData<6>((int*)0x460fcf, 0x90); //restore Miles's tail effect when AI
 
 	if (IsHubBanned)
 		return;
@@ -507,9 +448,8 @@ void AI_Patches() {
 	WriteCall((void*)0x64015A, FixTailsAI_Train);
 	WriteCall((void*)0x53A29B, FixTailsAI_Train);
 
-	WriteCall((void*)0x42f72d, CallTailsAI_R); //Manually Call Tails AI After few early Cutscene to avoid crash.
+	WriteCall((void*)0x42f72d, CallTailsAI_R); //Manually Call Tails AI After few early Cutscene
 	WriteCall((void*)0x42f78c, CallTailsAI_R);
 	WriteCall((void*)0x42f747, CallTailsAI_R);
 
-	WriteData<6>((int*)0x460fcf, 0x90); //restore Miles's tail effect when AI
 }

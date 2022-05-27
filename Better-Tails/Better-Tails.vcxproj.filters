@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Source Files\abilities">
+      <UniqueIdentifier>{b5064d06-f603-48c5-a876-8125b664cf15}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="mod.cpp">
@@ -21,16 +24,7 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="abilities.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="patches.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="fly-travel.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="rescue.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="tails-ai.cpp">
@@ -38,6 +32,15 @@
     </ClCompile>
     <ClCompile Include="util.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="abilities.cpp">
+      <Filter>Source Files\abilities</Filter>
+    </ClCompile>
+    <ClCompile Include="fly-travel.cpp">
+      <Filter>Source Files\abilities</Filter>
+    </ClCompile>
+    <ClCompile Include="rescue.cpp">
+      <Filter>Source Files\abilities</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

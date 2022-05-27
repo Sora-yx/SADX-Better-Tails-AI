@@ -28,7 +28,7 @@ int CheckTailsAI_R(void); //Tails flag spawn allowed
 void LoadAISnowBoard_R(); //Load Snowboard for Tails AI
 bool isUIScale();
 bool isPlayerUsingSnowboard();
-void CatchUP(unsigned char playerID);
+void speedHighwayBuilding_Follow(unsigned char playerID);
 
 extern int rngDeathZoneRescue;
 extern int rngRegularDeathRescue;
@@ -64,10 +64,9 @@ void Rescue_Init();
 void PlayCharacterGrabAnimation(EntityData1* p1, CharObj2* co2);
 void FlySoundOnFrames(int playerID);
 
-void ReduceRespawnDelay();
-
 void MilesAI_OnFrames(unsigned char playerID);
 bool isNewTricksActive();
+float getMilesDistance(EntityData1* p1, EntityData1* p2);
 
 
 void GetPlayerSidePos(NJS_VECTOR* v1, EntityData1* a2, float m);
@@ -127,9 +126,17 @@ void Force_MilesToFollow(unsigned char playerID);
 unsigned char getAI_ID();
 void RemovePlayerCollision(unsigned char ID);
 void RestorePlayerCollision(unsigned char ID);
-void MoveAI_Vehicle();
+void moveAItoPlayer(unsigned char playerID, float posX, float posZ);
+void Miles_AbilitiesOnFrames(unsigned char pnum);
 
 enum milesAI_CustomAction
 {
-	passengerCart = 115
+	boardSlide = 48,
+	boardHurt = 54,
+	debugAction = 110,
+	passengerCart = 115,
+	followBuilding
+
 };
+
+#define TARGET_STATIC(name) ((decltype(name##_r)*)name##_t.Target())

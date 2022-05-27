@@ -2,54 +2,104 @@
 
 //every improvement and new abilities for Tails go here.
 
-Trampoline* Chao_Main_t;
-Trampoline* ScoreDisplay_main_t;
+Trampoline* Chao_Main_t = nullptr;
+Trampoline* ScoreDisplay_main_t = nullptr;
+Trampoline* forcePlayerAction_t = nullptr;
 
-void CatchUP(unsigned char playerID) {
+bool disableCol = false;
 
-	if (CurrentCharacter != Characters_Sonic)
+void SpinDash_Check(unsigned char ID) {
+
+	if (!isNewTricksActive())
+		return;
+
+	EntityData1* data = EntityData1Ptrs[0];
+
+	if (data->CharID == Characters_Sonic && data->Action == 4 || data->CharID == Characters_Knuckles && data->Action == 59) {
+		PressedButtons[ID] |= Buttons_B;
+		HeldButtons[ID] |= Buttons_B;
+	}
+}
+
+void InvincibilityCheck(unsigned char playerID)
+{
+	if (disableCol)
+	{
+		CharObj2Ptrs[playerID]->Powerups |= Powerups_Invincibility;
+	}
+}
+
+//Make Tails using snowboard again when trying to catch Sonic
+void SnowboardRespawn(unsigned char playerID) {
+	if (GameState != 15 || isRandoActive())
+		return;
+
+	EntityData1* milesAI = EntityData1Ptrs[playerID];
+
+	if (milesAI->Action > boardHurt && milesAI->Action < boardSlide) {
+
+		if (isPlayerUsingSnowboard()) {
+			EntityData1Ptrs[playerID]->Status &= ~(Status_Attack | Status_Ball | Status_LightDash);
+			CharObj2Ptrs[playerID]->PhysicsData.CollisionSize = PhysicsArray[Characters_Tails].CollisionSize; //Reset Miles physic properly
+			CharObj2Ptrs[playerID]->PhysicsData.YOff = PhysicsArray[Characters_Tails].YOff;
+			CharObj2Ptrs[playerID]->PhysicsData.JumpSpeed = PhysicsArray[Characters_Tails].JumpSpeed;
+			ForcePlayerAction(playerID, 44);
+		}
+	}
+}
+
+
+void snowboard_Follow(unsigned char playerID, EntityData1* P1, EntityData1* P2)
+{
+	if (isPlayerUsingSnowboard()) {
+		if (CurrentLevel == LevelIDs_IceCap && CurrentAct == 2 && P1->Position.y > -3800) {
+			if (P2->Status & Status_Ground)
+				CharObj2Ptrs[playerID]->Speed.x = CharObj2Ptrs[0]->Speed.x + 0.6f;
+		}
+		else {
+			P2->Rotation = P1->Rotation;
+			if (P1->Status & Status_Ground)
+				CharObj2Ptrs[playerID]->Speed.x = CharObj2Ptrs[0]->Speed.x + 0.8f;
+		}
+	}
+
+	SnowboardRespawn(playerID);
+}
+
+void speedHighwayBuilding_Follow(unsigned char playerID) {
+
+	if (CurrentCharacter != Characters_Sonic || CurrentLevel != LevelIDs_SpeedHighway && CurrentAct != 1)
 		return;
 
 	EntityData1* P1 = EntityData1Ptrs[0];
 	EntityData1* P2 = EntityData1Ptrs[playerID];
 
-	if (CurrentLevel == LevelIDs_SpeedHighway && CurrentAct == 1 && (P1->Action >= 46 && P1->Action <= 50))
+	if (P1->Action >= 46 && P1->Action <= 50)
 	{
+		disableCol = true;
 		P2->Rotation = P1->Rotation;
-
-		CharObj2Ptrs[playerID]->Powerups |= Powerups_Invincibility;
 		if (P2->Position.y > -10790)
 		{
 			CharObj2Ptrs[playerID]->AnimationThing.Index = 37;
-			P2->Action = 125;
+			P2->Action = followBuilding;
 			P2->Position.x = P1->Position.x + 10;
 			P2->Position.y = P1->Position.y + 2;
 			P2->Position.z = P1->Position.z + 10;
 		}
 		else if (P2->Position.y <= -10791 && P2->Position.y > -18659) {
 			CharObj2Ptrs[playerID]->AnimationThing.Index = 12;
-			P2->Action = 125;
+			P2->Action = followBuilding;
 			P2->Position.x = P1->Position.x;
 			P2->Position.y = P1->Position.y - 7;
 			P2->Position.z = P1->Position.z;
 		}
 		else if (P2->Position.y <= -18660 && P2->Action > 90) {
+			disableCol = false;
 			CharObj2Ptrs[playerID]->Powerups &= 0x100u;
 			P2->Action = 1;
 		}
 	}
 
-	if (isPlayerUsingSnowboard()) {
-		if (CurrentLevel == LevelIDs_IceCap && CurrentAct == 2 && P1->Position.y > -3800) {
-			if (P2->Status & Status_Ground)
-				CharObj2Ptrs[playerID]->Speed.x = CharObj2Ptrs[0]->Speed.x + 0.6;
-		}
-		else {
-			P2->Rotation = P1->Rotation;
-			if (P1->Status & Status_Ground)
-				CharObj2Ptrs[playerID]->Speed.x = CharObj2Ptrs[0]->Speed.x + 0.8;
-		}
-	}
 }
 
 //Load Tails AI Snowboard when playing Sonic
@@ -64,42 +114,16 @@ void LoadAISnowBoard_R() {
 	if (CurrentCharacter == Characters_Sonic && isAIActive)
 	{
 		ForcePlayerAction(ID, 44); //Force AI to use Snowboard
-		ObjectMaster* v1 = LoadObject((LoadObj)(LoadObj_Data1 | LoadObj_Data2), 2, Snowboard_Tails_Load);
-		if (v1 != nullptr)
+		ObjectMaster* board = LoadObject((LoadObj)(LoadObj_Data1 | LoadObj_Data2), 2, Snowboard_Tails_Load);
+		if (board != nullptr)
 		{
-			v1->Data1->CharID = ID;
-			v1->Data1->CharIndex = ID;
+			board->Data1->CharID = ID;
+			board->Data1->CharIndex = ID;
 			return;
 		}
 	}
 }
 
-//Make Tails using snowboard again when trying to catch Sonic
-void SnowboardRespawn(unsigned char playerID) {
-	if (GameState != 15 || isRandoActive())
-		return;
-
-	EntityData1* data = EntityData1Ptrs[playerID];
-
-	if (data->Action == 15) {
-		if (isPlayerUsingSnowboard()) {
-			EntityData1Ptrs[playerID]->Status &= ~(Status_Attack | Status_Ball | Status_LightDash);
-			CharObj2Ptrs[playerID]->PhysicsData.CollisionSize = PhysicsArray[Characters_Tails].CollisionSize; //Reset Miles physic properly
-			CharObj2Ptrs[playerID]->PhysicsData.YOff = PhysicsArray[Characters_Tails].YOff;
-			CharObj2Ptrs[playerID]->PhysicsData.JumpSpeed = PhysicsArray[Characters_Tails].JumpSpeed;
-			ForcePlayerAction(playerID, 44);
-		}
-	}
-}
-
-
-float spawnDelay = 15.0;
-float* spawnDelayptr = &spawnDelay;
-
-void ReduceRespawnDelay() {
-	spawnDelay = 15.0;
-	WriteData((float**)0x47EA74, spawnDelayptr);
-}
 
 
 int CharacterPetActionNumber[8] = { 72, 64, 64, 54, 54, 50, 56, 52 };
@@ -204,6 +228,7 @@ void MilesAI_VictoryPose(ObjectMaster* obj) {
 	{
 	case 0:
 		if (p1->NextAction == 0x13) {
+			disableCol = true;
 			p2->Position = UnitMatrix_GetPoint_Player(&p1->Position, &p2->Rotation, 0.0f, 0.0f, 7.0f);
 			p2->Rotation = p1->Rotation;
 			if (++data->InvulnerableTime == 10)
@@ -232,15 +257,13 @@ void MilesAI_VictoryPose(ObjectMaster* obj) {
 	case 2:
 		p2->Rotation = p1->Rotation;
 		ForcePlayerAction(data->CharIndex, 19); //Force AI to Victory pose
+		disableCol = false;
 		break;
 	}
 }
 
-
-
 //While load result: Teleport AI close to the player and Force Victory Pose.
 void ScoreDisplayMain_R(ObjectMaster* obj) {
-
 
 	unsigned char ID = getAI_ID();
 
@@ -256,14 +279,10 @@ void ScoreDisplayMain_R(ObjectMaster* obj) {
 	origin(obj);
 }
 
-
-void RestoreRespawnDelay() {
-	spawnDelay = 50.0;
-}
-
 int copyDebugAction = 110;
 
 void PreventTailsAIAction(unsigned char playerID) {
+
 	if (EntityData1Ptrs[playerID]->CharID != Characters_Tails || !EntityData1Ptrs[playerID] || !CharObj2Ptrs[playerID])
 		return;
 
@@ -275,10 +294,9 @@ void PreventTailsAIAction(unsigned char playerID) {
 		if (data->Action == 38)
 		{
 			data->Action = 1;
-			data->Position.x += 5;
+			data->Position.x += 5.0f;
 		}
 	}
-
 
 	if (DebugMode)
 	{
@@ -287,62 +305,195 @@ void PreventTailsAIAction(unsigned char playerID) {
 	else {
 		if (data->Action == copyDebugAction)
 		{
-			data->Status & ~Status_Ball;
+			data->Status &= ~Status_Ball;
 			data->Action = 1;
 		}
 	}
 }
 
-bool isFollowing = false;
-
-void Force_MilesToFollow(unsigned char playerID) {
-
-	if (!EntityData1Ptrs[playerID])
-		return;
-
-	EntityData1* P1 = EntityData1Ptrs[0];
-	EntityData1* P2 = EntityData1Ptrs[playerID];
-
-	if (P1->NextAction == 0x13 && isFollowing) {
-		P2->Action = 1;
-		isFollowing = false;
-	}
-
-	if ((ControllerPointers[0]->HeldButtons & Buttons_Y)) {
-
-		if (!isFollowing || P2->Action != 105) {
-			P2->Status = 0;
-			P2->Action = 105;
-			CharObj2Ptrs[playerID]->AnimationThing.Index = 37;
-			return;
-		}
-		else {
-			if (P2->Action == 105) {
-				isFollowing = false;
-				P2->Action = 1;
-			}
-		}
-	}
-
-
-	if (P2->Action != 105)
-		return;
-
-	P2->Rotation = P1->Rotation;
-
-	CharObj2Ptrs[playerID]->Powerups |= Powerups_Invincibility;
-	P2->Position.x = P1->Position.x + 15;
-	P2->Position.y = P1->Position.y + 10;
-	P2->Position.z = P1->Position.z + 15;
-}
-
 void FixCollision(EntityData1* entity) {
-	if (isFollowing)
+
+	if (disableCol)
 		return;
 
 	AddToCollisionList(entity);
 }
 
+void ResetMilesAI(char pnum, char action)
+{
+	EntityData1* milesData = EntityData1Ptrs[AIIndex];
+	task* miles = (task*)PlayerPtrs[AIIndex];
+	CharObj2* co2Miles = CharObj2Ptrs[AIIndex];
+
+	if (action > 0)
+		ForcePlayerAction(pnum, action);
+
+	disableCol = false;
+	EV_ClrAction(miles);
+	milesData->Action = 1;
+	co2Miles->AnimationThing.Index = 1;
+}
+
+
+void AI_SitInCart(EntityData1* p1, EntityData1* milesData, task* miles, CharObj2* co2Miles)
+{
+	char pnum = milesData->CharIndex;
+
+	if (CurrentLevel == LevelIDs_TwinklePark && CurrentAct == 1 && p1->Action == 45)
+		return;
+
+	if (p1->Action == 45 && milesData->Action != passengerCart)
+	{
+		disableCol = true;
+		EV_SetAction(miles, &action_m_m9002_miles, &MILES_TEXLIST, 1.0f, 3, 0);
+		milesData->Action = passengerCart;
+	}
+	else if (milesData->Action == passengerCart)
+	{
+		if (p1->Action == 45)
+		{
+			milesData->Rotation = p1->Rotation;
+			milesData->Position = UnitMatrix_GetPoint_Player(&p1->Position, &p1->Rotation, -4.5f, 4.5f, 2.0f);
+		}
+		else
+		{
+			ResetMilesAI(AIIndex, 28);
+		}
+	}
+
+}
+
+void AI_HubWorld_Vehicle(EntityData1* p1, EntityData1* milesData, task* miles, CharObj2* co2Miles)
+{
+	if (!isInHubWorld())
+	{
+		return;
+	}
+
+	if (p1->Action == 20)
+	{
+		moveAItoPlayer(AIIndex, -5.0, 0.0f);
+		ForcePlayerAction(AIIndex, 12);
+		milesData->Rotation = p1->Rotation;	
+		EV_SetAction(miles, &action_m_m9002_miles, &MILES_TEXLIST, 1.0f, 3, 0);
+		disableCol = true;
+		milesData->Action = 18;
+	}
+
+	if (milesData->Action == 18)
+	{
+		milesData->Rotation = p1->Rotation;
+		milesData->Position = UnitMatrix_GetPoint_Player(&p1->Position, &p1->Rotation, 2.0f, 1.0f, 5.0f);
+	}
+
+	if (p1->NextAction == 24 && milesData->Action == 18)
+	{
+		ResetMilesAI(AIIndex, 24);
+	}
+
+}
+
+void MoveAI_Vehicle()
+{
+	if (!EntityData1Ptrs[0])
+		return;
+
+	EntityData1* milesData = EntityData1Ptrs[AIIndex];
+	task* miles = (task*)PlayerPtrs[AIIndex];
+	EntityData1* p1 = EntityData1Ptrs[0];
+	CharObj2* co2Miles = CharObj2Ptrs[AIIndex];
+
+	AI_SitInCart(p1, milesData, miles, co2Miles);
+	AI_HubWorld_Vehicle(p1, milesData, miles, co2Miles);
+}
+
+//patch RC to make Miles able to use it
+void __cdecl execTPCoaster_r(task* tp);
+Trampoline execTPCoaster_t(0x61D6E0, 0x61D6E6, execTPCoaster_r);
+void __cdecl execTPCoaster_r(task* tp)
+{
+	TARGET_STATIC(execTPCoaster)(tp);
+
+	auto twp = tp->twp;
+	auto id = twp->value.b[0];
+	float posY = 4.0f;
+
+	if (id > 0 && playertwp[id])
+	{
+		switch (twp->mode)
+		{
+		case 1:
+			NPCMilesStandByFlag = 0;
+			twp->scl.x = (twp->pos.x - playertwp[0]->pos.x) * 0.05f;
+			twp->scl.y = (twp->pos.y - playertwp[0]->pos.y) * 0.05f;
+			twp->scl.z = (twp->pos.z - playertwp[0]->pos.z) * 0.01f;
+			break;
+		case 2:
+			if (++twp->wtimer <= 0x14ui16)
+			{
+				EV_SetAction((task*)PlayerPtrs[AIIndex], &action_m_m9002_miles, &MILES_TEXLIST, 1.0f, 3, 0);
+				twp->pos.x += twp->scl.x;
+				twp->pos.y += twp->scl.y + posY;
+				twp->pos.z += twp->scl.z;
+			}
+			else
+			{
+				SetInputP(id, PL_OP_PLACEWITHCART);
+			}
+			break;
+		case 3:
+			SetPositionP(id, twp->pos.x, twp->pos.y + posY, twp->pos.z);
+			SetRotationP(id, twp->ang.x, twp->ang.y - 0x4000, twp->ang.z);
+			break;
+		case 4:
+			ResetMilesAI(AIIndex, 28);
+			GetOutOfCartP(id, -1.2f, 1.5f, 0.0f);
+			RumbleA(id, 0);
+			break;
+		}
+	}
+}
+
+uint32_t timingRespawn = 0;
+
+void MilesFasterRespawn(EntityData1* p1, EntityData1* p2)
+{
+	float distance = getMilesDistance(p1, p2);
+
+	if (distance > 150.0f)
+	{
+		timingRespawn++;
+		if (timingRespawn > 300)
+		{
+			ForcePlayerAction(AIIndex, 48);
+			p2->Position.y = p1->Position.y + 60.0f;
+			p2->Position.x = p1->Position.x;
+			p2->Position.z = p1->Position.z;
+			timingRespawn = 0;
+		}
+	}
+	else
+	{
+		timingRespawn = 0;
+	}
+}
+
+
+void Miles_AbilitiesOnFrames(unsigned char pnum)
+{
+	if (!EntityData1Ptrs[0] || !EntityData1Ptrs[pnum])
+		return;
+
+
+	InvincibilityCheck(pnum);
+	PreventTailsAIAction(pnum);
+	speedHighwayBuilding_Follow(pnum);
+	SpinDash_Check(pnum);
+
+	MoveAI_Vehicle();
+
+	MilesFasterRespawn(EntityData1Ptrs[0], EntityData1Ptrs[pnum]);
+}
 
 void AI_Improvement() {
 
@@ -350,14 +501,6 @@ void AI_Improvement() {
 	WriteCall((void*)0x597b14, LoadAISnowBoard_R);  //Load AI Snowboard when playing Sand Hill
 	WriteCall((void*)0x4ea091, LoadAISnowBoard_R);  //Load AI Snowboard when playing Ice Cap.
 	WriteCall((void*)0x4e9664, LoadAISnowBoard_R);
-
-	ReduceRespawnDelay();
-
-	//Reduce Tails AI's "Range out" check, so he can catch faster. (Changing the float value from 1000 to 700)
-	WriteData<1>((int*)0x47DC5E, 0x81);
-	WriteData<1>((int*)0x47DC5D, 0x36);
-	WriteData<1>((int*)0x47DC5C, 0xb0);
-
 	WriteCall((void*)0x462490, FixCollision);
 
 

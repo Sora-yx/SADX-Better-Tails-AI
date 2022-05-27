@@ -210,11 +210,11 @@ void __cdecl DisplayMilesMap_r()
 	{
 		v5 = 0;
 		v14 = 0;
-		v13 = (double)v12 * 256.0 - 16.0 - 240.0;
+		v13 = (double)v12 * 256.0f - 16.0f - 240.0f;
 		do
 		{
-			a3 = VerticalStretch * 240.0 + v13;
-			a2 = (double)v14 * 256.0 - 64.0 - 320.0 + HorizontalStretch * 320.0;
+			a3 = VerticalStretch * 240.0f + v13;
+			a2 = (float)v14 * 256.0f - 64.0f - 320.0f + HorizontalStretch * 320.0f;
 
 			DisplayScreenTexture(texId + v5++, a2, a3, 1.1);
 
@@ -303,7 +303,7 @@ void CheckAndForceLeavingGrab(EntityData1* data) {
 	EntityData1* p1 = EntityData1Ptrs[0];
 	CharObj2* co2p1 = CharObj2Ptrs[0];
 
-	if (data->Action >= grabbed && data->Action <= data->Action < leaving)
+	if (data->Action >= grabbed && data->Action <= leaving)
 	{
 		if (ControllerPointers[0]->PressedButtons & Buttons_B) {
 			PlaySound(3, NULL, 0, NULL);
@@ -391,6 +391,7 @@ float GetCharacterPositionY(EntityData1* p1) {
 	switch (p1->CharID) {
 	case Characters_Sonic:
 	case Characters_Knuckles:
+	default:
 		return 6.5f;
 	case Characters_Amy:
 		return 5.5f;
@@ -577,8 +578,8 @@ void TailsAI_Grab(ObjectMaster* obj) {
 		p2->Action = 15; //fly mode
 		UpdateP1Position(co2p1, co2p2, p1, p2);
 
-		co2p2->Speed.y += 0.4;
-		co2p2->Speed.x += 0.8;
+		co2p2->Speed.y += 0.4f;
+		co2p2->Speed.x += 0.8f;
 
 		if (++data->InvulnerableTime == 180) {
 			LoadDestination(data->CharIndex);
@@ -654,8 +655,8 @@ void TailsAI_Landing(ObjectMaster* obj) {
 		break;
 	case 1:
 		UpdateP1Position(co2p1, co2p2, p1, p2);
-		co2p2->Speed.y -= 0.8;
-		co2p2->Speed.z += 0.8;
+		co2p2->Speed.y -= 0.8f;
+		co2p2->Speed.z += 0.8f;
 
 		if (++data->InvulnerableTime == 140 || ((p1->Status & Status_Ground)) || (p1->Status & Status_OnColli)) {
 			data->Action++;

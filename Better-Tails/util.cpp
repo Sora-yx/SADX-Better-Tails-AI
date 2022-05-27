@@ -1,5 +1,18 @@
 #include "stdafx.h"
 
+float getMilesDistance(EntityData1* p1, EntityData1* p2)
+{
+	if (!p1 || !p2)
+		return 0.0f;
+
+	float v4 = p2->Position.x - p1->Position.x;
+	float v5 = p2->Position.y - p1->Position.y;
+	float v6 = p2->Position.z - p1->Position.z;
+	float v11 = v6 * v6 + v5 * v5 + v4 * v4;
+	float v7 = squareroot(v11);
+	return v7;
+}
+
 bool isUIScale() {
 	if (HorizontalStretchPointer != &HorizontalStretch)
 		return true;
@@ -120,4 +133,12 @@ float GetDistance(NJS_VECTOR* orig, NJS_VECTOR* dest) {
 bool isInHubWorld()
 {
 	return CurrentLevel >= LevelIDs_StationSquare && CurrentLevel <= LevelIDs_Past;
+}
+
+bool isTailsAI()
+{
+	if (!TailsAI_ptr || !EntityData1Ptrs[0] || EntityData1Ptrs[0]->CharID != Characters_Sonic || !EntityData1Ptrs[AIIndex] || EntityData1Ptrs[AIIndex]->CharID != Characters_Tails)
+		return false;
+
+	return true;
 }
