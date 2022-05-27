@@ -22,10 +22,9 @@ void DeleteMilesAI()
 int CheckTailsAI_R(void) {
 	bool isSA2Mod = GetModuleHandle("sadx-sa2-mod");
 
-	if (NPCMilesStandByFlag || EV_MainThread_ptr || CurrentLevel == LevelIDs_SkyChase1 || CurrentLevel == LevelIDs_SkyChase2 || !isSA2Mod && CurrentLevel == LevelIDs_ChaoRace) {
+	if (EV_MainThread_ptr || CurrentLevel == LevelIDs_SkyChase1 || CurrentLevel == LevelIDs_SkyChase2 || !isSA2Mod && CurrentLevel == LevelIDs_ChaoRace) {
 		return 0x0; //don't load AI
 	}
-
 
 	if (CurrentCharacter == Characters_Sonic && MetalSonicFlag && isMSBanned)
 		return 0x0;
@@ -185,6 +184,7 @@ void MilesAI_OnFrames(unsigned char playerID) { //Only run when TailsAI_Main is 
 	CatchUP(playerID);
 	SpinDash_Check(playerID);
 	InvincibilityCheck(playerID);
+	MoveAI_Vehicle();
 	//Force_MilesToFollow(playerID);
 
 	if (isRescueAllowed)
@@ -239,7 +239,7 @@ void AI_Init(const HelperFunctions& helperFunctions) {
 		WriteJump(CheckTailsAI, CheckTailsAI_R);
 
 		WriteData<5>((void*)0x415948, 0x90); //remove the original load2PTails in LoadCharacter as we use a custom one
-		AI_Fixes();
+		AI_Patches();
 
 		AI_Improvement();
 	}

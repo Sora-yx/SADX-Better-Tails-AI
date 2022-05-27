@@ -204,7 +204,7 @@ void MilesAI_VictoryPose(ObjectMaster* obj) {
 	{
 	case 0:
 		if (p1->NextAction == 0x13) {
-			p2->Position = UnitMatrix_GetPoint(&p1->Position, &p2->Rotation, 0.0f, 0.0f, 7.0f);
+			p2->Position = UnitMatrix_GetPoint_Player(&p1->Position, &p2->Rotation, 0.0f, 0.0f, 7.0f);
 			p2->Rotation = p1->Rotation;
 			if (++data->InvulnerableTime == 10)
 				data->Action = 1;
@@ -217,13 +217,13 @@ void MilesAI_VictoryPose(ObjectMaster* obj) {
 
 		if ((p2->Status & Status_Ground) == 0 && (p2->Status & Status_OnColli) == 0 || p2->Position.y > p1->Position.y + 2 || p2->Position.y < p1->Position.y - 2)
 		{
-			p2->Position = UnitMatrix_GetPoint(&p1->Position, &p2->Rotation, 0.0f, 0.0f, 6.0f);  //fix floating victory pose
+			p2->Position = UnitMatrix_GetPoint_Player(&p1->Position, &p2->Rotation, 0.0f, 0.0f, 6.0f);  //fix floating victory pose
 		}
 
 		if (++data->Index == 5) {
 
 			if ((p2->Status & Status_Ground) == 0 && (p2->Status & Status_OnColli) == 0) { //last failsafe
-				p2->Position = UnitMatrix_GetPoint(&p1->Position, &p2->Rotation, 0.0f, 0.0f, -6.0f); //try other side
+				p2->Position = UnitMatrix_GetPoint_Player(&p1->Position, &p2->Rotation, 0.0f, 0.0f, -6.0f); //try other side
 			}
 			data->Action = 2;
 		}
@@ -279,8 +279,6 @@ void PreventTailsAIAction(unsigned char playerID) {
 		}
 	}
 
-	if (CurrentLevel == LevelIDs_TwinklePark)
-		RestoreRespawnDelay();
 
 	if (DebugMode)
 	{

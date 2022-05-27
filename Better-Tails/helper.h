@@ -45,14 +45,14 @@ bool isMilesSaving();
 void CheckAndLoadTailsTravelObjects(task* obj);
 void TailsAI_ResetValue();
 void CheckAndDeleteAI();
-void AI_Fixes();
+void AI_Patches();
 void SnowboardRespawn(unsigned char ID);
 void AI_Improvement();
 int isCharacterPetting();
 void FadeoutScreen(ObjectMaster* obj);
 bool isInputModActive();
 
-NJS_VECTOR UnitMatrix_GetPoint(NJS_VECTOR* orig, Rotation3* rot, float x, float y, float z);
+NJS_VECTOR UnitMatrix_GetPoint_Player(NJS_VECTOR* orig, Rotation3* rot, float x, float y, float z);
 float GetSquare(NJS_VECTOR* orig, NJS_VECTOR* dest);
 float GetDistance(NJS_VECTOR* orig, NJS_VECTOR* dest);
 float CheckDistance(NJS_VECTOR* vec1, NJS_VECTOR* vec2);
@@ -127,3 +127,9 @@ void Force_MilesToFollow(unsigned char playerID);
 unsigned char getAI_ID();
 void RemovePlayerCollision(unsigned char ID);
 void RestorePlayerCollision(unsigned char ID);
+void MoveAI_Vehicle();
+
+enum milesAI_CustomAction
+{
+	passengerCart = 115
+};

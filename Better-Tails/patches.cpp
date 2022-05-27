@@ -92,9 +92,27 @@ void moveAItoPlayer(unsigned char playerID) {
 			EntityData1* p2 = EntityData1Ptrs[playerID];
 
 			if (CurrentCharacter != Characters_Big && CurrentCharacter != Characters_Gamma)
-				p2->Position = UnitMatrix_GetPoint(&p1->Position, &p1->Rotation, -7.0f, 0.0f, 5.0f);
+				p2->Position = UnitMatrix_GetPoint_Player(&p1->Position, &p1->Rotation, -7.0f, 0.0f, 5.0f);
 			else
-				p2->Position = UnitMatrix_GetPoint(&p1->Position, &p1->Rotation, -10.0f, 0.0f, 8.0f);
+				p2->Position = UnitMatrix_GetPoint_Player(&p1->Position, &p1->Rotation, -10.0f, 0.0f, 8.0f);
+		}
+	}
+
+	return;
+}
+
+void moveAItoPlayer(unsigned char playerID, float posX, float posZ) {
+	if (isAIActive)
+	{
+		if (EntityData1Ptrs[0] && EntityData1Ptrs[playerID])
+		{
+			EntityData1* p1 = EntityData1Ptrs[0];
+			EntityData1* p2 = EntityData1Ptrs[playerID];
+
+			if (CurrentCharacter != Characters_Big && CurrentCharacter != Characters_Gamma)
+				p2->Position = UnitMatrix_GetPoint_Player(&p1->Position, &p1->Rotation, posX, 0.0f, posZ);
+			else
+				p2->Position = UnitMatrix_GetPoint_Player(&p1->Position, &p1->Rotation, posX - 3.0f, 0.0f, posZ + 3.0f);
 		}
 	}
 
@@ -231,7 +249,7 @@ void CallTailsAI_R() {
 
 void GetPlayerSidePos(NJS_VECTOR* v1, EntityData1* a2, float m)
 {
-	Float _sin; 
+	Float _sin;
 
 	if (a2)
 	{
@@ -382,12 +400,102 @@ void MoveForward(EntityData1* entity, float speed) {
 	njPopMatrix(1u);
 }
 
+void FixTailsAI_Train(int ID, void* a2, int a3, void* a4)
+{
+	moveAItoPlayer(AIIndex);
+	PlaySound(ID, a2, a3, a4);
+}
 
-void AI_Fixes() {
+
+void AI_SitInCart(EntityData1* p1, EntityData1* milesData, task* miles, CharObj2* co2Miles)
+{
+	if (CurrentLevel == LevelIDs_TwinklePark && CurrentAct == 1 && NPCMilesStandByFlag)
+	{
+		if (p1->Action == 45)
+		{
+			if (milesData->Action != passengerCart) {
+				isFollowing = true;
+				EV_SetAction(miles, &action_m_m9002_miles, &MILES_TEXLIST, 1.0f, 3, 0);
+				milesData->Action = passengerCart;
+			}
+			else
+			{
+				milesData->Rotation = p1->Rotation;
+				milesData->Position = UnitMatrix_GetPoint_Player(&p1->Position, &p1->Rotation, 10.0f, 5.5f, 0.0f);
+			}
+		}
+		else
+		{
+			ForcePlayerAction(milesData->CharIndex, 24);
+			EV_ClrAction(miles);
+			milesData->Action = 1;
+			co2Miles->AnimationThing.Index = 1;
+		}
+
+	}
+	else
+	{
+		if (p1->Action == 45 && milesData->Action != passengerCart)
+		{
+
+			isFollowing = true;
+			EV_SetAction(miles, &action_m_m9002_miles, &MILES_TEXLIST, 1.0f, 3, 0);
+			milesData->Action = passengerCart;
+		}
+		else if (milesData->Action == passengerCart)
+		{
+			if (p1->Action == 45)
+			{
+				milesData->Rotation = p1->Rotation;
+				milesData->Position = UnitMatrix_GetPoint_Player(&p1->Position, &p1->Rotation, -4.5f, 4.5f, 2.0f);
+			}
+			else
+			{
+				isFollowing = false;
+				ForcePlayerAction(milesData->CharIndex, 24);
+				EV_ClrAction(miles);
+				milesData->Action = 1;
+				co2Miles->AnimationThing.Index = 1;
+			}
+		}
+	}
+}
+
+void MoveAI_Vehicle()
+{
+	if (!EntityData1Ptrs[0])
+		return;
+
+	EntityData1* milesData = EntityData1Ptrs[AIIndex];
+	task* miles = (task*)PlayerPtrs[AIIndex];
+	EntityData1* p1 = EntityData1Ptrs[0];
+	CharObj2* co2Miles = CharObj2Ptrs[AIIndex];
+
+	AI_SitInCart(p1, milesData, miles, co2Miles);
+
+	if (p1->NextAction == 12)
+	{
+		moveAItoPlayer(AIIndex, -5.0, 0.0f);
+		ForcePlayerAction(AIIndex, 12);
+		milesData->Rotation = p1->Rotation;
+
+		if (isInHubWorld()) {
+			EV_SetAction(miles, &action_m_m9002_miles, &MILES_TEXLIST, 1.0f, 3, 0);
+		}
+	}
+	else if (p1->NextAction == 24 && milesData->Action == 18)
+	{
+		EV_ClrAction(miles);
+		ForcePlayerAction(AIIndex, 24);
+	}
+
+}
+
+
+void AI_Patches() {
 
 	WriteJump(GetRaceWinnerPlayer, GetRaceWinnerPlayer_r); //fix wrong victory pose for Tails AI.
-
-	EventCutscene_Load2_t = new Trampoline((int)0x42FA30, (int)0x42FA38, EventCutscene_Load2_r);
+	EventCutscene_Load2_t = new Trampoline((int)0x42FA30, (int)0x42FA38, EventCutscene_Load2_r); //remove AI when cutscene starts (fix crash)
 	LoadCharacterBoss_t = new Trampoline((int)LoadCharacterBoss, (int)LoadCharacterBoss + 0xc, LoadCharacterBoss_r);
 
 	if (IsHubBanned)
@@ -396,6 +504,8 @@ void AI_Fixes() {
 	//Tails AI Fixes and small optimization/improvement.
 	WriteCall((void*)0x4151ba, FixAIHubTransition); //Fix AI position when you change act in hub world.
 	WriteCall((void*)0x417588, FixAIHubTransition2);
+	WriteCall((void*)0x64015A, FixTailsAI_Train);
+	WriteCall((void*)0x53A29B, FixTailsAI_Train);
 
 	WriteCall((void*)0x42f72d, CallTailsAI_R); //Manually Call Tails AI After few early Cutscene to avoid crash.
 	WriteCall((void*)0x42f78c, CallTailsAI_R);

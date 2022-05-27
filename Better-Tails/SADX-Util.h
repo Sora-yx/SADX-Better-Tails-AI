@@ -111,3 +111,7 @@ static inline signed int TailsAI_RangeOut(taskwk* p1, taskwk* p2, task* a2)
 
 FunctionPointer(int, NpcGetAnalogForBrake, (NJS_VECTOR* a1, float* a2, Angle* a3), 0x47DE00);
 DataPointer(int, NPCMilesStandByFlag, 0x03b2a304);
+DataPointer(NJS_ACTION, action_m_m9002_miles, 0x3C84DC4);
+DataPointer(NJS_ACTION, action_m_m9001_miles, 0x3C84DCC);
+
+ObjectFunc(EV_ClrFace, 0x4310F0);
