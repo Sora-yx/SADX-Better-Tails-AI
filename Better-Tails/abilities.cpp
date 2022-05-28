@@ -386,9 +386,10 @@ void AI_HubWorld_Vehicle(EntityData1* p1, EntityData1* milesData, task* miles, C
 		milesData->Position = UnitMatrix_GetPoint_Player(&p1->Position, &p1->Rotation, 2.0f, 1.0f, 5.0f);
 	}
 
-	if (p1->NextAction == 24 && milesData->Action == 18)
+	char nextAction = p1->NextAction;
+	if ( (nextAction == 24 || nextAction == 5) && milesData->Action == 18)
 	{
-		ResetMilesAI(AIIndex, 24);
+		ResetMilesAI(AIIndex, nextAction);
 	}
 
 }

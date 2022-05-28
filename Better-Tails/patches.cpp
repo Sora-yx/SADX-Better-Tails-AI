@@ -427,6 +427,17 @@ static void __declspec(naked) TailsAI_WriteInputASM()
 	}
 }
 
+void __cdecl FixTailsAI_BotAreaTransition(Uint8 charIndex, float x, float y, float z)
+{
+	PositionPlayer(charIndex, x, y, z);
+	moveAItoPlayer(AIIndex);
+}
+
+void __cdecl FixTailsAI_ECAreaTransition(unsigned __int8 playerNum, char action)
+{
+	ForcePlayerAction(playerNum, action);
+	moveAItoPlayer(AIIndex);
+}
 
 void AI_Patches() {
 
@@ -447,6 +458,11 @@ void AI_Patches() {
 	WriteCall((void*)0x417588, FixAIHubTransition2);
 	WriteCall((void*)0x64015A, FixTailsAI_Train);
 	WriteCall((void*)0x53A29B, FixTailsAI_Train);
+	WriteCall((void*)0x5339AB, FixTailsAI_BotAreaTransition);	//MR
+	WriteCall((void*)0x5339EA, FixTailsAI_BotAreaTransition);	
+	WriteCall((void*)0x51D2AD, FixTailsAI_BotAreaTransition);	//EC
+	WriteCall((void*)0x51D216, FixTailsAI_BotAreaTransition);	
+	WriteCall((void*)0x51BDD0, FixTailsAI_ECAreaTransition);
 
 	WriteCall((void*)0x42f72d, CallTailsAI_R); //Manually Call Tails AI After few early Cutscene
 	WriteCall((void*)0x42f78c, CallTailsAI_R);
