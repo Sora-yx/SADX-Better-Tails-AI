@@ -438,6 +438,12 @@ void __cdecl FixTailsAI_ECAreaTransition(unsigned __int8 playerNum, char action)
 	moveAItoPlayer(AIIndex);
 }
 
+void Fix_AIPos_ActTransition()
+{
+	moveAItoPlayer(AIIndex);
+	ResetMilesAI(AIIndex, 24);
+}
+
 void AI_Patches() {
 
 	WriteJump(GetRaceWinnerPlayer, GetRaceWinnerPlayer_r); //fix wrong victory pose for Tails AI.
@@ -453,8 +459,7 @@ void AI_Patches() {
 		return;
 
 	//Tails AI Fixes and small optimization/improvement.
-	WriteCall((void*)0x4151ba, FixAIHubTransition); //Fix AI position when you change act in hub world.
-	WriteCall((void*)0x417588, FixAIHubTransition2);
+
 	WriteCall((void*)0x64015A, FixTailsAI_Train);
 	WriteCall((void*)0x53A29B, FixTailsAI_Train);
 	WriteCall((void*)0x5339AB, FixTailsAI_BotAreaTransition);	//MR

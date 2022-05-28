@@ -36,7 +36,7 @@ void SnowboardRespawn(unsigned char playerID) {
 
 	EntityData1* milesAI = EntityData1Ptrs[playerID];
 
-	if (milesAI->Action > boardHurt && milesAI->Action < boardSlide) {
+	if ( milesAI->Action < boardSlide || milesAI->Action > boardHurt) {
 
 		if (isPlayerUsingSnowboard()) {
 			EntityData1Ptrs[playerID]->Status &= ~(Status_Attack | Status_Ball | Status_LightDash);
@@ -49,8 +49,11 @@ void SnowboardRespawn(unsigned char playerID) {
 }
 
 
-void snowboard_Follow(unsigned char playerID, EntityData1* P1, EntityData1* P2)
+void snowboard_Follow(unsigned char playerID)
 {
+	EntityData1* P1 = EntityData1Ptrs[0];
+	EntityData1* P2 = EntityData1Ptrs[playerID];
+
 	if (isPlayerUsingSnowboard()) {
 		if (CurrentLevel == LevelIDs_IceCap && CurrentAct == 2 && P1->Position.y > -3800) {
 			if (P2->Status & Status_Ground)
@@ -61,9 +64,9 @@ void snowboard_Follow(unsigned char playerID, EntityData1* P1, EntityData1* P2)
 			if (P1->Status & Status_Ground)
 				CharObj2Ptrs[playerID]->Speed.x = CharObj2Ptrs[0]->Speed.x + 0.8f;
 		}
-	}
 
-	SnowboardRespawn(playerID);
+		SnowboardRespawn(playerID);
+	}
 }
 
 void speedHighwayBuilding_Follow(unsigned char playerID) {
@@ -77,6 +80,7 @@ void speedHighwayBuilding_Follow(unsigned char playerID) {
 	if (P1->Action >= 46 && P1->Action <= 50)
 	{
 		disableCol = true;
+		P2->Status &= ~Status_Ball;
 		P2->Rotation = P1->Rotation;
 
 		if (P2->Position.y > -10790)
@@ -94,11 +98,10 @@ void speedHighwayBuilding_Follow(unsigned char playerID) {
 			P2->Position.y = P1->Position.y - 7;
 			P2->Position.z = P1->Position.z;
 		}
-		else if (P2->Position.y <= -18660 && P2->Action > 90) {
-			disableCol = false;
-			CharObj2Ptrs[playerID]->Powerups &= 0x100u;
-			P2->Action = 1;
-		}
+	} else if (P2->Position.y <= -18660 && P2->Action > 90) {
+		disableCol = false;
+		CharObj2Ptrs[playerID]->Powerups &= 0x100u;
+		P2->Action = 1;
 	}
 
 }
@@ -120,6 +123,7 @@ void LoadAISnowBoard_R() {
 		{
 			board->Data1->CharID = ID;
 			board->Data1->CharIndex = ID;
+			disableCol = true;
 			return;
 		}
 	}
@@ -326,6 +330,9 @@ void ResetMilesAI(char pnum, char action)
 	task* miles = (task*)PlayerPtrs[AIIndex];
 	CharObj2* co2Miles = CharObj2Ptrs[AIIndex];
 
+	if (!co2Miles)
+		return;
+
 	if (action > 0)
 		ForcePlayerAction(pnum, action);
 
@@ -346,6 +353,7 @@ void AI_SitInCart(EntityData1* p1, EntityData1* milesData, task* miles, CharObj2
 	if (p1->Action == 45 && milesData->Action != passengerCart)
 	{
 		disableCol = true;
+		milesData->Status &= ~Status_Ball;
 		EV_SetAction(miles, &action_m_m9002_miles, &MILES_TEXLIST, 1.0f, 3, 0);
 		milesData->Action = passengerCart;
 	}
@@ -469,6 +477,8 @@ void MilesFasterRespawn(EntityData1* p1, EntityData1* p2)
 		if (timingRespawn > 300)
 		{
 			ForcePlayerAction(AIIndex, 48);
+			p2->Unknown = 0;
+			p2->Status &= ~Status_Ball;
 			p2->Position.y = p1->Position.y + 60.0f;
 			p2->Position.x = p1->Position.x;
 			p2->Position.z = p1->Position.z;
@@ -491,6 +501,7 @@ void Miles_AbilitiesOnFrames(unsigned char pnum)
 	PreventTailsAIAction(pnum);
 	speedHighwayBuilding_Follow(pnum);
 	SpinDash_Check(pnum);
+	snowboard_Follow(pnum);
 
 	MoveAI_Vehicle();
 
@@ -506,9 +517,7 @@ void AI_Improvement() {
 	WriteCall((void*)0x4e9664, LoadAISnowBoard_R);
 	WriteCall((void*)0x462490, FixCollision);
 
-
-	if (isFlyTravel)
-		FlyTravel_Init();
+	FlyTravel_Init();
 
 	if (isRescueAllowed)
 		Rescue_Init();

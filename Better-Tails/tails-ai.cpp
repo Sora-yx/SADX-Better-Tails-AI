@@ -173,6 +173,7 @@ void TailsAI_Delete_r() {
 	isChaoPetByAI = false; //just to be safe
 	isAIActive = false;
 	isRescued = false;
+	disableCol = false;
 	FlagDeleteMilesAI = false;
 	rngRegularDeathRescue = 0;
 	return FUN_0042ce20();

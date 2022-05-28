@@ -68,13 +68,17 @@ void LoadDestination(int playerID) {
 }
 
 void __cdecl MovePlayerToStartPoint_r(EntityData1* data) {
-	if (isMoving > 0) {
+
+	if (isMoving > 0 && isFlyTravel) {
 		EntityData1Ptrs[0]->Position = DestinationArray[Cursor].destination;
 		EntityData1Ptrs[0]->Position.y -= 6.5f;
 	}
 	else {
 		FunctionPointer(void, original, (EntityData1 * data), MovePlayerToStartPoint_t->Target());
-		return original(data);
+		original(data);
+
+		Fix_AIPos_ActTransition();
+		return;
 	}
 }
 
@@ -707,10 +711,13 @@ void CheckAndLoadTailsTravelObjects(task* obj) {
 }
 
 void FlyTravel_Init() {
-	WriteCall((void*)0x458b86, PauseMenu_Map_Display_r);
-	WriteCall((void*)0x458bd0, PauseMenu_Map_Display_r);
-	WriteCall((void*)0x458bb8, PauseMenu_Map_Display_r);
-	WriteCall((void*)0x458b6e, PauseMenu_Map_Display_r);
+
+	if (isFlyTravel) {
+		WriteCall((void*)0x458b86, PauseMenu_Map_Display_r);
+		WriteCall((void*)0x458bd0, PauseMenu_Map_Display_r);
+		WriteCall((void*)0x458bb8, PauseMenu_Map_Display_r);
+		WriteCall((void*)0x458b6e, PauseMenu_Map_Display_r);
+	}
 
 	MovePlayerToStartPoint_t = new Trampoline((int)MovePlayerToStartPoint, (int)MovePlayerToStartPoint + 0x6, MovePlayerToStartPoint_r);
 }
