@@ -78,6 +78,7 @@ void speedHighwayBuilding_Follow(unsigned char playerID) {
 	{
 		disableCol = true;
 		P2->Rotation = P1->Rotation;
+
 		if (P2->Position.y > -10790)
 		{
 			CharObj2Ptrs[playerID]->AnimationThing.Index = 37;
@@ -374,8 +375,9 @@ void AI_HubWorld_Vehicle(EntityData1* p1, EntityData1* milesData, task* miles, C
 	{
 		moveAItoPlayer(AIIndex, -5.0, 0.0f);
 		ForcePlayerAction(AIIndex, 12);
-		milesData->Rotation = p1->Rotation;	
-		EV_SetAction(miles, &action_m_m9002_miles, &MILES_TEXLIST, 1.0f, 3, 0);
+		milesData->Rotation = p1->Rotation;
+		if (CurrentLevel != LevelIDs_StationSquare && CurrentAct != 3)
+			EV_SetAction(miles, &action_m_m9002_miles, &MILES_TEXLIST, 1.0f, 3, 0);
 		disableCol = true;
 		milesData->Action = 18;
 	}
@@ -485,7 +487,6 @@ void Miles_AbilitiesOnFrames(unsigned char pnum)
 	if (!EntityData1Ptrs[0] || !EntityData1Ptrs[pnum])
 		return;
 
-
 	InvincibilityCheck(pnum);
 	PreventTailsAIAction(pnum);
 	speedHighwayBuilding_Follow(pnum);
@@ -493,7 +494,8 @@ void Miles_AbilitiesOnFrames(unsigned char pnum)
 
 	MoveAI_Vehicle();
 
-	MilesFasterRespawn(EntityData1Ptrs[0], EntityData1Ptrs[pnum]);
+	if (fasterRespawn)
+		MilesFasterRespawn(EntityData1Ptrs[0], EntityData1Ptrs[pnum]);
 }
 
 void AI_Improvement() {

@@ -15,6 +15,7 @@ extern bool isFlyTravel;
 extern bool isRescueAllowed;
 extern bool isRescued;
 extern bool isMSBanned;
+extern bool fasterRespawn;
 
 
 bool isTailsAIAllowed();
@@ -43,7 +44,7 @@ void AI_Init(const HelperFunctions& helperFunctions);
 void moveAItoPlayer(unsigned char playerID);
 bool isMilesSaving();
 void CheckAndLoadTailsTravelObjects(task* obj);
-void TailsAI_ResetValue();
+void TailsAI_Delete_r();
 void CheckAndDeleteAI();
 void AI_Patches();
 void SnowboardRespawn(unsigned char ID);
@@ -140,3 +141,5 @@ enum milesAI_CustomAction
 };
 
 #define TARGET_STATIC(name) ((decltype(name##_r)*)name##_t.Target())
+
+void config(const char* path);

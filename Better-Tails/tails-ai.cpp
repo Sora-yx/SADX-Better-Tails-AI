@@ -166,7 +166,7 @@ void MilesAI_OnFrames(unsigned char playerID) { //Only run when TailsAI_Main is 
 }
 
 //Reset value when Tails AI is deleted
-void TailsAI_ResetValue() {
+void TailsAI_Delete_r() {
 	TailsAI_ptr = nullptr;
 	AIIndex = 1;
 	rngDeathZoneRescue = 0;

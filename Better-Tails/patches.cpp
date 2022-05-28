@@ -13,7 +13,6 @@ void __cdecl EnableTailsAI_Controller(Uint8 index)
 	ControllerEnabled[index] = 1;
 }
 
-
 unsigned char getAI_ID() {
 
 	if (!EntityData1Ptrs[AIIndex])

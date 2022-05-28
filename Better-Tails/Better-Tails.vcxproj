@@ -144,6 +144,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="abilities.cpp" />
+    <ClCompile Include="config.cpp" />
     <ClCompile Include="fly-travel.cpp" />
     <ClCompile Include="mod.cpp" />
     <ClCompile Include="patches.cpp" />
