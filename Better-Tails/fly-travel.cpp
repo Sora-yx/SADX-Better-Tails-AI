@@ -152,7 +152,7 @@ void DisplayCursorAnimation() {
 
 	MilesCursor_SPRITE.p.x = DestinationArray[Cursor].cursor.x;
 	MilesCursor_SPRITE.p.y = DestinationArray[Cursor].cursor.y;
-	njDrawSprite2D_Queue(&MilesCursor_SPRITE, MilesCurTex, -1.501, NJD_SPRITE_ALPHA | NJD_SPRITE_COLOR, QueuedModelFlagsB_SomeTextureThing);
+	njDrawSprite2D_Queue(&MilesCursor_SPRITE, MilesCurTex, -1.501f, NJD_SPRITE_ALPHA | NJD_SPRITE_COLOR, QueuedModelFlagsB_SomeTextureThing);
 }
 
 void UpdatePlayerCursorPos() {
@@ -555,7 +555,7 @@ void TailsAI_Grab(ObjectMaster* obj) {
 		SetDebugFontSize(20);
 		DisplayDebugStringFormatted(NJM_LOCATION(2, 1), "Destination: %s", getDestinationText());
 		UpdatePlayerCursorPos();
-		DrawModelCallback_Queue((void(__cdecl*)(void*))PauseMenu_Map_DisplayCallback, 0, 22047.998, QueuedModelFlagsB_EnableZWrite); //fix transparency issue
+		DrawModelCallback_Queue((void(__cdecl*)(void*))PauseMenu_Map_DisplayCallback, 0, 22047.998f, QueuedModelFlagsB_EnableZWrite); //fix transparency issue
 
 		if (ControllerPointers[0]->PressedButtons & Buttons_A || ControllerPointers[0]->PressedButtons & Buttons_Start) {
 			if (!CheckFastTravelStoryProgression()) {

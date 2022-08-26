@@ -139,7 +139,7 @@ int __cdecl IsMilesInsideSphere(NJS_VECTOR* x_1, float radius)
 	EntityData1* v5;
 	CollisionInfo* v6;
 	float* v7;
-	double v8;
+	float v8;
 	float v10;
 	float v11;
 	NJS_VECTOR v;
@@ -296,26 +296,23 @@ void FadeoutScreen(ObjectMaster* obj) {
 }
 
 
-void SetCharaInfo(ObjectMaster* obj, int i) {
-	obj->Data1->CharID = (char)CurrentCharacter;
-	obj->Data1->CharIndex = i;
-	EntityData1Ptrs[i] = obj->Data1;
-	EntityData2Ptrs[i] = (EntityData2*)obj->Data2;
-	MovePlayerToStartPoint(obj->Data1);
+void SetCharaInfo(task* obj, int i) {
+	obj->twp->charID = (char)CurrentCharacter;
+	obj->twp->pNum = i;
+
+	playertwp[i] = obj->twp;
+	playermwp[i] = (motionwk2*)obj->mwp;
+	MovePlayerToStartPoint((EntityData1*)obj->twp);
 	return;
 }
 
 void __cdecl LoadCharacter_r()
 {
-	__int16 i; // di
-	ObjectMaster* object; // esi
-	ObjectMaster* v3; // eax
-	ObjectMaster* v4; // eax
-	ObjectMaster* player1 = nullptr;
+	task* p1 = nullptr;
 
 	ClearPlayerArrays();
-	object = player1;
-	for (i = 0; i < 2; ++i)
+
+	for (__int16 i = 0; i < 2; ++i)
 	{
 		if (i)
 		{
@@ -327,53 +324,51 @@ void __cdecl LoadCharacter_r()
 			{
 				if (CurrentLevel == LevelIDs_SkyChase1 || CurrentLevel == LevelIDs_SkyChase2)
 				{
-					v3 = LoadObject((LoadObj)(LoadObj_UnknownA | LoadObj_Data1 | LoadObj_Data2), 1, Tornado_Main);
+					p1 = CreateElementalTask((LoadObj)(LoadObj_UnknownA | LoadObj_Data1 | LoadObj_Data2), 1, (TaskFuncPtr)Tornado_Main);
 				}
 				else
 				{
-					v3 = LoadObject((LoadObj)(LoadObj_UnknownA | LoadObj_Data1 | LoadObj_Data2), 1, Sonic_Main);
+					p1 = CreateElementalTask((LoadObj)(LoadObj_UnknownA | LoadObj_Data1 | LoadObj_Data2), 1, (TaskFuncPtr)Sonic_Main);
 				}
-				object = v3;
 			}
 			if (CurrentCharacter == Characters_Knuckles)
 			{
-				object = LoadObject((LoadObj)(LoadObj_UnknownA | LoadObj_Data1 | LoadObj_Data2), 1, Knuckles_Main);
+				p1 = CreateElementalTask((LoadObj)(LoadObj_UnknownA | LoadObj_Data1 | LoadObj_Data2), 1, (TaskFuncPtr)Knuckles_Main);
 				if (sub_42FB00() != 1
 					&& (GameMode == GameModes_Adventure_ActionStg
 						|| GameMode == GameModes_Mission
 						|| GameMode == GameModes_Trial))
 				{
-					LoadObject(LoadObj_Data1, 6, EmeraldRadarHud_Load_Load);
+					CreateElementalTask(LoadObj_Data1, 6, (TaskFuncPtr)EmeraldRadarHud_Load_Load);
 				}
 			}
 			if (CurrentCharacter == Characters_Tails)
 			{
 				if (CurrentLevel == LevelIDs_SkyChase1 || CurrentLevel == LevelIDs_SkyChase2)
 				{
-					v4 = LoadObject((LoadObj)(LoadObj_UnknownA | LoadObj_Data1 | LoadObj_Data2), 1, Tornado_Main);
+					p1 = CreateElementalTask((LoadObj)(LoadObj_UnknownA | LoadObj_Data1 | LoadObj_Data2), 1, (TaskFuncPtr)Tornado_Main);
 				}
 				else
 				{
-					v4 = LoadObject((LoadObj)(LoadObj_UnknownA | LoadObj_Data1 | LoadObj_Data2), 1, Tails_Main);
+					p1 = CreateElementalTask((LoadObj)(LoadObj_UnknownA | LoadObj_Data1 | LoadObj_Data2), 1, (TaskFuncPtr)Tails_Main);
 				}
-				object = v4;
 			}
 			if (CurrentCharacter == Characters_Big)
 			{
-				object = LoadObject((LoadObj)(LoadObj_UnknownA | LoadObj_Data1 | LoadObj_Data2), 1, Big_Main);
-				LoadObject(LoadObj_Data1, 6, BigHud_Main);
+				p1 = CreateElementalTask((LoadObj)(LoadObj_UnknownA | LoadObj_Data1 | LoadObj_Data2), 1, (TaskFuncPtr)Big_Main);
+				CreateElementalTask(LoadObj_Data1, 6, (TaskFuncPtr)BigHud_Main);
 			}
 			if (CurrentCharacter == Characters_Amy)
 			{
-				object = LoadObject((LoadObj)(LoadObj_UnknownA | LoadObj_Data1 | LoadObj_Data2), 1, Amy_Main);
+				p1 = CreateElementalTask((LoadObj)(LoadObj_UnknownA | LoadObj_Data1 | LoadObj_Data2), 1, (TaskFuncPtr)Amy_Main);
 				CheckLoadBird();
 			}
 			if (CurrentCharacter == Characters_Gamma)
 			{
-				object = LoadObject((LoadObj)(LoadObj_UnknownA | LoadObj_Data1 | LoadObj_Data2), 1, Gamma_Main);
+				p1 = CreateElementalTask((LoadObj)(LoadObj_UnknownA | LoadObj_Data1 | LoadObj_Data2), 1, (TaskFuncPtr)Gamma_Main);
 			}
 
-			SetCharaInfo(object, i);
+			SetCharaInfo(p1, i);
 		}
 	}
 }

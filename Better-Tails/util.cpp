@@ -59,7 +59,6 @@ bool isNewTricksActive() {
 
 }
 
-
 NJS_VECTOR UnitMatrix_GetPoint_Player(NJS_VECTOR* orig, Angle3* rot, float x, float y, float z) {
 	NJS_VECTOR point;
 	

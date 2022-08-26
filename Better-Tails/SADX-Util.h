@@ -3,8 +3,6 @@
 
 VoidFunc(FUN_0042ce20, 0x42ce20); //Called with Delete Tails AI
 
-
-
 FunctionPointer(int, GetCutsceneFlagArray, (int cutscene), 0x42fb10);
 
 DataPointer(char, IceCapFlag, 0x3B188B4);
