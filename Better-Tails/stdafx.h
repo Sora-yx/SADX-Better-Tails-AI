@@ -12,6 +12,7 @@
 #include "SADXModLoader.h"
 #include "LandTableInfo.h"
 #include "Trampoline.h"
+#include "FunctionHook.h"
 #include "IniFile.hpp"
 
 #include "helper.h"

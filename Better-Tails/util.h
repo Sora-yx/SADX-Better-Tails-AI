@@ -9,3 +9,4 @@ bool isInHubWorld();
 
 extern bool disableCol;
 bool isTailsAI();
+

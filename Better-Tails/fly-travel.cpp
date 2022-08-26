@@ -487,8 +487,6 @@ void TailsAI_Grab(ObjectMaster* obj) {
 		CheckThingButThenDeleteObject(obj);
 	}
 
-
-
 	if ((++data->field_A == 230 && data->Action > initFly && data->Action < grabbed) || p2->CharID != Characters_Tails) {
 		data->Action = leaving;
 	}

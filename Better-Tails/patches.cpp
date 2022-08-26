@@ -1,7 +1,8 @@
 #include "stdafx.h"
 
-Trampoline* EventCutscene_Load2_t = nullptr;
-Trampoline* LoadCharacterBoss_t = nullptr;
+
+static Trampoline* LoadCharacterBoss_t = nullptr;
+static FunctionHook<void, int> EV_Load2_t(EV_Load2);
 
 void __cdecl DisableTailsAI_Controller(Uint8 index)
 {
@@ -63,12 +64,11 @@ void RestorePlayerCollision(unsigned char ID) {
 }
 
 //remove AI when cutscene start
-void __cdecl EventCutscene_Load2_r(int a2)
+void __cdecl EV_Load2_r(int a2)
 {
 	DeleteMilesAI();
 
-	FunctionPointer(void, origin, (int a2), EventCutscene_Load2_t->Target());
-	origin(a2);
+	return EV_Load2_t.Original(a2);
 }
 
 void __cdecl LoadCharacterBoss_r(int boss_id)
@@ -398,33 +398,6 @@ void FixTailsAI_Train(int ID, void* a2, int a3, void* a4)
 }
 
 
-void FixTailsAI_Standing(task* obj)
-{	
-	EntityData1* p2 = EntityData1Ptrs[AIIndex];
-	CharObj2* co2Miles = CharObj2Ptrs[AIIndex];
-	CharObj2* p1 = CharObj2Ptrs[0];
-
-	if (p2->Action <= 2 && co2Miles->Speed.x == 0.0f && co2Miles->Speed.y == 0.0f && co2Miles->Speed.z == 0.0f
-		&& p1->Speed.x == 0.0f && p1->Speed.y == 0.0f && p1->Speed.z == 0.0f) {
-
-		NormalizedAnalogs[AIIndex].direction = 0;
-		NormalizedAnalogs[AIIndex].magnitude = 0.0f;
-	}
-	else {
-		TailsAI_WriteInput((ObjectMaster*)obj);
-	}
-}
-
-static void __declspec(naked) TailsAI_WriteInputASM()
-{
-	__asm
-	{
-		push eax
-		call FixTailsAI_Standing
-		pop eax 
-		retn
-	}
-}
 
 void __cdecl FixTailsAI_BotAreaTransition(Uint8 charIndex, float x, float y, float z)
 {
@@ -447,11 +420,9 @@ void Fix_AIPos_ActTransition()
 void AI_Patches() {
 
 	WriteJump(GetRaceWinnerPlayer, GetRaceWinnerPlayer_r); //fix wrong victory pose for Tails AI.
-	EventCutscene_Load2_t = new Trampoline((int)0x42FA30, (int)0x42FA38, EventCutscene_Load2_r); //remove AI when cutscene starts (fix crash)
+	EV_Load2_t.Hook(EV_Load2_r);
 	LoadCharacterBoss_t = new Trampoline((int)LoadCharacterBoss, (int)LoadCharacterBoss + 0xc, LoadCharacterBoss_r);
 
-	WriteCall((void*)0x47EB59, TailsAI_WriteInputASM);
-	WriteCall((void*)0x47EB80, TailsAI_WriteInputASM);
 
 	WriteData<6>((int*)0x460fcf, 0x90); //restore Miles's tail effect when AI
 

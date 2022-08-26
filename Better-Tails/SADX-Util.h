@@ -3,7 +3,7 @@
 
 VoidFunc(FUN_0042ce20, 0x42ce20); //Called with Delete Tails AI
 
-FunctionPointer(signed int, SetPlayerPosition, (unsigned __int8 playerNum, char a2, NJS_POINT3* a3, long* a4), 0x441a40);
+
 
 FunctionPointer(int, GetCutsceneFlagArray, (int cutscene), 0x42fb10);
 
@@ -31,7 +31,8 @@ FunctionPointer(int, isAngelIslandOpen, (), 0x534570);
 
 FunctionPointer(long, Chao_Pleasure, (ObjectMaster* Chao), 0x75db80);
 FunctionPointer(void, Chao_SetBehavior, (ObjectMaster* Chao, long* a2), 0x71EF10);
-
+FunctionPointer(void, EV_Load2, (int num), 0x42FA30);
+FunctionPointer(int, EV_FreeNpcMilesPlayerTask, (), 0x42CDF0);
 
 
 enum class CameraAdjustsIDs {

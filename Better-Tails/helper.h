@@ -2,6 +2,7 @@
 
 #define MaxPlayers 8
 
+extern HMODULE multi;
 extern bool IsChaoGardenBanned;
 extern bool IsHubBanned;
 extern bool IsBossBanned;
@@ -145,3 +146,7 @@ enum milesAI_CustomAction
 #define TARGET_STATIC(name) ((decltype(name##_r)*)name##_t.Target())
 
 void config(const char* path);
+#define TARGET_DYNAMIC(name) ((decltype(name##_r)*)name##_t->Target())
+
+
+bool isMultiEnabled();

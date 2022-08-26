@@ -1,18 +1,12 @@
 #include "stdafx.h"
 
-
 time_t t;
+HMODULE multi = NULL;
 
 extern "C" {
 
 	__declspec(dllexport) void __cdecl Init(const char* path, const HelperFunctions& helperFunctions)
 	{
-
-
-		if (!isRandoActive())  //rando already has its own stuff for AI.
-			WriteCall((void*)0x415a25, LoadCharacterAndAI); //Call Tails AI when Load Character.
-
-
 		config(path);
 		srand((unsigned)time(&t));
 
@@ -22,11 +16,11 @@ extern "C" {
 		//Tails AI Stuff (Load, Fixes...)
 		AI_Init(helperFunctions);
 
+		multi = GetModuleHandle("sadx-multiplayer");
 	}
 
 	__declspec(dllexport) void __cdecl OnFrame()
 	{
-
 		//LoadAI_OnFrames();
 
 

@@ -142,3 +142,19 @@ bool isTailsAI()
 
 	return true;
 }
+
+
+bool isMultiEnabled()
+{
+	if (!multi)
+		return false;
+
+	bool result = (bool)GetProcAddress(multi, "multi_is_active");
+
+	if (result)
+	{
+		return true;
+	}
+
+	return false;
+}

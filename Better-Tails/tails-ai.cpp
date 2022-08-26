@@ -5,7 +5,9 @@
 bool isAIActive = false;
 bool FlagDeleteMilesAI = false;
 int FlagAI = 0;
-Trampoline* TailsAI_Main_t;
+
+static FunctionHook<void, ObjectMaster*> TailsAI_Main_t(TailsAI_Main);
+static FunctionHook<void> LoadCharacter_t(LoadCharacter);
 
 void DeleteMilesAI()
 {
@@ -13,7 +15,7 @@ void DeleteMilesAI()
 
 	if (id > 0) {
 		FlagDeleteMilesAI = true;
-		CheckThingButThenDeleteObject(GetCharacterObject(id));
+		FreeTask((task*)GetCharacterObject(id));
 	}
 }
 
@@ -21,6 +23,11 @@ void DeleteMilesAI()
 //Tails AI Flag Check
 int CheckTailsAI_R(void) {
 	bool isSA2Mod = GetModuleHandle("sadx-sa2-mod");
+
+	if (isMultiEnabled())
+	{
+		return 0x0;
+	}
 
 	if (NPCMilesStandByFlag || EV_MainThread_ptr || CurrentLevel == LevelIDs_SkyChase1 || CurrentLevel == LevelIDs_SkyChase2 || !isSA2Mod && CurrentLevel == LevelIDs_ChaoRace) {
 		return 0x0; //don't load AI
@@ -149,7 +156,7 @@ void LoadCharacterAndAI() {
 		return LoadCharacter_r();
 	}
 
-	return LoadCharacter(); //call original function
+	return LoadCharacter_t.Original();
 }
 
 
@@ -188,7 +195,7 @@ void TailsAI_Main_R(task* obj) {
 
 	if (FlagDeleteMilesAI && IsIngame())
 	{
-		CheckThingButThenDeleteObject((ObjectMaster*)obj);
+		FreeTask(obj);
 		return;
 	}
 
@@ -197,19 +204,22 @@ void TailsAI_Main_R(task* obj) {
 
 	MilesAI_OnFrames(pid);
 
-	DisplayDebugStringFormatted(NJM_LOCATION(2, 1), "AI Distance: % f", getMilesDistance(EntityData1Ptrs[0], EntityData1Ptrs[AIIndex]));
+
+	DisplayDebugStringFormatted(NJM_LOCATION(2, 1), "Tails AI: %d", TailsAI_ptr);
+	//DisplayDebugStringFormatted(NJM_LOCATION(2, 1), "AI Distance: % f", getMilesDistance(EntityData1Ptrs[0], EntityData1Ptrs[AIIndex]));
 
 	if (data->mode == 0) {
 		RemovePlayerCollision(pid);
 	}
 
-	TaskFunc(origin, TailsAI_Main_t->Target());
-	origin(obj);
+	TailsAI_Main_t.Original((ObjectMaster*)obj);
 }
 		
 void AI_Init(const HelperFunctions& helperFunctions) {
 
 	if (!isRandoActive()) {
+
+		LoadCharacter_t.Hook(LoadCharacterAndAI);
 
 		//Allow Tails AI to spawn in acton stages, hub world, bosses and chao garden + fixes
 		WriteJump(CheckTailsAI, CheckTailsAI_R);
@@ -220,5 +230,5 @@ void AI_Init(const HelperFunctions& helperFunctions) {
 		AI_Improvement();
 	}
 
-	TailsAI_Main_t = new Trampoline((int)TailsAI_Main, (int)TailsAI_Main + 0x5, TailsAI_Main_R);
+	TailsAI_Main_t.Hook((ObjectFuncPtr)TailsAI_Main_R);
 }

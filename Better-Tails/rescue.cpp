@@ -93,7 +93,6 @@ void TailsAI_Landing2(ObjectMaster* obj) {
 		return;
 	}
 
-
 	LookAt(&p2->Position, &data->Position, nullptr, &p2->Rotation.y);
 	FlySoundOnFrames(data->CharIndex);
 
@@ -141,15 +140,14 @@ void TailsAI_Landing2(ObjectMaster* obj) {
 }
 
 void MilesRescuesCharacterFall(ObjectMaster* obj) {
-	EntityData1* data = obj->Data1;
 
+	EntityData1* data = obj->Data1;
 	EntityData1* p1 = EntityData1Ptrs[0];
 	EntityData1* p2 = EntityData1Ptrs[data->CharIndex];
 	CharObj2* p1co2 = CharObj2Ptrs[0];
 	CharObj2* p2co2 = CharObj2Ptrs[data->CharIndex];
 
-
-	if (data->Action >= 2)
+	if (data->Action >= playerGrabbed)
 		FlySoundOnFrames(data->CharIndex);
 
 	switch (data->Action) {
@@ -266,14 +264,11 @@ static void __declspec(naked) PlayCharacterDeathSoundAsm(ObjectMaster* eax, int 
 {
 	__asm
 	{
-		push[esp + 04h] // pid
-		push eax // eax0
-
-		// Call your __cdecl function here:
+		push[esp + 04h]
+		push eax 
 		call PlayCharacterDeathSound_r
-
-		pop eax // eax0
-		add esp, 4 // pid
+		pop eax 
+		add esp, 4 
 		retn
 	}
 }
@@ -301,17 +296,16 @@ void CheckMilesBossRescue(unsigned char ID) {
 void MilesRescueEnemyDelete(ObjectMaster* obj) {
 	rngDeathZoneRescue = 0;
 	MilesRescueEnemy = nullptr;
-
 	return;
 }
 
 void MilesRescueFromEnemy(ObjectMaster* obj) {
+
 	EntityData1* data = obj->Data1;
 	EntityData1* p1 = EntityData1Ptrs[0];
 	EntityData1* p2 = EntityData1Ptrs[data->CharIndex ];
 	CharObj2* co2p2 = CharObj2Ptrs[data->CharIndex];
 	CharObj2* co2p1 = CharObj2Ptrs[0];
-
 
 	switch (data->Action)
 	{
@@ -322,13 +316,13 @@ void MilesRescueFromEnemy(ObjectMaster* obj) {
 			SetCameraEvent(CameraEvent_MilesRescue, CameraAdjustsIDs::None, CameraDirectIDs::Target);
 		p1->Action = 125;
 		p2->Action = 125;
-		data->Action = 1;
+		data->Action++;
 		break;
 	case 1:
 		p2->Position = p1->Position;
 		p2->Position.x = p1->Position.x - 100;
 		PlaySound(768, 0, 0, 0);
-		data->Action = 2;
+		data->Action++;
 		break;
 	case 2:
 		LookAt(&p2->Position, &p1->Position, nullptr, &p2->Rotation.y);
@@ -337,7 +331,7 @@ void MilesRescueFromEnemy(ObjectMaster* obj) {
 		p2->Position.x += 4;
 
 		if (GetCollidingEntityA(p2) || ++data->InvulnerableTime == 50)
-			data->Action = 3;
+			data->Action++;
 		break;
 	case 3:
 		p2->Action = 4;
@@ -348,13 +342,13 @@ void MilesRescueFromEnemy(ObjectMaster* obj) {
 		p1->Action = 8;
 		co2p1->Speed = { 1.5, 4, 0 };
 		co2p1->Powerups &= 0x100u;
-		data->Action = 4;
+		data->Action++;
 		break;
-	case 4:
+	default:
 		if (CurrentLevel < LevelIDs_Chaos0)
 			RemoveCameraEvent();
 		CheckThingButThenDeleteObject(obj);
-		break;
+		return;
 	}
 }
 
