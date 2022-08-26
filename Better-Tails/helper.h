@@ -54,13 +54,7 @@ int isCharacterPetting();
 void FadeoutScreen(ObjectMaster* obj);
 bool isInputModActive();
 
-NJS_VECTOR UnitMatrix_GetPoint_Player(NJS_VECTOR* orig, Rotation3* rot, float x, float y, float z);
-float GetSquare(NJS_VECTOR* orig, NJS_VECTOR* dest);
-float GetDistance(NJS_VECTOR* orig, NJS_VECTOR* dest);
-float CheckDistance(NJS_VECTOR* vec1, NJS_VECTOR* vec2);
-void PlayerLookAt(NJS_VECTOR* from, NJS_VECTOR* to, Angle* outx, Angle* outy);
-float GetCharacterPositionY(EntityData1* p1);
-void UpdateP1Position(CharObj2* co2p1, CharObj2* co2p2, EntityData1* p1, EntityData1* p2);
+
 void PlayCharacterLeaveAnimation(EntityData1* p1, CharObj2* co2, int playerID);
 void Rescue_Init();
 void PlayCharacterGrabAnimation(EntityData1* p1, CharObj2* co2);
@@ -68,7 +62,7 @@ void FlySoundOnFrames(int playerID);
 
 void MilesAI_OnFrames(unsigned char playerID);
 bool isNewTricksActive();
-float getMilesDistance(EntityData1* p1, EntityData1* p2);
+float getMilesDistance(taskwk* p1, taskwk* p2);
 
 
 void GetPlayerSidePos(NJS_VECTOR* v1, EntityData1* a2, float m);
@@ -147,6 +141,7 @@ enum milesAI_CustomAction
 
 void config(const char* path);
 #define TARGET_DYNAMIC(name) ((decltype(name##_r)*)name##_t->Target())
-
+#define charID counter.b[1]
+#define pNum counter.b[0]
 
 bool isMultiEnabled();

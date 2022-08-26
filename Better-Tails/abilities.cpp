@@ -4,7 +4,7 @@
 
 Trampoline* Chao_Main_t = nullptr;
 Trampoline* ScoreDisplay_main_t = nullptr;
-Trampoline* forcePlayerAction_t = nullptr;
+Trampoline* forcePlayermode_t = nullptr;
 
 bool disableCol = false;
 
@@ -13,9 +13,15 @@ void SpinDash_Check(unsigned char ID) {
 	if (!isNewTricksActive())
 		return;
 
-	EntityData1* data = EntityData1Ptrs[0];
+	auto pData = playertwp[0];
 
-	if (data->CharID == Characters_Sonic && data->Action == 4 || data->CharID == Characters_Knuckles && data->Action == 59) {
+	if (pData->charID == Characters_Sonic && pData->mode == 4 || pData->charID == Characters_Knuckles && pData->mode == 59) {
+
+		if (playertwp[ID]->flag & 0x10)
+		{
+			return;
+		}
+
 		PressedButtons[ID] |= Buttons_B;
 		HeldButtons[ID] |= Buttons_B;
 	}
@@ -25,7 +31,7 @@ void InvincibilityCheck(unsigned char playerID)
 {
 	if (disableCol)
 	{
-		CharObj2Ptrs[playerID]->Powerups |= Powerups_Invincibility;
+		playerpwp[playerID]->item |= Powerups_Invincibility;
 	}
 }
 
@@ -34,15 +40,15 @@ void SnowboardRespawn(unsigned char playerID) {
 	if (GameState != 15 || isRandoActive())
 		return;
 
-	EntityData1* milesAI = EntityData1Ptrs[playerID];
+	auto milesAI = playertwp[playerID];
 
-	if ( milesAI->Action < boardSlide || milesAI->Action > boardHurt) {
+	if (milesAI->mode< boardSlide || milesAI->mode > boardHurt) {
 
 		if (isPlayerUsingSnowboard()) {
-			EntityData1Ptrs[playerID]->Status &= ~(Status_Attack | Status_Ball | Status_LightDash);
-			CharObj2Ptrs[playerID]->PhysicsData.CollisionSize = PhysicsArray[Characters_Tails].CollisionSize; //Reset Miles physic properly
-			CharObj2Ptrs[playerID]->PhysicsData.YOff = PhysicsArray[Characters_Tails].YOff;
-			CharObj2Ptrs[playerID]->PhysicsData.JumpSpeed = PhysicsArray[Characters_Tails].JumpSpeed;
+			playertwp[playerID]->flag &= ~(Status_Attack | Status_Ball | Status_LightDash);
+			playerpwp[playerID]->p.height = PhysicsArray[Characters_Tails].CollisionSize; //Reset Miles physic properly
+			playerpwp[playerID]->p.center_height = PhysicsArray[Characters_Tails].YOff;
+			playerpwp[playerID]->p.jmp_y_spd = PhysicsArray[Characters_Tails].JumpSpeed;
 			ForcePlayerAction(playerID, 44);
 		}
 	}
@@ -51,18 +57,18 @@ void SnowboardRespawn(unsigned char playerID) {
 
 void snowboard_Follow(unsigned char playerID)
 {
-	EntityData1* P1 = EntityData1Ptrs[0];
-	EntityData1* P2 = EntityData1Ptrs[playerID];
+	auto P1 = playertwp[0];
+	auto P2 = playertwp[playerID];
 
 	if (isPlayerUsingSnowboard()) {
-		if (CurrentLevel == LevelIDs_IceCap && CurrentAct == 2 && P1->Position.y > -3800) {
-			if (P2->Status & Status_Ground)
-				CharObj2Ptrs[playerID]->Speed.x = CharObj2Ptrs[0]->Speed.x + 0.6f;
+		if (CurrentLevel == LevelIDs_IceCap && CurrentAct == 2 && P1->pos.y > -3800) {
+			if (P2->flag & Status_Ground)
+				playerpwp[playerID]->spd.x = playerpwp[0]->spd.x + 0.6f;
 		}
 		else {
-			P2->Rotation = P1->Rotation;
-			if (P1->Status & Status_Ground)
-				CharObj2Ptrs[playerID]->Speed.x = CharObj2Ptrs[0]->Speed.x + 0.8f;
+			P2->ang = P1->ang;
+			if (P1->flag & Status_Ground)
+				playerpwp[playerID]->spd.x = playerpwp[0]->spd.x + 0.8f;
 		}
 
 		SnowboardRespawn(playerID);
@@ -74,40 +80,42 @@ void speedHighwayBuilding_Follow(unsigned char playerID) {
 	if (CurrentCharacter != Characters_Sonic || CurrentLevel != LevelIDs_SpeedHighway && CurrentAct != 1)
 		return;
 
-	EntityData1* P1 = EntityData1Ptrs[0];
-	EntityData1* P2 = EntityData1Ptrs[playerID];
+	auto P1 = playertwp[0];
+	auto P2 = playertwp[playerID];
 
-	if (P1->Action >= 46 && P1->Action <= 50)
+	if (P1->mode >= 46 && P1->mode <= 50)
 	{
 		disableCol = true;
-		P2->Status &= ~Status_Ball;
-		P2->Rotation = P1->Rotation;
+		P2->flag &= ~Status_Ball;
+		P2->ang = P1->ang;
 
-		if (P2->Position.y > -10790)
+		if (P2->pos.y > -10790)
 		{
-			CharObj2Ptrs[playerID]->AnimationThing.Index = 37;
-			P2->Action = followBuilding;
-			P2->Position.x = P1->Position.x + 10;
-			P2->Position.y = P1->Position.y + 2;
-			P2->Position.z = P1->Position.z + 10;
+			playerpwp[playerID]->mj.reqaction = 37;
+			P2->mode = followBuilding;
+			P2->pos.x = P1->pos.x + 10;
+			P2->pos.y = P1->pos.y + 2;
+			P2->pos.z = P1->pos.z + 10;
 		}
-		else if (P2->Position.y <= -10791 && P2->Position.y > -18659) {
-			CharObj2Ptrs[playerID]->AnimationThing.Index = 12;
-			P2->Action = followBuilding;
-			P2->Position.x = P1->Position.x;
-			P2->Position.y = P1->Position.y - 7;
-			P2->Position.z = P1->Position.z;
+		else if (P2->pos.y <= -10791 && P2->pos.y > -18659) {
+			playerpwp[playerID]->mj.reqaction = 12;
+			P2->mode = followBuilding;
+			P2->pos.x = P1->pos.x;
+			P2->pos.y = P1->pos.y - 7;
+			P2->pos.z = P1->pos.z;
 		}
-	} else if (P2->Position.y <= -18660 && P2->Action > 90) {
+	}
+	else if (P2->pos.y <= -18660 && P2->mode > 90) {
 		disableCol = false;
-		CharObj2Ptrs[playerID]->Powerups &= 0x100u;
-		P2->Action = 1;
+		playerpwp[playerID]->item &= 0x100u;
+		P2->mode = 1;
 	}
 
 }
 
 //Load Tails AI Snowboard when playing Sonic
 void LoadAISnowBoard_R() {
+
 	ForcePlayerAction(0, 0x2c);
 
 	unsigned char ID = getAI_ID();
@@ -130,66 +138,64 @@ void LoadAISnowBoard_R() {
 }
 
 
-
-int CharacterPetActionNumber[8] = { 72, 64, 64, 54, 54, 50, 56, 52 };
+int CharacterPetmodeNumber[8] = { 72, 64, 64, 54, 54, 50, 56, 52 };
 
 int isCharacterPetting() {
-	return CharacterPetActionNumber[EntityData1Ptrs[0]->CharID];
+	return CharacterPetmodeNumber[playertwp[0]->charID];
 }
 
 bool isChaoPetByAI = false;
 int chaoHappyTimer = 0;
 
-void MakeAIPetChao(ObjectMaster* Chao) {
-	EntityData1* data = Chao->Data1;
-	EntityData1* p1 = EntityData1Ptrs[0];
+void MakeAIPetChao(task* Chao) {
 
-
-	unsigned char ID = getAI_ID();
+	auto data = Chao->twp;
+	auto p1 = playertwp[0];
+	auto ID = getAI_ID();
 
 	if (!ID)
 		return;
 
-	EntityData1* p2 = EntityData1Ptrs[ID];
+	auto p2 = playertwp[ID];
 
-	if (p1->Action != isCharacterPetting()) {
-		if (p2->Action > 40) {
-			p2->Action = 1;
+	if (p1->mode != isCharacterPetting()) {
+		if (p2->mode > 40) {
+			p2->mode = 1;
 		}
-		data->Index = 0;
-		p2->Unknown = 0;
+		data->btimer = 0;
+		p2->id = 0;
 	}
 
-	float dist = GetDistance(&p2->Position, &data->Position);
+	float dist = GetDistance(&p2->pos, &data->pos);
 
-	switch (data->Index)
+	switch (data->btimer)
 	{
 	case 0:
-		if (++p2->Unknown == 40)
+		if (++p2->id == 40)
 		{
-			data->InvulnerableTime = 0;
-			data->Index = 1;
+			data->wtimer = 0;
+			data->btimer++;
 		}
 		break;
 	case 1:
 		if (dist < 9) {
 			chaoHappyTimer = 0;
-			p2->Action = 64;
-			CharObj2Ptrs[ID]->AnimationThing.Index = 133;
+			p2->mode = 64;
+			playerpwp[ID]->mj.reqaction = 133;
 			isChaoPetByAI = true;
 		}
 		break;
 	}
 }
 
-void CheckAndMakeAIPetChao(ObjectMaster* Chao) {
+void CheckAndMakeAIPetChao(task* Chao) {
 
 	unsigned char ID = getAI_ID();
 
 	if (!ID)
 		return;
 
-	if (IsChaoGardenBanned || !EntityData1Ptrs[ID])
+	if (IsChaoGardenBanned || !playertwp[ID])
 		return;
 
 	if (CurrentLevel >= LevelIDs_SSGarden && CurrentLevel <= LevelIDs_MRGarden) {
@@ -197,16 +203,15 @@ void CheckAndMakeAIPetChao(ObjectMaster* Chao) {
 	}
 }
 
+void Chao_Main_R(task* obj) {
 
-void Chao_Main_R(ObjectMaster* obj) {
-	EntityData1* p1 = EntityData1Ptrs[0];
+	auto p1 = playertwp[0];
 
-
-	if (IsPlayerInsideSphere(&obj->Data1->Position, 10)) {
+	if (IsPlayerInsideSphere(&obj->twp->pos, 10)) {
 		CheckAndMakeAIPetChao(obj);
 	}
 
-	if (p1->Action != isCharacterPetting() && isChaoPetByAI) {
+	if (p1 && p1->mode != isCharacterPetting() && isChaoPetByAI) {
 		if (++chaoHappyTimer == 120) {
 			Chao_SetBehavior(obj, (long*)Chao_Pleasure);
 			isChaoPetByAI = false;
@@ -214,155 +219,157 @@ void Chao_Main_R(ObjectMaster* obj) {
 		}
 	}
 
-	ObjectFunc(origin, Chao_Main_t->Target());
+	TaskFunc(origin, Chao_Main_t->Target());
 	origin(obj);
 }
 
-void MilesAI_VictoryPose(ObjectMaster* obj) {
+void MilesAI_VictoryPose(task* obj) {
 
-	EntityData1* data = obj->Data1;
+	auto data = obj->twp;
+	auto pnum = data->pNum;
 
-	if (!EntityData1Ptrs[0] || !EntityData1Ptrs[data->CharIndex] || !isAIActive || EntityData1Ptrs[data->CharIndex]->CharID != Characters_Tails)
+	auto p1 = playertwp[0];
+	auto p2 = playertwp[pnum];
+
+	if (!isP1AndTailsAIEnabled(pnum) || !isAIActive)
 		return;
 
-	EntityData1* p1 = EntityData1Ptrs[0];
-	EntityData1* p2 = EntityData1Ptrs[data->CharIndex];
 
-
-	switch (data->Action)
+	switch (data->mode)
 	{
 	case 0:
-		if (p1->NextAction == 0x13) {
+		if (p1->smode == 0x13) {
 			disableCol = true;
-			p2->Position = UnitMatrix_GetPoint_Player(&p1->Position, &p2->Rotation, 0.0f, 0.0f, 7.0f);
-			p2->Rotation = p1->Rotation;
-			if (++data->InvulnerableTime == 10)
-				data->Action = 1;
+			p2->pos = UnitMatrix_GetPoint_Player(&p1->pos, &p2->ang, 0.0f, 0.0f, 7.0f);
+			p2->ang = p1->ang;
+
+			if (++data->wtimer == 10)
+				data->mode++;
 		}
 		break;
 	case 1:
 
 		if (CurrentLevel == LevelIDs_IceCap && CurrentAct == 2)
-			ForcePlayerAction(data->CharIndex, 24);
+			ForcePlayerAction(pnum, 24);
 
-		if ((p2->Status & Status_Ground) == 0 && (p2->Status & Status_OnColli) == 0 || p2->Position.y > p1->Position.y + 2 || p2->Position.y < p1->Position.y - 2)
+		if (((p2->flag & 3) == 0) || p2->pos.y > p1->pos.y + 2 || p2->pos.y < p1->pos.y - 2)
 		{
-			p2->Position = UnitMatrix_GetPoint_Player(&p1->Position, &p2->Rotation, 0.0f, 0.0f, 6.0f);  //fix floating victory pose
+			p2->pos = UnitMatrix_GetPoint_Player(&p1->pos, &p2->ang, 0.0f, 0.0f, 6.0f);  //fix floating victory pose
 		}
 
-		if (++data->Index == 5) {
+		if (++data->btimer == 5) {
 
-			if ((p2->Status & Status_Ground) == 0 && (p2->Status & Status_OnColli) == 0) { //last failsafe
-				p2->Position = UnitMatrix_GetPoint_Player(&p1->Position, &p2->Rotation, 0.0f, 0.0f, -6.0f); //try other side
+			if ((p2->flag & Status_Ground) == 0 && (p2->flag & Status_OnColli) == 0) { //last failsafe
+				p2->pos = UnitMatrix_GetPoint_Player(&p1->pos, &p2->ang, 0.0f, 0.0f, -6.0f); //try other side
 			}
-			data->Action = 2;
+			data->mode++;
 		}
 
 		break;
 	case 2:
-		p2->Rotation = p1->Rotation;
-		ForcePlayerAction(data->CharIndex, 19); //Force AI to Victory pose
+		p2->ang = p1->ang;
+		ForcePlayerAction(pnum, 19); //Force AI to Victory pose
 		disableCol = false;
 		break;
 	}
 }
 
 //While load result: Teleport AI close to the player and Force Victory Pose.
-void ScoreDisplayMain_R(ObjectMaster* obj) {
+void ScoreDisplayMain_R(task* obj) {
 
 	unsigned char ID = getAI_ID();
 
 	if (ID > 0) {
 
-		if (obj->Data1->Action == 0) {
-			ObjectMaster* victory = LoadObject((LoadObj)(LoadObj_Data1 | LoadObj_Data2), 2, MilesAI_VictoryPose);
-			victory->Data1->CharIndex = ID;
+		if (obj->twp->mode == 0) {
+			task* victory = CreateElementalTask((LoadObj)(LoadObj_Data1 | LoadObj_Data2), 2, MilesAI_VictoryPose);
+			victory->twp->pNum = ID;
 		}
 	}
 
-	ObjectFunc(origin, ScoreDisplay_main_t->Target());
+	TaskFunc(origin, ScoreDisplay_main_t->Target());
 	origin(obj);
 }
 
-int copyDebugAction = 110;
+int copyDebugmode = 110;
 
-void PreventTailsAIAction(unsigned char playerID) {
+void PreventTailsAImode(unsigned char playerID) {
 
-	if (EntityData1Ptrs[playerID]->CharID != Characters_Tails || !EntityData1Ptrs[playerID] || !CharObj2Ptrs[playerID])
+	if (playertwp[playerID]->charID != Characters_Tails || !playertwp[playerID] || !playerpwp[playerID])
 		return;
 
-	CharObj2* co2 = CharObj2Ptrs[playerID];
-	EntityData1* data = EntityData1Ptrs[playerID];
+	auto co2 = playerpwp[playerID];
+	auto data = playertwp[playerID];
 
 	if (CurrentLevel == LevelIDs_MysticRuins && CurrentAct == 0)
 	{
-		if (data->Action == 38)
+		if (data->mode == 38)
 		{
-			data->Action = 1;
-			data->Position.x += 5.0f;
+			data->mode = 1;
+			data->pos.x += 5.0f;
 		}
 	}
 
 	if (DebugMode)
 	{
-		copyDebugAction = data->Action;
+		copyDebugmode = data->mode;
 	}
 	else {
-		if (data->Action == copyDebugAction)
+		if (data->mode == copyDebugmode)
 		{
-			data->Status &= ~Status_Ball;
-			data->Action = 1;
+			data->flag &= ~Status_Ball;
+			data->mode = 1;
 		}
 	}
 }
 
-void FixCollision(EntityData1* entity) {
+void FixCollision(taskwk* entity) {
 
 	if (disableCol)
 		return;
 
-	AddToCollisionList(entity);
+	EntryColliList(entity);
 }
 
-void ResetMilesAI(char pnum, char action)
+void ResetMilesAI(char pnum, char mode)
 {
-	EntityData1* milesData = EntityData1Ptrs[AIIndex];
-	task* miles = (task*)PlayerPtrs[AIIndex];
-	CharObj2* co2Miles = CharObj2Ptrs[AIIndex];
+	auto milesData = playertwp[AIIndex];
+	auto miles = (task*)PlayerPtrs[AIIndex];
+	auto co2Miles = playerpwp[AIIndex];
 
 	if (!co2Miles)
 		return;
 
-	if (action > 0)
-		ForcePlayerAction(pnum, action);
+	if (mode > 0)
+		ForcePlayerAction(pnum, mode);
 
 	disableCol = false;
 	EV_ClrAction(miles);
-	milesData->Action = 1;
-	co2Miles->AnimationThing.Index = 1;
+	milesData->mode = 1;
+	co2Miles->mj.reqaction = 1;
 }
 
 
-void AI_SitInCart(EntityData1* p1, EntityData1* milesData, task* miles, CharObj2* co2Miles)
+void AI_SitInCart(taskwk* p1, taskwk* milesData, task* miles)
 {
-	char pnum = milesData->CharIndex;
+	char pnum = milesData->pNum;
 
-	if (CurrentLevel == LevelIDs_TwinklePark && CurrentAct == 1 && p1->Action == 45)
+	if (CurrentLevel == LevelIDs_TwinklePark && CurrentAct == 1 && p1->mode == 45)
 		return;
 
-	if (p1->Action == 45 && milesData->Action != passengerCart)
+	if (p1->mode == 45 && milesData->mode != passengerCart)
 	{
 		disableCol = true;
-		milesData->Status &= ~Status_Ball;
+		milesData->flag &= ~Status_Ball;
 		EV_SetAction(miles, &action_m_m9002_miles, &MILES_TEXLIST, 1.0f, 3, 0);
-		milesData->Action = passengerCart;
+		milesData->mode = passengerCart;
 	}
-	else if (milesData->Action == passengerCart)
+	else if (milesData->mode == passengerCart)
 	{
-		if (p1->Action == 45)
+		if (p1->mode == 45)
 		{
-			milesData->Rotation = p1->Rotation;
-			milesData->Position = UnitMatrix_GetPoint_Player(&p1->Position, &p1->Rotation, -4.5f, 4.5f, 2.0f);
+			milesData->ang = p1->ang;
+			milesData->pos = UnitMatrix_GetPoint_Player(&p1->pos, &p1->ang, -4.5f, 4.5f, 2.0f);
 		}
 		else
 		{
@@ -372,50 +379,51 @@ void AI_SitInCart(EntityData1* p1, EntityData1* milesData, task* miles, CharObj2
 
 }
 
-void AI_HubWorld_Vehicle(EntityData1* p1, EntityData1* milesData, task* miles, CharObj2* co2Miles)
+void AI_HubWorld_Vehicle(taskwk* p1, taskwk* milesData, task* miles)
 {
 	if (!isInHubWorld())
 	{
 		return;
 	}
 
-	if (p1->Action == 20)
+	if (p1->mode == 20)
 	{
 		moveAItoPlayer(AIIndex, -5.0, 0.0f);
 		ForcePlayerAction(AIIndex, 12);
-		milesData->Rotation = p1->Rotation;
+		milesData->ang = p1->ang;
 		if (CurrentLevel != LevelIDs_StationSquare && CurrentAct != 3)
 			EV_SetAction(miles, &action_m_m9002_miles, &MILES_TEXLIST, 1.0f, 3, 0);
 		disableCol = true;
-		milesData->Action = 18;
+		milesData->mode = 18;
 	}
 
-	if (milesData->Action == 18)
+	if (milesData->mode == 18)
 	{
-		milesData->Rotation = p1->Rotation;
-		milesData->Position = UnitMatrix_GetPoint_Player(&p1->Position, &p1->Rotation, 2.0f, 1.0f, 5.0f);
+		milesData->ang = p1->ang;
+		milesData->pos = UnitMatrix_GetPoint_Player(&p1->pos, &p1->ang, 2.0f, 1.0f, 5.0f);
 	}
 
-	char nextAction = p1->NextAction;
-	if ( (nextAction == 24 || nextAction == 5) && milesData->Action == 18)
+	char nextmode = p1->smode;
+
+	if ((nextmode == 24 || nextmode == 5) && milesData->mode == 18)
 	{
-		ResetMilesAI(AIIndex, nextAction);
+		ResetMilesAI(AIIndex, nextmode);
 	}
 
 }
 
 void MoveAI_Vehicle()
 {
-	if (!EntityData1Ptrs[0])
+	if (!playertwp[0])
 		return;
 
-	EntityData1* milesData = EntityData1Ptrs[AIIndex];
-	task* miles = (task*)PlayerPtrs[AIIndex];
-	EntityData1* p1 = EntityData1Ptrs[0];
-	CharObj2* co2Miles = CharObj2Ptrs[AIIndex];
+	auto milesData = playertwp[AIIndex];
+	auto miles = (task*)PlayerPtrs[AIIndex];
+	auto p1 = playertwp[0];
+	auto co2Miles = playerpwp[AIIndex];
 
-	AI_SitInCart(p1, milesData, miles, co2Miles);
-	AI_HubWorld_Vehicle(p1, milesData, miles, co2Miles);
+	AI_SitInCart(p1, milesData, miles);
+	AI_HubWorld_Vehicle(p1, milesData, miles);
 }
 
 //patch RC to make Miles able to use it
@@ -467,7 +475,7 @@ void __cdecl execTPCoaster_r(task* tp)
 
 uint32_t timingRespawn = 0;
 
-void MilesFasterRespawn(EntityData1* p1, EntityData1* p2)
+void MilesFasterRespawn(taskwk* p1, taskwk* p2)
 {
 	float distance = getMilesDistance(p1, p2);
 
@@ -477,11 +485,11 @@ void MilesFasterRespawn(EntityData1* p1, EntityData1* p2)
 		if (timingRespawn > 300)
 		{
 			ForcePlayerAction(AIIndex, 48);
-			p2->Unknown = 0;
-			p2->Status &= ~Status_Ball;
-			p2->Position.y = p1->Position.y + 60.0f;
-			p2->Position.x = p1->Position.x;
-			p2->Position.z = p1->Position.z;
+			p2->id = 0;
+			p2->flag &= ~Status_Ball;
+			p2->pos.y = p1->pos.y + 60.0f;
+			p2->pos.x = p1->pos.x;
+			p2->pos.z = p1->pos.z;
 			timingRespawn = 0;
 		}
 	}
@@ -494,11 +502,11 @@ void MilesFasterRespawn(EntityData1* p1, EntityData1* p2)
 
 void Miles_AbilitiesOnFrames(unsigned char pnum)
 {
-	if (!EntityData1Ptrs[0] || !EntityData1Ptrs[pnum])
+	if (!playertwp[0] || !playertwp[pnum])
 		return;
 
 	InvincibilityCheck(pnum);
-	PreventTailsAIAction(pnum);
+	PreventTailsAImode(pnum);
 	speedHighwayBuilding_Follow(pnum);
 	SpinDash_Check(pnum);
 	snowboard_Follow(pnum);
@@ -506,7 +514,7 @@ void Miles_AbilitiesOnFrames(unsigned char pnum)
 	MoveAI_Vehicle();
 
 	if (fasterRespawn)
-		MilesFasterRespawn(EntityData1Ptrs[0], EntityData1Ptrs[pnum]);
+		MilesFasterRespawn(playertwp[0], playertwp[pnum]);
 }
 
 void AI_Improvement() {

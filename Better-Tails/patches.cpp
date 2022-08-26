@@ -84,17 +84,18 @@ void __cdecl LoadCharacterBoss_r(int boss_id)
 
 //teleport AI to Player
 void moveAItoPlayer(unsigned char playerID) {
+
 	if (isAIActive)
 	{
-		if (EntityData1Ptrs[0] && EntityData1Ptrs[playerID])
+		if (isP1AndTailsAIEnabled(playerID))
 		{
-			EntityData1* p1 = EntityData1Ptrs[0];
-			EntityData1* p2 = EntityData1Ptrs[playerID];
+			auto p1 = playertwp[0];
+			auto p2 = playertwp[playerID];
 
 			if (CurrentCharacter != Characters_Big && CurrentCharacter != Characters_Gamma)
-				p2->Position = UnitMatrix_GetPoint_Player(&p1->Position, &p1->Rotation, -7.0f, 0.0f, 5.0f);
-			else
-				p2->Position = UnitMatrix_GetPoint_Player(&p1->Position, &p1->Rotation, -10.0f, 0.0f, 8.0f);
+				p2->pos = UnitMatrix_GetPoint_Player(&p1->pos, &p1->ang, -7.0f, 0.0f, 5.0f);
+			else	
+				p2->pos = UnitMatrix_GetPoint_Player(&p1->pos, &p1->ang, -10.0f, 0.0f, 8.0f);
 		}
 	}
 
@@ -104,15 +105,15 @@ void moveAItoPlayer(unsigned char playerID) {
 void moveAItoPlayer(unsigned char playerID, float posX, float posZ) {
 	if (isAIActive)
 	{
-		if (EntityData1Ptrs[0] && EntityData1Ptrs[playerID])
+		if (isP1AndTailsAIEnabled(playerID))
 		{
-			EntityData1* p1 = EntityData1Ptrs[0];
-			EntityData1* p2 = EntityData1Ptrs[playerID];
+			auto p1 = playertwp[0];
+			auto p2 = playertwp[playerID];
 
 			if (CurrentCharacter != Characters_Big && CurrentCharacter != Characters_Gamma)
-				p2->Position = UnitMatrix_GetPoint_Player(&p1->Position, &p1->Rotation, posX, 0.0f, posZ);
+				p2->pos = UnitMatrix_GetPoint_Player(&p1->pos, &p1->ang, posX, 0.0f, posZ);
 			else
-				p2->Position = UnitMatrix_GetPoint_Player(&p1->Position, &p1->Rotation, posX - 3.0f, 0.0f, posZ + 3.0f);
+				p2->pos = UnitMatrix_GetPoint_Player(&p1->pos, &p1->ang, posX - 3.0f, 0.0f, posZ + 3.0f);
 		}
 	}
 
@@ -120,7 +121,8 @@ void moveAItoPlayer(unsigned char playerID, float posX, float posZ) {
 }
 
 bool isPlayerUsingSnowboard() {
-	if (CurrentCharacter == Characters_Sonic && EntityData1Ptrs[0]->Action >= 62 && EntityData1Ptrs[0]->Action <= 68)
+
+	if (CurrentCharacter == Characters_Sonic && playertwp[0]->mode >= 62 && playertwp[0]->mode <= 68)
 		return true;
 
 	return false;

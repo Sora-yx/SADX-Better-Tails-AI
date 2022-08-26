@@ -29,8 +29,8 @@ VoidFunc(FUN_00412ad0, 0x412ad0); //called when you soft reset / quit
 FunctionPointer(int, isHostelOpen, (), 0x630900);
 FunctionPointer(int, isAngelIslandOpen, (), 0x534570);
 
-FunctionPointer(long, Chao_Pleasure, (ObjectMaster* Chao), 0x75db80);
-FunctionPointer(void, Chao_SetBehavior, (ObjectMaster* Chao, long* a2), 0x71EF10);
+FunctionPointer(long, Chao_Pleasure, (task* Chao), 0x75db80);
+FunctionPointer(void, Chao_SetBehavior, (task* Chao, long* a2), 0x71EF10);
 FunctionPointer(void, EV_Load2, (int num), 0x42FA30);
 FunctionPointer(int, EV_FreeNpcMilesPlayerTask, (), 0x42CDF0);
 

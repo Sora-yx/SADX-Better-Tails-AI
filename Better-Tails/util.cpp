@@ -1,13 +1,13 @@
 #include "stdafx.h"
 
-float getMilesDistance(EntityData1* p1, EntityData1* p2)
+float getMilesDistance(taskwk* p1, taskwk* p2)
 {
 	if (!p1 || !p2)
 		return 0.0f;
 
-	float v4 = p2->Position.x - p1->Position.x;
-	float v5 = p2->Position.y - p1->Position.y;
-	float v6 = p2->Position.z - p1->Position.z;
+	float v4 = p2->pos.x - p1->pos.x;
+	float v5 = p2->pos.y - p1->pos.y;
+	float v6 = p2->pos.z - p1->pos.z;
 	float v11 = v6 * v6 + v5 * v5 + v4 * v4;
 	float v7 = squareroot(v11);
 	return v7;
@@ -60,9 +60,9 @@ bool isNewTricksActive() {
 }
 
 
-NJS_VECTOR UnitMatrix_GetPoint_Player(NJS_VECTOR* orig, Rotation3* rot, float x, float y, float z) {
+NJS_VECTOR UnitMatrix_GetPoint_Player(NJS_VECTOR* orig, Angle3* rot, float x, float y, float z) {
 	NJS_VECTOR point;
-
+	
 	njPushMatrix(_nj_unit_matrix_);
 	njTranslateV(0, orig);
 
@@ -155,6 +155,17 @@ bool isMultiEnabled()
 	{
 		return true;
 	}
+
+	return false;
+}
+
+bool isP1AndTailsAIEnabled(char playerID)
+{
+	auto p1 = playertwp[0];
+	auto p2 = playertwp[playerID];
+
+	if (p1 && p2 && p2->charID == Characters_Tails)
+		return true;
 
 	return false;
 }

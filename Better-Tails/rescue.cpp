@@ -107,7 +107,7 @@ void TailsAI_Landing2(ObjectMaster* obj) {
 	break;
 	case 1:
 		UpdateP1Position(co2p1, co2p2, p1, p2);
-		CharObj2Ptrs[data->CharIndex]->Speed.y -= 0.4;
+		CharObj2Ptrs[data->CharIndex]->Speed.y -= 0.4f;
 
 		if (++data->Index == 30) {
 			data->NextAction = rand() % 2;
@@ -191,15 +191,15 @@ void MilesRescuesCharacterFall(ObjectMaster* obj) {
 			else {
 				p1->Position = RestartLevel.Position;
 			}
-			p1->Position.y += 50;
+			p1->Position.y += 50.0f;
 			p2->Position = p1->Position;
 			p1co2->Speed = { 0, 0, 0 };
 			data->Action = 3;
 		}
 		else {
 			UpdateP1Position(p1co2, p2co2, p1, p2);
-			p2co2->Speed.y += 0.5;
-			p2co2->Speed.x += 0.3;
+			p2co2->Speed.y += 0.5f;
+			p2co2->Speed.x += 0.3f;
 		}
 		break;
 	case landingTransition:

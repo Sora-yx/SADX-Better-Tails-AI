@@ -214,13 +214,13 @@ void __cdecl DisplayMilesMap_r()
 	{
 		v5 = 0;
 		v14 = 0;
-		v13 = (double)v12 * 256.0f - 16.0f - 240.0f;
+		v13 = v12 * 256.0f - 16.0f - 240.0f;
 		do
 		{
 			a3 = VerticalStretch * 240.0f + v13;
 			a2 = (float)v14 * 256.0f - 64.0f - 320.0f + HorizontalStretch * 320.0f;
 
-			DisplayScreenTexture(texId + v5++, a2, a3, 1.1);
+			DisplayScreenTexture(texId + v5++, a2, a3, 1.1f);
 
 			v14 = v5;
 		} while (v5 < 3);
