@@ -1,7 +1,6 @@
 #include "stdafx.h"
 
-
-static Trampoline* LoadCharacterBoss_t = nullptr;
+static FunctionHook<void, int> LoadCharacterBoss_t(LoadCharacterBoss);
 static FunctionHook<void, int> EV_Load2_t(EV_Load2);
 
 void __cdecl DisableTailsAI_Controller(Uint8 index)
@@ -75,8 +74,7 @@ void __cdecl EV_Load2_r(int a2)
 
 void __cdecl LoadCharacterBoss_r(int boss_id)
 {
-	FunctionPointer(void, origin, (int boss_id), LoadCharacterBoss_t->Target());
-	origin(boss_id);
+	LoadCharacterBoss_t.Original(boss_id);
 
 	for (uint8_t i = 0; i < MaxPlayers; i++) {
 
@@ -339,13 +337,11 @@ int GetRaceWinnerPlayer_r() {
 	return RaceWinnerPlayer;
 }
 
-
 void FixTailsAI_Train(int ID, void* a2, int a3, void* a4)
 {
 	moveAItoPlayer(AIIndex);
 	PlaySound(ID, a2, a3, a4);
 }
-
 
 
 void __cdecl FixTailsAI_BotAreaTransition(Uint8 charIndex, float x, float y, float z)
@@ -370,8 +366,7 @@ void AI_Patches() {
 
 	WriteJump(GetRaceWinnerPlayer, GetRaceWinnerPlayer_r); //fix wrong victory pose for Tails AI.
 	EV_Load2_t.Hook(EV_Load2_r);
-	LoadCharacterBoss_t = new Trampoline((int)LoadCharacterBoss, (int)LoadCharacterBoss + 0xc, LoadCharacterBoss_r);
-
+	LoadCharacterBoss_t.Hook(LoadCharacterBoss_r);
 
 	WriteData<6>((int*)0x460fcf, 0x90); //restore Miles's tail effect when AI
 

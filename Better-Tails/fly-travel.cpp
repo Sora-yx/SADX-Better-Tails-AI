@@ -1,6 +1,6 @@
 #include "stdafx.h"
 
-Trampoline* MovePlayerToStartPoint_t;
+static FunctionHook<void, taskwk*> MovePlayerToStartPoint_t((intptr_t)MovePlayerToStartPoint);
 task* TailsGrab = nullptr;
 uint8_t isMoving = 0;
 task* TailsLanding = nullptr;
@@ -74,8 +74,7 @@ void __cdecl MovePlayerToStartPoint_r(taskwk* data) {
 		playertwp[0]->pos.y -= 6.5f;
 	}
 	else {
-		FunctionPointer(void, original, (taskwk * data), MovePlayerToStartPoint_t->Target());
-		original(data);
+		MovePlayerToStartPoint_t.Original(data);
 
 		Fix_AIPos_ActTransition();
 		return;
@@ -724,5 +723,5 @@ void FlyTravel_Init() {
 		WriteCall((void*)0x458b6e, PauseMenu_Map_Display_r);
 	}
 
-	MovePlayerToStartPoint_t = new Trampoline((int)MovePlayerToStartPoint, (int)MovePlayerToStartPoint + 0x6, MovePlayerToStartPoint_r);
+	MovePlayerToStartPoint_t.Hook(MovePlayerToStartPoint_r);
 }

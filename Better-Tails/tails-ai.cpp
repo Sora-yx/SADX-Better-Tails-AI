@@ -6,7 +6,7 @@ bool isAIActive = false;
 bool FlagDeleteMilesAI = false;
 int FlagAI = 0;
 
-static FunctionHook<void, ObjectMaster*> TailsAI_Main_t(TailsAI_Main);
+static FunctionHook<void, task*> TailsAI_Main_t((intptr_t)TailsAI_Main);
 static FunctionHook<void> LoadCharacter_t(LoadCharacter);
 
 void DeleteMilesAI()
@@ -190,7 +190,6 @@ void TailsAI_Delete_r() {
 void TailsAI_Main_R(task* obj) {
 
 	taskwk* data = obj->twp;
-
 	char pid = AIIndex;
 
 	if (FlagDeleteMilesAI && IsIngame())
@@ -212,7 +211,7 @@ void TailsAI_Main_R(task* obj) {
 		RemovePlayerCollision(pid);
 	}
 
-	TailsAI_Main_t.Original((ObjectMaster*)obj);
+	TailsAI_Main_t.Original(obj);
 }
 		
 void AI_Init(const HelperFunctions& helperFunctions) {
@@ -230,5 +229,5 @@ void AI_Init(const HelperFunctions& helperFunctions) {
 		AI_Improvement();
 	}
 
-	TailsAI_Main_t.Hook((ObjectFuncPtr)TailsAI_Main_R);
+	TailsAI_Main_t.Hook(TailsAI_Main_R);
 }

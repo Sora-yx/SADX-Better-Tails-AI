@@ -2,9 +2,10 @@
 
 //every improvement and new abilities for Tails go here.
 
-Trampoline* Chao_Main_t = nullptr;
-Trampoline* ScoreDisplay_main_t = nullptr;
-Trampoline* forcePlayermode_t = nullptr;
+static FunctionHook<void, task*> Chao_Main_t((intptr_t)Chao_Main);
+static FunctionHook<void, int> EV_Load2_t(EV_Load2);
+static FunctionHook<void, task*> ScoreDisplay_main_t((intptr_t)ScoreDisplay_Main);
+static FunctionHook<void, task*> execTPCoaster_t((intptr_t)0x61D6E0);
 
 bool disableCol = false;
 
@@ -219,8 +220,7 @@ void Chao_Main_R(task* obj) {
 		}
 	}
 
-	TaskFunc(origin, Chao_Main_t->Target());
-	origin(obj);
+	Chao_Main_t.Original(obj);
 }
 
 void MilesAI_VictoryPose(task* obj) {
@@ -287,8 +287,7 @@ void ScoreDisplayMain_R(task* obj) {
 		}
 	}
 
-	TaskFunc(origin, ScoreDisplay_main_t->Target());
-	origin(obj);
+	ScoreDisplay_main_t.Original(obj);
 }
 
 int copyDebugmode = 110;
@@ -427,11 +426,9 @@ void MoveAI_Vehicle()
 }
 
 //patch RC to make Miles able to use it
-void __cdecl execTPCoaster_r(task* tp);
-Trampoline execTPCoaster_t(0x61D6E0, 0x61D6E6, execTPCoaster_r);
 void __cdecl execTPCoaster_r(task* tp)
 {
-	TARGET_STATIC(execTPCoaster)(tp);
+	execTPCoaster_t.Original(tp);
 
 	auto twp = tp->twp;
 	auto id = twp->value.b[0];
@@ -530,6 +527,7 @@ void AI_Improvement() {
 	if (isRescueAllowed)
 		Rescue_Init();
 
-	Chao_Main_t = new Trampoline((int)Chao_Main, (int)Chao_Main + 0x6, Chao_Main_R);
-	ScoreDisplay_main_t = new Trampoline((int)ScoreDisplay_Main, (int)ScoreDisplay_Main + 0x5, ScoreDisplayMain_R);
+	Chao_Main_t.Hook(Chao_Main_R);
+	ScoreDisplay_main_t.Hook(ScoreDisplayMain_R);
+	execTPCoaster_t.Hook(execTPCoaster_r);
 }
