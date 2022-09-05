@@ -67,14 +67,14 @@ void LoadDestination(int playerID) {
 	return;
 }
 
-void __cdecl MovePlayerToStartPoint_r(EntityData1* data) {
+void __cdecl MovePlayerToStartPoint_r(taskwk* data) {
 
 	if (isMoving > 0 && isFlyTravel) {
-		EntityData1Ptrs[0]->Position = DestinationArray[Cursor].destination;
-		EntityData1Ptrs[0]->Position.y -= 6.5f;
+		playertwp[0]->pos = DestinationArray[Cursor].destination;
+		playertwp[0]->pos.y -= 6.5f;
 	}
 	else {
-		FunctionPointer(void, original, (EntityData1 * data), MovePlayerToStartPoint_t->Target());
+		FunctionPointer(void, original, (taskwk * data), MovePlayerToStartPoint_t->Target());
 		original(data);
 
 		Fix_AIPos_ActTransition();
@@ -134,7 +134,7 @@ void DisplayCursorAnimation() {
 
 	SetMaterialAndSpriteColor_Float(1, 1, 1, 1);
 
-	float scale = 2.0F;
+	float scale = 2.0f;
 	float x = (float)HorizontalResolution / 2.0f;
 	float y = (float)VerticalResolution / 2.0f;
 	float incr = 0x10 * scale;
@@ -322,12 +322,12 @@ void FlySoundOnFrames(int playerID) {
 		return;
 
 	if (ai->charID == Characters_Tails && playertwp[0]->charID <= Characters_Tails) {
-		if (EntityData1Ptrs[playerID]->Unknown == 0)
+		if (playertwp[playerID]->id == 0)
 			PlaySound(0x302, NULL, 0, NULL);
 
-		if (++EntityData1Ptrs[playerID]->Unknown == 31) {
+		if (++playertwp[playerID]->id == 31) {
 			PlaySound(0x302, NULL, 0, NULL);
-			EntityData1Ptrs[playerID]->Unknown = 1;
+			playertwp[playerID]->id = 1;
 		}
 	}
 }

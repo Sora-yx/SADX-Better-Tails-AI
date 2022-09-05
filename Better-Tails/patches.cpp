@@ -16,10 +16,10 @@ void __cdecl EnableTailsAI_Controller(Uint8 index)
 
 unsigned char getAI_ID() {
 
-	if (!EntityData1Ptrs[AIIndex])
+	if (!playertwp[AIIndex])
 		return 0;
 
-	if (EntityData1Ptrs[AIIndex]->CharID == Characters_Tails && TailsAI_ptr) {
+	if (playertwp[AIIndex]->charID == Characters_Tails && TailsAI_ptr) {
 		return AIIndex;
 	}
 
@@ -28,18 +28,18 @@ unsigned char getAI_ID() {
 
 void RemovePlayerCollision(unsigned char ID) {
 
-	if (!EntityData1Ptrs[0] || ID > 0 && !EntityData1Ptrs[ID] || EV_MainThread_ptr || CharacterBossActive || AIIndex > 1)
+	if (!playertwp[0] || ID > 0 && !playertwp[ID] || EV_MainThread_ptr || CharacterBossActive || AIIndex > 1)
 		return;
 
-	EntityData1* data = EntityData1Ptrs[0];
+	auto data = playertwp[0];
 
-	if (data->CollisionInfo)
+	if (data->cwp)
 	{
-		if (data->CollisionInfo->nbInfo) {
+		if (data->cwp->nbInfo) {
 
-			for (int8_t i = 0; i < data->CollisionInfo->nbInfo; i++) {
+			for (int8_t i = 0; i < data->cwp->nbInfo; i++) {
 
-				EntityData1Ptrs[0]->CollisionInfo->CollisionArray[i].damage &= ~0x20u; //Remove damage on other players
+				playertwp[0]->cwp->info->damage &= ~0x20u; //Remove damage on other players
 			}
 		}
 	}
@@ -47,17 +47,19 @@ void RemovePlayerCollision(unsigned char ID) {
 
 void RestorePlayerCollision(unsigned char ID) {
 
-	if (!EntityData1Ptrs[ID])
+	if (!playertwp[ID])
 		return;
 
-	EntityData1* data = EntityData1Ptrs[ID];
+	auto data = playertwp[ID];
 
-	if (data->CollisionInfo)
+
+	if (data->cwp)
 	{
-		if (data->CollisionInfo->nbInfo) {
-			for (int8_t i = 0; i < data->CollisionInfo->nbInfo; i++) {
+		if (data->cwp->nbInfo) {
 
-				EntityData1Ptrs[ID]->CollisionInfo->CollisionArray[i].damage |= 0x20u; //Remstore damage on other players
+			for (int8_t i = 0; i < data->cwp->nbInfo; i++) {
+
+				playertwp[ID]->cwp->info->damage |= 0x20u; //Remstore damage on other players
 			}
 		}
 	}
@@ -128,57 +130,7 @@ bool isPlayerUsingSnowboard() {
 	return false;
 }
 
-int __cdecl IsMilesInsideSphere(NJS_VECTOR* x_1, float radius)
-{
 
-	unsigned char ID = getAI_ID();
-
-	float v2;
-	float v3;
-	int v4;
-	EntityData1* v5;
-	CollisionInfo* v6;
-	float* v7;
-	float v8;
-	float v10;
-	float v11;
-	NJS_VECTOR v;
-	float v13;
-
-	v2 = x_1->y;
-	v3 = x_1->z;
-	v13 = x_1->x;
-	v10 = v2;
-	v11 = v3;
-	v4 = 1;
-	while (1)
-	{
-		v5 = EntityData1Ptrs[v4];
-		if (v5)
-		{
-			v6 = v5->CollisionInfo;
-			if (v6)
-			{
-				v7 = (float*)&v6->CollisionArray->kind;
-				v8 = v7[2];
-				// pointer to Y of the first vector because sega hates everything
-				v7 += 3;
-				v.x = v8 - v13;
-				v.y = *v7 - v10;
-				v.z = v7[1] - v11;
-				if (njScalor(&v) - radius < 0.0f)
-				{
-					break;
-				}
-			}
-		}
-		if (++v4 >= 2)
-		{
-			return 0;
-		}
-	}
-	return v4 + 1;
-}
 
 //Fix AI Start Position in hub world
 
@@ -240,7 +192,7 @@ void CallTailsAI_R() {
 
 	unsigned char ID = getAI_ID();
 
-	if (ID > 0 && EntityData1Ptrs[ID] || ID > 0 && CharObj2Ptrs[ID] || IsAdventureComplete(SelectedCharacter) && SelectedCharacter != 6)
+	if (ID > 0 && playertwp[ID] || ID > 0 && CharObj2Ptrs[ID] || IsAdventureComplete(SelectedCharacter) && SelectedCharacter != 6)
 		return PlayMusic(CurZic);
 
 	Load2PTails_r();
@@ -249,18 +201,18 @@ void CallTailsAI_R() {
 }
 
 
-void GetPlayerSidePos(NJS_VECTOR* v1, EntityData1* a2, float m)
+void GetPlayerSidePos(NJS_VECTOR* v1, taskwk* a2, float m)
 {
-	Float _sin;
+	Float _sin = 0.0f;
 
 	if (a2)
 	{
 		if (v1)
 		{
-			_sin = njSin(a2->Rotation.y);
-			v1->x = a2->Position.x - njCos(a2->Rotation.y) * m;
-			v1->y = a2->Position.y;
-			v1->z = a2->Position.z - _sin * m;
+			_sin = njSin(a2->ang.y);
+			v1->x = a2->pos.x - njCos(a2->ang.y) * m;
+			v1->y = a2->pos.y;
+			v1->z = a2->pos.z - _sin * m;
 		}
 	}
 }
@@ -378,8 +330,8 @@ int GetRaceWinnerPlayer_r() {
 	unsigned char ID = getAI_ID();
 
 
-	if (ID > 0 && CurrentCharacter != Characters_Tails && EntityData1Ptrs[ID] != nullptr) {
-		if (EntityData1Ptrs[ID]->CharID == Characters_Tails) {
+	if (ID > 0 && CurrentCharacter != Characters_Tails && playertwp[ID] != nullptr) {
+		if (playertwp[ID]->charID == Characters_Tails) {
 			return 1;
 		}
 	}

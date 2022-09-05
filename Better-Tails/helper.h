@@ -65,7 +65,7 @@ bool isNewTricksActive();
 float getMilesDistance(taskwk* p1, taskwk* p2);
 
 
-void GetPlayerSidePos(NJS_VECTOR* v1, EntityData1* a2, float m);
+void GetPlayerSidePos(NJS_VECTOR* v1, taskwk* a2, float m);
 
 void CallTailsAI_R();
 

@@ -136,7 +136,7 @@ bool isInHubWorld()
 
 bool isTailsAI()
 {
-	if (!TailsAI_ptr || !EntityData1Ptrs[0] || EntityData1Ptrs[0]->CharID != Characters_Sonic || !EntityData1Ptrs[AIIndex] || EntityData1Ptrs[AIIndex]->CharID != Characters_Tails)
+	if (!TailsAI_ptr || !playertwp[0] || playertwp[0]->charID != Characters_Sonic || !playertwp[AIIndex] || playertwp[AIIndex]->charID != Characters_Tails)
 		return false;
 
 	return true;

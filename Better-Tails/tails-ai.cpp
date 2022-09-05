@@ -96,14 +96,14 @@ int CheckTailsAI_R(void) {
 
 unsigned char AIIndex = 1;
 
-ObjectMaster* LoadTails()
+task* LoadTails()
 {
 	char pnum = (char)AIIndex;
-	ObjectMaster* obj = LoadObject((LoadObj)(LoadObj_UnknownA | LoadObj_Data1 | LoadObj_Data2), 1, Tails_Main);
-	obj->Data1->CharID = Characters_Tails;
-	obj->Data1->CharIndex = pnum;
-	EntityData1Ptrs[pnum] = (EntityData1*)obj->Data1;
-	EntityData2Ptrs[pnum] = (EntityData2*)obj->Data2;
+	auto obj = CreateElementalTask((LoadObj)(LoadObj_UnknownA | LoadObj_Data1 | LoadObj_Data2), 1, (TaskFuncPtr)Tails_Main);
+	obj->twp->charID = Characters_Tails;
+	obj->twp->pNum = pnum;
+	playertwp[pnum] = obj->twp;
+	playermwp[pnum] = (motionwk2*)obj->mwp;
 
 	return obj;
 }
@@ -129,10 +129,10 @@ ObjectMaster* Load2PTails_r() {
 			AI->twp->counter.b[1] = Characters_Tails;
 			AI->twp->counter.b[0] = AIIndex;
 			AI->dest = (TaskFuncPtr)TailsAI_Delete;
-			ObjectMaster* Chara = LoadTails(); //set the character
+			auto Chara = LoadTails(); //set the character
 			if (Chara) {
 				isAIActive = true;
-				GetPlayerSidePos(&Chara->Data1->Position, (EntityData1*)AI->twp, 10);
+				GetPlayerSidePos(&Chara->twp->pos, AI->twp, 10);
 			}
 			AI->twp->mode = 0;
 			NPCMilesStandByFlag = 0;
@@ -149,7 +149,7 @@ void LoadCharacterAndAI() {
 	if (isFlyTravel)
 		CheckAndLoadMapPVM();
 
-	if (banCharacter[CurrentCharacter] != true && !EntityData1Ptrs[AIIndex])
+	if (banCharacter[CurrentCharacter] != true && !playertwp[AIIndex])
 		Load2PTails_r();
 
 	if (isCharSelActive()) {
@@ -162,7 +162,7 @@ void LoadCharacterAndAI() {
 
 void MilesAI_OnFrames(unsigned char playerID) { //Only run when TailsAI_Main is active
 
-	if (!IsIngame() || !EntityData1Ptrs[0] || !EntityData1Ptrs[playerID] || EntityData1Ptrs[playerID]->CharID != Characters_Tails || !TailsAI_ptr)
+	if (!IsIngame() || !playertwp[0] || !playertwp[playerID] || playertwp[playerID]->charID != Characters_Tails || !TailsAI_ptr)
 		return;
 
 
@@ -206,7 +206,7 @@ void TailsAI_Main_R(task* obj) {
 
 
 	DisplayDebugStringFormatted(NJM_LOCATION(2, 1), "Tails AI Pointer: %d", TailsAI_ptr != nullptr);
-	//DisplayDebugStringFormatted(NJM_LOCATION(2, 1), "AI Distance: % f", getMilesDistance(EntityData1Ptrs[0], EntityData1Ptrs[AIIndex]));
+	//DisplayDebugStringFormatted(NJM_LOCATION(2, 1), "AI Distance: % f", getMilesDistance(playertwp[0], playertwp[AIIndex]));
 
 	if (data->mode == 0) {
 		RemovePlayerCollision(pid);

@@ -17,15 +17,15 @@ void CameraEvent_MilesRescue(_OBJ_CAMERAPARAM* camparam) {
 	if (!ID)
 		return;
 
-	CameraTask.camxpos = EntityData1Ptrs[ID]->Position.x;	
-	CameraTask.camypos = EntityData1Ptrs[ID]->Position.y;	
-	CameraTask.camzpos = EntityData1Ptrs[ID]->Position.z;
+	CameraTask.camxpos = playertwp[ID]->pos.x;	
+	CameraTask.camypos = playertwp[ID]->pos.y;	
+	CameraTask.camzpos = playertwp[ID]->pos.z;
 	CameraTask.camxpos += 30;
 	CameraTask.camypos += 30;
 	CameraTask.camzpos += 30;
-	CameraTask.tgtxpos = EntityData1Ptrs[ID]->Position.x;	
-	CameraTask.tgtypos = EntityData1Ptrs[ID]->Position.y;	
-	CameraTask.tgtzpos = EntityData1Ptrs[ID]->Position.z;
+	CameraTask.tgtxpos = playertwp[ID]->pos.x;	
+	CameraTask.tgtypos = playertwp[ID]->pos.y;	
+	CameraTask.tgtzpos = playertwp[ID]->pos.z;
 }
 
 MilesAI_Fly RescueArray[]{
@@ -279,18 +279,18 @@ void CheckMilesBossRescue(unsigned char ID) {
 	if (CurrentLevel != LevelIDs_EggHornet && CurrentLevel != LevelIDs_EggViper || GameState != 15 || isMilesSaving() || rngDeathZoneRescue || isRescued && CurrentLevel < LevelIDs_StationSquare)
 		return;
 
-	if (CurrentLevel == LevelIDs_EggHornet && EntityData1Ptrs[0]->Position.y > 94 || CurrentLevel == LevelIDs_EggViper && (EntityData1Ptrs[0]->Position.y > -150.0 || EggViper_Health < 3))
+	if (CurrentLevel == LevelIDs_EggHornet && playertwp[0]->pos.y > 94.0f || CurrentLevel == LevelIDs_EggViper && (playertwp[0]->pos.y > -150.0f || EggViper_Health < 3))
 		return;
 
 	if (!MilesRescueObj && !TailsRescueLanding && !rngDeathZoneRescue) {
 		rngDeathZoneRescue = rand() % 100 + 1;
 
-		if (!EntityData1Ptrs[ID] || EntityData1Ptrs[ID]->CharID != Characters_Tails || rngDeathZoneRescue < 65) {
+		if (!playertwp[ID] || playertwp[ID]->counter.b[1] != Characters_Tails || rngDeathZoneRescue < 65) {
 			return;
 		}
 	}
 
-	EntityData1Ptrs[0]->Action = 125;
+	playertwp[0]->mode = 125;
 	CheckAndCallMilesRescue(ID);
 	return;
 }
@@ -304,50 +304,51 @@ void MilesRescueEnemyDelete(task* obj) {
 void MilesRescueFromEnemy(task* obj) {
 
 	auto data = obj->twp;
-	auto p1 = EntityData1Ptrs[0];
+	auto p1 = playertwp[0];
 	char pnum = data->counter.b[0];
-	auto p2 = EntityData1Ptrs[pnum];
-	auto co2p2 = CharObj2Ptrs[pnum];
-	auto co2p1 = CharObj2Ptrs[0];
+	auto p2 = playertwp[pnum];
+	auto co2p2 = playerpwp[pnum];
+	auto co2p1 = playerpwp[0];
 
 	switch (data->mode)
 	{
 	case 0:
-		co2p1->Powerups |= Powerups_Invincibility;
+		co2p1->item |= Powerups_Invincibility;
 		obj->dest = MilesRescueEnemyDelete;
 		if (CurrentLevel < LevelIDs_Chaos0)
 			SetCameraEvent(CameraEvent_MilesRescue, CameraAdjustsIDs::None, CameraDirectIDs::Target);
-		p1->Action = 125;
-		p2->Action = 125;
+		p1->mode = 125;
+		p2->mode = 125;
 		data->mode++;
 		break;
 	case 1:
-		p2->Position = p1->Position;
-		p2->Position.x = p1->Position.x - 100;
+		p2->pos = p1->pos;
+		p2->pos.x = p1->pos.x - 100.0f;
 		PlaySound(768, 0, 0, 0);
 		data->mode++;
 		break;
 	case 2:
-		LookAt(&p2->Position, &p1->Position, nullptr, &p2->Rotation.y);
-		p2->Status |= Status_Ball;
-		co2p2->AnimationThing.Index = 15;
-		p2->Position.x += 4;
+		LookAt(&p2->pos, &p1->pos, nullptr, &p2->ang.y);
+		p2->flag |= Status_Ball;
+		co2p2->mj.reqaction = 15;
+		p2->pos.x += 4;
 
-		if (GetCollidingEntityA(p2) || ++data->wtimer == 50)
+		if (GetCollidingEntityA((EntityData1*)p2) || ++data->wtimer == 50)
 			data->mode++;
 		break;
 	case 3:
-		p2->Action = 4;
-		co2p2->Speed = { 1, 0, 0 };
+		p2->mode = 4;
+		co2p2->spd = { 1.0f, 0.0f, 0.0f };
 		HurtCharacter(pnum);
 		PlaySound(33, 0, 0, 0);
 		isRescued = true;
-		p1->Action = 8;
-		co2p1->Speed = { 1.5, 4, 0 };
-		co2p1->Powerups &= 0x100u;
+		p1->mode = 8;
+		co2p1->spd = { 1.5f, 4.0f, 0.0f };
+		co2p1->item &= 0x100u;
 		data->mode++;
 		break;
 	default:
+
 		if (CurrentLevel < LevelIDs_Chaos0)
 			RemoveCameraEvent();
 
@@ -363,7 +364,7 @@ void CheckPlayerDamage(unsigned __int8 player) {
 	if (ID == 0)
 		return KillPlayer(player);
 
-	if (isRescued || !EntityData1Ptrs[ID] || EntityData1Ptrs[ID]->CharID != Characters_Tails || player > 0 || CurrentLevel >= LevelIDs_Chaos0 || BannedRescueLevel()) {
+	if (isRescued || !playertwp[ID] || playertwp[ID]->counter.b[1] != Characters_Tails || player > 0 || CurrentLevel >= LevelIDs_Chaos0 || BannedRescueLevel()) {
 		return KillPlayer(player);
 	}
 
@@ -373,7 +374,7 @@ void CheckPlayerDamage(unsigned __int8 player) {
 	if (!MilesRescueEnemy && !rngRegularDeathRescue && !isRescued) {
 		rngRegularDeathRescue = rand() % 100 + 1;
 
-		if (rngRegularDeathRescue > 69 && EntityData1Ptrs[ID]) {
+		if (rngRegularDeathRescue > 69 && playertwp[ID]) {
 			MilesRescueEnemy = CreateElementalTask((LoadObj)2, 1, MilesRescueFromEnemy);
 			MilesRescueEnemy->twp->counter.b[0] = ID;
 		}
