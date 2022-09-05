@@ -357,8 +357,9 @@ void PlayCharacterGrabAnimation(taskwk* p1, playerwk* co2) {
 
 void PlayCharacterLeaveAnimation(taskwk* p1, playerwk* co2, int playerID) {
 
-	if (p1->mode < 100)
-		return;
+
+	if ( (co2->equipment & Upgrades_SuperSonic) == 0)
+		ForcePlayerAction(playerID, 24);
 
 	switch (p1->charID) {
 	case Characters_Sonic:
@@ -369,7 +370,7 @@ void PlayCharacterLeaveAnimation(taskwk* p1, playerwk* co2, int playerID) {
 		}
 		else {
 			p1->mode = 12;
-			CharObj2Ptrs[playerID]->AnimationThing.Index = 18;
+			co2->mj.reqaction = 18;
 		}
 
 		break;
@@ -378,6 +379,7 @@ void PlayCharacterLeaveAnimation(taskwk* p1, playerwk* co2, int playerID) {
 		co2->mj.reqaction = 82;
 		break;
 	case Characters_Amy:
+
 		p1->mode = 5;
 		co2->mj.reqaction = 18;
 		break;
@@ -409,7 +411,7 @@ float GetCharacterPositionY(taskwk* p1) {
 }
 
 void UpdateP1Position(playerwk* co2p1, playerwk* co2p2, taskwk* p1, taskwk* p2) {
-	co2p2->spd= co2p1->spd;
+	co2p2->spd = co2p1->spd;
 	p1->pos = p2->pos;
 	p1->pos.y -= GetCharacterPositionY(p1);
 	p1->ang = p2->ang;
@@ -635,7 +637,7 @@ void TailsAI_Landing(task* obj) {
 	auto co2p1 = playerpwp[0];
 	auto co2p2 = playerpwp[pnum];
 
-	if (!p1 || !p2 || GameState != 15 && GameState != 4) {
+	if (!p1 || !p2 || !IsIngame()) {
 		return;
 	}
 
