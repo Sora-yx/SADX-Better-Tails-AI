@@ -18,7 +18,6 @@ extern bool isRescued;
 extern bool isMSBanned;
 extern bool fasterRespawn;
 
-
 bool isTailsAIAllowed();
 bool isCharSelActive();
 bool isRandoActive();
@@ -116,8 +115,6 @@ enum EMilesMap {
 	MRJungleBig
 };
 
-
-
 void CheckAndLoadMapPVM();
 void Force_MilesToFollow(unsigned char playerID);
 unsigned char getAI_ID();
@@ -138,10 +135,7 @@ enum milesAI_CustomAction
 
 };
 
-#define TARGET_STATIC(name) ((decltype(name##_r)*)name##_t.Target())
-
 void config(const char* path);
-#define TARGET_DYNAMIC(name) ((decltype(name##_r)*)name##_t->Target())
 #define charID counter.b[1]
 #define pNum counter.b[0]
 
