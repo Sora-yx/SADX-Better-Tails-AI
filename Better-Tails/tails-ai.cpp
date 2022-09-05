@@ -109,14 +109,14 @@ task* LoadTails()
 }
 
 //Load Tails AI
-ObjectMaster* Load2PTails_r() {
+void Load2PTails_r() {
 
 	FlagAI = CheckTailsAI_R();
 
 	if (FlagAI != 1)
 	{
 		isAIActive = false;
-		return (ObjectMaster*)0x0;
+		return;
 	}
 	else
 	{
@@ -136,12 +136,12 @@ ObjectMaster* Load2PTails_r() {
 			}
 			AI->twp->mode = 0;
 			NPCMilesStandByFlag = 0;
-			return (ObjectMaster*)AI;
+			return;
 		}
 	}
 
 	isAIActive = false;
-	return nullptr;
+	return;
 }
 
 void LoadCharacterAndAI() {

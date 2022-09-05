@@ -35,7 +35,7 @@ void speedHighwayBuilding_Follow(unsigned char playerID);
 extern int rngDeathZoneRescue;
 extern int rngRegularDeathRescue;
 
-ObjectMaster* Load2PTails_r();
+void Load2PTails_r();
 void RestoreAIControl(unsigned char ID);
 void FixAIHubTransition();
 void FixAIHubTransition2();
