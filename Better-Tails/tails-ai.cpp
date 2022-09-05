@@ -205,7 +205,7 @@ void TailsAI_Main_R(task* obj) {
 	MilesAI_OnFrames(pid);
 
 
-	DisplayDebugStringFormatted(NJM_LOCATION(2, 1), "Tails AI: %d", TailsAI_ptr);
+	DisplayDebugStringFormatted(NJM_LOCATION(2, 1), "Tails AI Pointer: %d", TailsAI_ptr != nullptr);
 	//DisplayDebugStringFormatted(NJM_LOCATION(2, 1), "AI Distance: % f", getMilesDistance(EntityData1Ptrs[0], EntityData1Ptrs[AIIndex]));
 
 	if (data->mode == 0) {

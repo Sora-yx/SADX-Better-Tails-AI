@@ -16,8 +16,8 @@ float GetSquare(NJS_VECTOR* orig, NJS_VECTOR* dest);
 float GetDistance(NJS_VECTOR* orig, NJS_VECTOR* dest);
 float CheckDistance(NJS_VECTOR* vec1, NJS_VECTOR* vec2);
 void PlayerLookAt(NJS_VECTOR* from, NJS_VECTOR* to, Angle* outx, Angle* outy);
-float GetCharacterPositionY(EntityData1* p1);
-void UpdateP1Position(CharObj2* co2p1, CharObj2* co2p2, EntityData1* p1, EntityData1* p2);
+float GetCharacterPositionY(taskwk* p1);
+void UpdateP1Position(playerwk* co2p1, playerwk* co2p2, taskwk* p1, taskwk* p2);
 
 
 bool isP1AndTailsAIEnabled(char playerID);

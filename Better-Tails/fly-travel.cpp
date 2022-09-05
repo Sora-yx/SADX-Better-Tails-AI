@@ -1,9 +1,9 @@
 #include "stdafx.h"
 
 Trampoline* MovePlayerToStartPoint_t;
-ObjectMaster* TailsGrab = nullptr;
+task* TailsGrab = nullptr;
 uint8_t isMoving = 0;
-ObjectMaster* TailsLanding = nullptr;
+task* TailsLanding = nullptr;
 const int8_t cursorMaxPos = 8;
 
 NJS_TEXANIM	MilesCursor_TEXANIM[]{
@@ -35,7 +35,7 @@ int Cursor = -1;
 int MilesCurTex = 0;
 
 const char* DestinationText[9] = {
-	"Station Square (Main)", "Station Square (Hostel Pool)", "Station Square Casino Area",
+	"Station Square (Main)", "Station Square (Hostel Pool", "Station Square Casino Area",
 	"Station Square City Hall", "Egg Carrier (Outside)", "Mystic Ruins (Station)", "Mystic Ruins (Angel Island)",
 	"Mystic Ruins (Jungle Temple)", "Mystic Ruins (Big's House)"
 };
@@ -177,14 +177,14 @@ void UpdatePlayerCursorPos() {
 
 void __cdecl DisplayMilesMap_r()
 {
-	signed int v3; // ebx
-	int texId = 0; // edi
-	signed int v5; // esi
-	float a3; // ST10_4
-	float a2; // ST0C_4
-	signed int v12; // [esp+1Ch] [ebp-4h]
-	float v13; // [esp+1Ch] [ebp-4h]
-	signed int v14; // [esp+24h] [ebp+4h]
+	signed int v3 = 0;
+	int texId = 0;
+	signed int diff = 0;
+	float posY = 0.0f;
+	float posX = 0.0f;
+	signed int v12 = 0;
+	float diffPosY = 0.0f;
+	signed int v14 = 0;
 
 	njSetTexture(&TravelMap_TEXLIST);
 
@@ -192,8 +192,6 @@ void __cdecl DisplayMilesMap_r()
 	njColorBlendingMode(0, NJD_COLOR_BLENDING_SRCALPHA);
 	njColorBlendingMode(NJD_DESTINATION_COLOR, NJD_COLOR_BLENDING_INVSRCALPHA);
 
-	v3 = 0;
-	v12 = 0;
 
 	if (Cursor >= Sstation && Cursor <= SChaos0)
 		texId = 0;
@@ -212,18 +210,18 @@ void __cdecl DisplayMilesMap_r()
 
 	do
 	{
-		v5 = 0;
+		diff = 0;
 		v14 = 0;
-		v13 = v12 * 256.0f - 16.0f - 240.0f;
+		diffPosY = v12 * 256.0f - 16.0f - 240.0f;
 		do
 		{
-			a3 = VerticalStretch * 240.0f + v13;
-			a2 = (float)v14 * 256.0f - 64.0f - 320.0f + HorizontalStretch * 320.0f;
+			posY = VerticalStretch * 240.0f + diffPosY;
+			posX = (float)v14 * 256.0f - 64.0f - 320.0f + HorizontalStretch * 320.0f;
 
-			DisplayScreenTexture(texId + v5++, a2, a3, 1.1f);
+			DisplayScreenTexture(texId + diff++, posX, posY, 1.1f);
 
-			v14 = v5;
-		} while (v5 < 3);
+			v14 = diff;
+		} while (diff < 3);
 		++v3;
 		texId += 3;
 		v12 = v3;
@@ -231,6 +229,7 @@ void __cdecl DisplayMilesMap_r()
 }
 
 void PauseMenuMap_OriginalFunction() {
+
 	switch ((unsigned __int16)((((unsigned __int16)CurrentAct | (unsigned __int16)(CurrentLevel << 8)) & 0xFF00) >> 8))
 	{
 	case 26u:
@@ -266,22 +265,23 @@ void __cdecl PauseMenu_Map_Display_r() {
 		return;
 
 	DisplayMilesMap_r(),
-	DisplayCursorAnimation();
+		DisplayCursorAnimation();
 
 	return;
 }
 
 bool isTailsAI_GrabAllowed() {
-	EntityData1* p1 = EntityData1Ptrs[0];
+
+	auto p1 = playertwp[0];
 
 	if (CurrentLevel == LevelIDs_MysticRuins && CurrentAct == 0)
 	{
-		if (p1->Position.x <= -410 && p1->Position.x > -672 && p1->Position.z > 772 && p1->Position.z < 880)
+		if (p1->pos.x <= -410.0f && p1->pos.x > -672.0f && p1->pos.z > 772.0f && p1->pos.z < 880.0f)
 			return false;
 	}
 
 	if (CurrentLevel == LevelIDs_MysticRuins && CurrentAct == 1) {
-		if (p1->Position.z < 1020)
+		if (p1->pos.z < 1020.0f)
 			return false;
 	}
 
@@ -291,7 +291,7 @@ bool isTailsAI_GrabAllowed() {
 	if (CurrentLevel == LevelIDs_StationSquare && (CurrentAct == 2 || CurrentAct == 5))
 		return false;
 
-	if (CurrentLevel == LevelIDs_StationSquare && CurrentAct == 1 && p1->Position.x > -370)
+	if (CurrentLevel == LevelIDs_StationSquare && CurrentAct == 1 && p1->pos.x > -370.0f)
 		return false;
 
 	if (CurrentLevel == LevelIDs_EggCarrierOutside && CurrentAct != 0 && CurrentAct != 2)
@@ -303,24 +303,25 @@ bool isTailsAI_GrabAllowed() {
 	return true;
 }
 
-void CheckAndForceLeavingGrab(EntityData1* data) {
-	EntityData1* p1 = EntityData1Ptrs[0];
-	CharObj2* co2p1 = CharObj2Ptrs[0];
+void CheckAndForceLeavingGrab(taskwk* data) {
 
-	if (data->Action >= grabbed && data->Action <= leaving)
+	if (data->mode >= grabbed && data->mode <= leaving)
 	{
 		if (ControllerPointers[0]->PressedButtons & Buttons_B) {
 			PlaySound(3, NULL, 0, NULL);
-			data->Action = leaving;
+			data->mode = leaving;
 		}
 	}
 }
 
 void FlySoundOnFrames(int playerID) {
-	if (GameState != 15 || !EntityData1Ptrs[playerID] || !TailsAI_ptr)
+
+	auto ai = playertwp[playerID];
+
+	if (GameState != 15 || !ai || !TailsAI_ptr)
 		return;
 
-	if (EntityData1Ptrs[playerID]->CharID == Characters_Tails && EntityData1Ptrs[0]->CharID <= Characters_Tails) {
+	if (ai->charID == Characters_Tails && playertwp[0]->charID <= Characters_Tails) {
 		if (EntityData1Ptrs[playerID]->Unknown == 0)
 			PlaySound(0x302, NULL, 0, NULL);
 
@@ -331,68 +332,71 @@ void FlySoundOnFrames(int playerID) {
 	}
 }
 
-void PlayCharacterGrabAnimation(EntityData1* p1, CharObj2* co2) {
-	switch (p1->CharID) {
+void PlayCharacterGrabAnimation(taskwk* p1, playerwk* co2) {
+
+	switch (p1->charID) {
+
 	case Characters_Sonic:
-		if ((co2->Upgrades & Upgrades_SuperSonic) == 0)
-			co2->AnimationThing.Index = 47;
+		if ((co2->equipment & Upgrades_SuperSonic) == 0)
+			co2->mj.reqaction = 47;
 		else
-			co2->AnimationThing.Index = 141;
+			co2->mj.reqaction = 141;
 		break;
 	case Characters_Knuckles:
-		co2->AnimationThing.Index = 84;
+		co2->mj.reqaction = 84;
 		break;
 	case Characters_Amy:
-		co2->AnimationThing.Index = 55;
+		co2->mj.reqaction = 55;
 		break;
 	case Characters_Big:
-		co2->AnimationThing.Index = 32;
+		co2->mj.reqaction = 32;
 		break;
 	}
 
 	return;
 }
 
-void PlayCharacterLeaveAnimation(EntityData1* p1, CharObj2* co2, int playerID) {
+void PlayCharacterLeaveAnimation(taskwk* p1, playerwk* co2, int playerID) {
 
-	if (p1->Action < 100)
+	if (p1->mode < 100)
 		return;
 
-	switch (p1->CharID) {
+	switch (p1->charID) {
 	case Characters_Sonic:
-		if (co2->Upgrades & Upgrades_SuperSonic) {
-			p1->Action = 82;
-			co2->AnimationThing.Index = 145;
+
+		if (co2->equipment & Upgrades_SuperSonic) {
+			p1->mode = 82;
+			co2->mj.reqaction = 145;
 		}
 		else {
-			p1->Action = 12;
+			p1->mode = 12;
 			CharObj2Ptrs[playerID]->AnimationThing.Index = 18;
 		}
 
 		break;
 	case Characters_Knuckles:
-		p1->Action = 10;
-		co2->AnimationThing.Index = 82;
+		p1->mode = 10;
+		co2->mj.reqaction = 82;
 		break;
 	case Characters_Amy:
-		p1->Action = 5;
-		co2->AnimationThing.Index = 18;
+		p1->mode = 5;
+		co2->mj.reqaction = 18;
 		break;
 	case Characters_Big:
-		p1->Action = 4;
-		co2->AnimationThing.Index = 15;
+		p1->mode = 4;
+		co2->mj.reqaction = 15;
 		break;
 	case Characters_Gamma:
-		p1->Action = 4;
-		co2->AnimationThing.Index = 6;
+		p1->mode = 4;
+		co2->mj.reqaction = 6;
 		break;
 	}
 
 	return;
 }
 
-float GetCharacterPositionY(EntityData1* p1) {
-	switch (p1->CharID) {
+float GetCharacterPositionY(taskwk* p1) {
+	switch (p1->charID) {
 	case Characters_Sonic:
 	case Characters_Knuckles:
 	default:
@@ -405,11 +409,11 @@ float GetCharacterPositionY(EntityData1* p1) {
 	}
 }
 
-void UpdateP1Position(CharObj2* co2p1, CharObj2* co2p2, EntityData1* p1, EntityData1* p2) {
-	co2p2->Speed = co2p1->Speed;
-	p1->Position = p2->Position;
-	p1->Position.y -= GetCharacterPositionY(p1);
-	p1->Rotation = p2->Rotation;
+void UpdateP1Position(playerwk* co2p1, playerwk* co2p2, taskwk* p1, taskwk* p2) {
+	co2p2->spd= co2p1->spd;
+	p1->pos = p2->pos;
+	p1->pos.y -= GetCharacterPositionY(p1);
+	p1->ang = p2->ang;
 	return;
 }
 
@@ -461,72 +465,73 @@ int CheckFastTravelStoryProgression() {
 	return 1;
 }
 
-void TailsAI_GrabDelete(ObjectMaster* obj) {
+void TailsAI_GrabDelete(task* obj) {
 	if (TailsGrab) {
 		TailsGrab = nullptr;
 	}
 }
 
-void TailsAI_Grab(ObjectMaster* obj) {
+void TailsAI_Grab(task* obj) {
 
-	EntityData1* data = obj->Data1;
-	EntityData1* p1 = EntityData1Ptrs[0];
-	EntityData1* p2 = EntityData1Ptrs[data->CharIndex];
+	auto data = obj->twp;
+	auto p1 = playertwp[0];
+	auto pnum = data->pNum;
+	auto p2 = playertwp[pnum];
 
-	CharObj2* co2p1 = CharObj2Ptrs[0];
-	CharObj2* co2p2 = CharObj2Ptrs[data->CharIndex];
+	auto co2p1 = playerpwp[0];
+	auto co2p2 = playerpwp[pnum];
 
-	if (data->Action != movetoDestination && (!p1
+	if (data->mode != movetoDestination && (!p1
 		|| !p2 || GameState != 15 || TailsLanding || isMilesSaving())) {
 
 		if (p2) {
-			if (p2->Action == 125) //failsafe if the player start fly travel but leave the level/act
-				p2->Action = 1;
+			if (p2->mode == 125) //failsafe if the player start fly travel but leave the level/act
+				p2->mode = 1;
 		}
 		TailsGrab = nullptr;
-		CheckThingButThenDeleteObject(obj);
+		FreeTask(obj);
 	}
 
-	if ((++data->field_A == 230 && data->Action > initFly && data->Action < grabbed) || p2->CharID != Characters_Tails) {
-		data->Action = leaving;
+	if ((++data->counter.w[1] == 230 && data->mode > initFly && data->mode < grabbed) || p2->charID != Characters_Tails) {
+		data->mode = leaving;
 	}
 
-	switch (data->Action)
+	switch (data->mode)
 	{
 	case initFly:
-		obj->DeleteSub = TailsAI_GrabDelete;
+		obj->dest = TailsAI_GrabDelete;
 		if (!isTailsAI_GrabAllowed()) {
-			if (++data->InvulnerableTime == 20)
-				CheckThingButThenDeleteObject(obj);
+			if (++data->wtimer == 20)
+				FreeTask(obj);
 		}
 		else {
-			data->Position = p2->Position;
-			data->Action = getAltitude;
+			data->pos = p2->pos;
+			data->mode = getAltitude;
 		}
 		break;
 	case getAltitude:
-		if ((p1->CharID <= Characters_Amy && p2->Position.y < p1->Position.y + 15) || (p1->CharID >= Characters_Gamma && p2->Position.y < p1->Position.y + 25)) {
-			Controllers[data->CharIndex].HeldButtons |= JumpButtons;
-			Controllers[data->CharIndex].PressedButtons |= JumpButtons;
+		if ((p1->charID <= Characters_Amy && p2->pos.y < p1->pos.y + 15.0f) || (p1->charID >= Characters_Gamma && p2->pos.y < p1->pos.y + 25.0f)) {
+			Controllers[pnum].HeldButtons |= JumpButtons;
+			Controllers[pnum].PressedButtons |= JumpButtons;
 		}
 		else {
-			p2->Status &= 0x100u;
-			p2->Action = 125;
-			co2p2->AnimationThing.Index = 37;
-			data->Action = checkGrab;
+			p2->flag &= 0x100u;
+			p2->mode = 125;
+			co2p2->mj.reqaction = 37;
+			data->mode = checkGrab;
 		}
 		break;
 	case checkGrab:
-		if (GetCollidingEntityA(p2)) {
-			p1->Status &= ~(Status_Attack | Status_Ball | Status_LightDash);
-			p1->Action = 125;
-			data->Action = grabbed;
+		if (GetCollidingEntityA((EntityData1*)p2)) {
+			p1->flag &= ~(Status_Attack | Status_Ball | Status_LightDash);
+			p1->mode = 125;
+			data->mode = grabbed;
 		}
 		break;
 	case grabbed:
-		data->Unknown = 0;
-		data->InvulnerableTime = 0;
-		data->field_A = 0;
+		data->id = 0;
+		data->wtimer = 0;
+		data->counter.w[1] = 0;
 
 		UpdateP1Position(co2p1, co2p2, p1, p2);
 		CheckAndForceLeavingGrab(data);
@@ -535,18 +540,18 @@ void TailsAI_Grab(ObjectMaster* obj) {
 
 		Cursor = setCursorPos(CurrentLevel, CurrentAct);
 		if (Cursor > -1) {
-			data->Action = transitionMap;
+			data->mode = transitionMap;
 		}
 		else {
-			data->Action = leaving;
+			data->mode = leaving;
 		}
 		break;
 	case transitionMap:
 		CheckAndForceLeavingGrab(data);
-		if (++data->Unknown == 50) {
+		if (++data->id == 50) {
 			PlaySound(21, NULL, 0, NULL);
-			data->Index = 0;
-			data->Action = displayMap;
+			data->btimer = 0;
+			data->mode = displayMap;
 		}
 		break;
 	case displayMap:
@@ -559,8 +564,8 @@ void TailsAI_Grab(ObjectMaster* obj) {
 
 		if (ControllerPointers[0]->PressedButtons & Buttons_A || ControllerPointers[0]->PressedButtons & Buttons_Start) {
 			if (!CheckFastTravelStoryProgression()) {
-				data->Index = 0;
-				data->Action = errorMove;
+				data->btimer = 0;
+				data->mode = errorMove;
 			}
 			else {
 				PlaySound(0x2, NULL, 0, NULL);
@@ -568,51 +573,52 @@ void TailsAI_Grab(ObjectMaster* obj) {
 					isMoving = 2;
 				else
 					isMoving = 1;
-				data->Unknown = 0;
-				data->InvulnerableTime = 0;
-				data->field_A = 0;
-				data->Action = movetoDestination;
+				data->id = 0;
+				data->wtimer = 0;
+				data->counter.w[1] = 0;
+				data->mode = movetoDestination;
 			}
 		}
 		break;
 	case movetoDestination:
-		FlySoundOnFrames(data->CharIndex);
-		p2->Action = 15; //fly mode
+		FlySoundOnFrames(pnum);
+		p2->mode = 15; //fly mode
 		UpdateP1Position(co2p1, co2p2, p1, p2);
 
-		co2p2->Speed.y += 0.4f;
-		co2p2->Speed.x += 0.8f;
+		co2p2->spd.y += 0.4f;
+		co2p2->spd.x += 0.8f;
 
-		if (++data->InvulnerableTime == 180) {
-			LoadDestination(data->CharIndex);
+		if (++data->wtimer == 180) {
+			LoadDestination(pnum);
+
 			if (isMoving == 2) //object isn't deleted between act transition unlike with level changes.
-				CheckThingButThenDeleteObject(obj);
+				FreeTask(obj);
 		}
 
 		break;
 	case leaving:
-		p2->Action = 10;
-		RestoreAIControl(data->CharIndex);
+		p2->mode = 10;
+		RestoreAIControl(pnum);
 		Cursor = -1;
 		EnablePause();
-		PlayCharacterLeaveAnimation(p1, co2p1, data->CharIndex);
+		PlayCharacterLeaveAnimation(p1, co2p1, pnum);
 		isMoving = 0;
-		CheckThingButThenDeleteObject(obj);
+		FreeTask(obj);
 		break;
 	case errorMove:
 		SetDebugFontSize(23);
 		SetDebugFontColor(0xFF0000);
 		DisplayDebugStringFormatted(NJM_LOCATION(12, 12), "You cannot fly here at the moment.");
-		if (++data->Index == 60) {
-			data->Unknown = 0;
-			data->InvulnerableTime = 0;
-			data->Action = displayMap;
+		if (++data->btimer == 60) {
+			data->id = 0;
+			data->wtimer = 0;
+			data->mode = displayMap;
 			SetDebugFontColor(0xFFFFFFFF);
 		}
 	}
 }
 
-void TailsAI_LandingDelete(ObjectMaster* obj) {
+void TailsAI_LandingDelete(task* obj) {
 	if (TailsLanding) {
 		isMoving = 0;
 		Cursor = -1;
@@ -620,14 +626,15 @@ void TailsAI_LandingDelete(ObjectMaster* obj) {
 	}
 }
 
-void TailsAI_Landing(ObjectMaster* obj) {
+void TailsAI_Landing(task* obj) {
 
-	EntityData1* data = obj->Data1;
-	EntityData1* p1 = EntityData1Ptrs[0];
-	EntityData1* p2 = EntityData1Ptrs[data->CharIndex];
+	auto data = obj->twp;
+	auto p1 = playertwp[0];
+	auto pnum = data->pNum;
+	auto p2 = playertwp[pnum];
 
-	CharObj2* co2p1 = CharObj2Ptrs[0];
-	CharObj2* co2p2 = CharObj2Ptrs[data->CharIndex];
+	auto co2p1 = playerpwp[0];
+	auto co2p2 = playerpwp[pnum];
 
 	if (!p1 || !p2 || GameState != 15 && GameState != 4) {
 		return;
@@ -636,72 +643,72 @@ void TailsAI_Landing(ObjectMaster* obj) {
 	if (EV_MainThread_ptr)
 	{
 		TailsAI_LandingDelete(obj);
-		CheckThingButThenDeleteObject(obj);
+		FreeTask(obj);
 		return;
 	}
 
+	LookAt(&p2->pos, &data->pos, nullptr, &p2->ang.y);
+	FlySoundOnFrames(pnum);
 
-	LookAt(&p2->Position, &data->Position, nullptr, &p2->Rotation.y);
-	FlySoundOnFrames(data->CharIndex);
-
-	switch (data->Action) {
+	switch (data->mode) {
 	case 0:
-		obj->DeleteSub = TailsAI_LandingDelete;
-		data->Position = DestinationArray[Cursor].destination;
-		p1->Rotation = p2->Rotation;
-		p1->Action = 125;
-		p2->Action = 15;
-		co2p2->AnimationThing.Index = 37;
+		obj->dest = TailsAI_LandingDelete;
+		data->pos = DestinationArray[Cursor].destination;
+		p1->ang = p2->ang;
+		p1->mode = 125;
+		p2->mode = 15;
+		co2p2->mj.reqaction = 37;
 		PlayCharacterGrabAnimation(p1, co2p1);
-		data->Action++;
+		data->mode++;
 		break;
 	case 1:
 		UpdateP1Position(co2p1, co2p2, p1, p2);
-		co2p2->Speed.y -= 0.8f;
-		co2p2->Speed.z += 0.8f;
+		co2p2->spd.y -= 0.8f;
+		co2p2->spd.z += 0.8f;
 
-		if (++data->InvulnerableTime == 140 || ((p1->Status & Status_Ground)) || (p1->Status & Status_OnColli)) {
-			data->Action++;
+		if (++data->wtimer== 140 || (p1->flag & 3)) {
+			data->mode++;
 		}
 		break;
 	case 2:
 
-		PlayCharacterLeaveAnimation(p1, co2p1, data->CharIndex);
-		RestoreAIControl(data->CharIndex);
+		PlayCharacterLeaveAnimation(p1, co2p1, pnum);
+		RestoreAIControl(pnum);
 		ForcePlayerAction(0, 24);
-		EnableTailsAI_Controller(data->CharIndex);
+		EnableTailsAI_Controller(pnum);
 		EnableControl();
 		EnablePause();
-		CheckThingButThenDeleteObject(obj);
+		FreeTask(obj);
 		break;
 	}
 }
 
-extern unsigned char AIIndex;
+
 void CheckAndLoadTailsTravelObjects(task* obj) {
 
 	taskwk* data = obj->twp;
 
 	char pid = AIIndex;
 
-	if (!EntityData1Ptrs[pid])
+	if (!playertwp[pid])
 		return;
 
 	if (data->mode == 0 && isMoving == 1 || data->mode > 0 && isMoving == 2) {
 		if (!TailsGrab && !TailsLanding) {
-			TailsLanding = LoadObject((LoadObj)2, 1, TailsAI_Landing);
-			TailsLanding->Data1->CharIndex = pid;
+			TailsLanding = CreateElementalTask((LoadObj)2, 1, TailsAI_Landing);
+			TailsLanding->twp->pNum = pid;
 		}
 	}
 
 	if (data->mode > 0) {
-		if (isInputModActive() && ControllerPointers[0]->PressedButtons & Buttons_C || !isInputModActive() && ControllerPointers[0]->PressedButtons & Buttons_Y) 
+
+		if (isInputModActive() && ControllerPointers[0]->PressedButtons & Buttons_C || !isInputModActive() && ControllerPointers[0]->PressedButtons & Buttons_Y)
 		{
-			if (EntityData1Ptrs[pid]->CharID == Characters_Tails && EntityData1Ptrs[0]->Action < 3 && EntityData1Ptrs[pid]->Action < 3) {
+			if (playertwp[pid]->charID == Characters_Tails && playertwp[pid]->mode < 3 && playertwp[0]->mode < 3) {
 
 				if (!TailsGrab) {
-					TailsGrab = LoadObject((LoadObj)2, 1, TailsAI_Grab);
-					TailsGrab->Data1->CharIndex = pid;
+					TailsGrab = CreateElementalTask((LoadObj)2, 1, TailsAI_Grab);
+					TailsGrab->twp->pNum = pid;
 				}
 			}
 		}

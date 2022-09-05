@@ -2,9 +2,9 @@
 
 //This is the rescue page, the idea here is to edit the deathzones and the death function to add code so Tails can save you.
 
-ObjectMaster* MilesRescueObj = nullptr;
-ObjectMaster* TailsRescueLanding = nullptr;
-ObjectMaster* MilesRescueEnemy = nullptr;
+task* MilesRescueObj = nullptr;
+task* TailsRescueLanding = nullptr;
+task* MilesRescueEnemy = nullptr;
 
 bool isRescued = false;
 int rngDeathZoneRescue = 0;
@@ -63,13 +63,13 @@ bool isMilesSaving() {
 }
 
 //reset PTR when objects are deleted
-void TailsAI_LandingDelete2(ObjectMaster* obj) {
+void TailsAI_LandingDelete2(task* obj) {
 	rngDeathZoneRescue = 0;
 	TailsRescueLanding = nullptr;
 	MilesRescueObj = nullptr;
 }
 
-void TailsAI_RescueDelete(ObjectMaster* obj) {
+void TailsAI_RescueDelete(task* obj) {
 	MilesRescueObj = nullptr;
 }
 
@@ -78,41 +78,41 @@ const char* const Sonic_message01[] = {
 	NULL,
 };
 
-
 //Actually need a second separate object for the landing part, otherwise Tails AI behavior become dumb, idk, kill me, game sucks.
-void TailsAI_Landing2(ObjectMaster* obj) {
+void TailsAI_Landing2(task* obj) {
 
-	EntityData1* data = obj->Data1;
-	EntityData1* p1 = EntityData1Ptrs[0];
-	EntityData1* p2 = EntityData1Ptrs[data->CharIndex];
+	auto data = obj->twp;
+	auto p1 = playertwp[0];
+	char pnum = data->counter.b[0];
+	auto p2 = playertwp[pnum];
 
-	CharObj2* co2p1 = CharObj2Ptrs[0];
-	CharObj2* co2p2 = CharObj2Ptrs[data->CharIndex];
+	auto co2p1 = playerpwp[0];
+	auto co2p2 = playerpwp[pnum];
 
-	if (!p1|| !p2 || GameState != 15 && GameState != 4) {
+	if (!p1|| !p2 || !IsIngame()) {
 		return;
 	}
 
-	LookAt(&p2->Position, &data->Position, nullptr, &p2->Rotation.y);
-	FlySoundOnFrames(data->CharIndex);
+	LookAt(&p2->pos, &data->pos, nullptr, &p2->ang.y);
+	FlySoundOnFrames(pnum);
 
-	switch (data->Action) {
+	switch (data->mode) {
 	case 0: {
 		isRescued = true;
-		obj->DeleteSub = TailsAI_LandingDelete2;
-		CharObj2Ptrs[data->CharIndex]->AnimationThing.Index = 37;
+		obj->dest = TailsAI_LandingDelete2;
+		co2p2->mj.reqaction = 37;
 		PlayCharacterGrabAnimation(p1, co2p1);
-		data->Action = 1;
+		data->mode = 1;
 	}
 	break;
 	case 1:
 		UpdateP1Position(co2p1, co2p2, p1, p2);
-		CharObj2Ptrs[data->CharIndex]->Speed.y -= 0.4f;
+		co2p2->spd.y -= 0.4f;
 
-		if (++data->Index == 30) {
-			data->NextAction = rand() % 2;
-			if (data->NextAction != 0) {
-				if (p1->CharID == Characters_Sonic) {
+		if (++data->btimer == 30) {
+			data->smode = rand() % 2;
+			if (data->smode != 0) {
+				if (p1->counter.b[1] == Characters_Sonic) {
 					if (TextLanguage == 1)
 						DisplayHintText(Sonic_message01, 100);
 					if (VoiceLanguage)
@@ -121,93 +121,95 @@ void TailsAI_Landing2(ObjectMaster* obj) {
 			}
 		}
 
-		if (++data->InvulnerableTime == 90 || ((p1->Status & Status_Ground)) || (p1->Status & Status_OnColli)) {
-			data->Index = 0;
-			data->Action = 2;
+		if (++data->wtimer == 90 || ((p1->flag & 3))) {
+			data->btimer = 0;
+			data->mode = 2;
 		}
 		break;
 	case 2:
 		EnableController(0);
-		co2p1->Powerups &= 0x100u;
-		PlayCharacterLeaveAnimation(p1, co2p1, data->CharIndex);
-		RestoreAIControl(data->CharIndex);
-		if (++data->Index == 20) {
+		co2p1->item &= 0x100u;
+		PlayCharacterLeaveAnimation(p1, co2p1, pnum);
+		RestoreAIControl(pnum);
+		if (++data->btimer == 20) {
 
-			CheckThingButThenDeleteObject(obj);
+			FreeTask(obj);
 		}
 		break;
 	}
 }
 
-void MilesRescuesCharacterFall(ObjectMaster* obj) {
+void MilesRescuesCharacterFall(task* obj) {
 
-	EntityData1* data = obj->Data1;
-	EntityData1* p1 = EntityData1Ptrs[0];
-	EntityData1* p2 = EntityData1Ptrs[data->CharIndex];
-	CharObj2* p1co2 = CharObj2Ptrs[0];
-	CharObj2* p2co2 = CharObj2Ptrs[data->CharIndex];
+	auto data = obj->twp;
+	auto p1 = playertwp[0];
+	char pnum = data->counter.b[0];
+	auto p2 = playertwp[pnum];
+	auto p1co2 = playerpwp[0];
+	auto p2co2 = playerpwp[pnum];
 
-	if (data->Action >= playerGrabbed)
-		FlySoundOnFrames(data->CharIndex);
+	if (data->mode >= playerGrabbed)
+		FlySoundOnFrames(pnum);
 
-	switch (data->Action) {
+	switch (data->mode) {
 	case initMilesFalling: //Set tails above player
-		p1co2->Speed = { 0, 0, 0 };
-		p1co2->Powerups |= Powerups_Invincibility;
-		obj->DeleteSub = TailsAI_RescueDelete;
-		p2->Position = p1->Position;
-		p2->Position.y += 60;
-		p2->Action = 6;
-		data->Action = 1;
+		p1co2->spd= { 0, 0, 0 };
+		p1co2->item |= Powerups_Invincibility;
+		obj->dest = TailsAI_RescueDelete;
+		p2->pos = p1->pos;
+		p2->pos.y += 60;
+		p2->mode = 6;
+		data->mode++;
 		break;
 	case catchPlayer:
-		if (p2->Position.y - p1->Position.y <= GetCharacterPositionY(p1) + 5) {
-			p1co2->Speed.y = 0;
-			p2->Status &= ~(Status_Attack | Status_Ball | Status_LightDash);
-			p2->Action = 15;
-			p2co2->AnimationThing.Index = 37;
-			p1->Status &= ~(Status_Attack | Status_Ball | Status_LightDash);
-			p1->Action = 125;
+		if (p2->pos.y - p1->pos.y <= GetCharacterPositionY(p1) + 5) {
+			p1co2->spd.y = 0;
+			p2->flag &= ~(Status_Attack | Status_Ball | Status_LightDash);
+			p2->mode = 15;
+			p2co2->mj.reqaction = 37;
+			p1->flag &= ~(Status_Attack | Status_Ball | Status_LightDash);
+			p1->mode = 125;
 			PlayCharacterGrabAnimation(p1, p1co2);
-			data->Action = 2;
+			data->mode++;
 		}
 		else { //let AI Fall until he catches player 1.
-			p2->Status |= Status_Ball;
-			p2co2->AnimationThing.Index = 15;
-			p1co2->Speed.y = -2.5;
-			p2co2->Speed.y = -4.5;
+			p2->flag |= Status_Ball;
+			p2co2->mj.reqaction = 15;
+			p1co2->spd.y = -2.5;
+			p2co2->spd.y = -4.5;
 		}
 		break;
 	case playerGrabbed:
-		if (++data->field_A == 140) {
+		if (++data->counter.w[1] == 140) {
 			LoadObject(LoadObj_Data1, 1, FadeoutScreen);
 		}
-		if (++data->InvulnerableTime == 200) { //get Altitude
-			p2co2->Speed.y = 3.5;
+		if (++data->wtimer == 200) { //get Altitude
+			p2co2->spd.y = 3.5;
 			NJS_VECTOR getPos = CheckRescueArray(); //move player to safe point (ie: last grabbed checkpoint or specific spot in hub world)
 			if (getPos.x != -1 && getPos.y != -1 && getPos.z != -1) {
-				p1->Position = getPos;
+				p1->pos = getPos;
 			}
 			else {
-				p1->Position = RestartLevel.Position;
+				p1->pos = RestartLevel.Position;
 			}
-			p1->Position.y += 50.0f;
-			p2->Position = p1->Position;
-			p1co2->Speed = { 0, 0, 0 };
-			data->Action = 3;
+			p1->pos.y += 50.0f;
+			p2->pos = p1->pos;
+			p1co2->spd = { 0, 0, 0 };
+			data->mode++;
 		}
 		else {
 			UpdateP1Position(p1co2, p2co2, p1, p2);
-			p2co2->Speed.y += 0.5f;
-			p2co2->Speed.x += 0.3f;
+			p2co2->spd.y += 0.5f;
+			p2co2->spd.x += 0.3f;
 		}
 		break;
 	case landingTransition:
 		if (!TailsRescueLanding)
-			TailsRescueLanding = LoadObject((LoadObj)2, 1, TailsAI_Landing2);
+			TailsRescueLanding = CreateElementalTask((LoadObj)2, 1, TailsAI_Landing2);
 
 		if (TailsRescueLanding)
-			CheckThingButThenDeleteObject(obj);
+			FreeTask(obj);
+
 		break;
 	}
 }
@@ -216,8 +218,8 @@ void CheckAndCallMilesRescue(int playerID) {
 	DisableController(0);
 
 	if (!MilesRescueObj) {
-		MilesRescueObj = LoadObject((LoadObj)2, 1, MilesRescuesCharacterFall);
-		MilesRescueObj->Data1->CharIndex = playerID;
+		MilesRescueObj = CreateElementalTask((LoadObj)2, 1, MilesRescuesCharacterFall);
+		MilesRescueObj->twp->counter.b[0] = playerID;
 	}
 }
 
@@ -235,7 +237,7 @@ void PlayCharacterDeathSound_r(ObjectMaster* a1, int pid) {
 
 	unsigned char ID = getAI_ID();
 
-	if (ID > 0 && (!EntityData1Ptrs[ID] || EntityData1Ptrs[ID]->CharID != Characters_Tails)) {
+	if (ID > 0 && (!playertwp[ID] || playertwp[ID]->counter.b[1] != Characters_Tails)) {
 		PlayCharacterDeathSound(a1, pid); //kill the player
 		return;
 	}
@@ -293,36 +295,37 @@ void CheckMilesBossRescue(unsigned char ID) {
 	return;
 }
 
-void MilesRescueEnemyDelete(ObjectMaster* obj) {
+void MilesRescueEnemyDelete(task* obj) {
 	rngDeathZoneRescue = 0;
 	MilesRescueEnemy = nullptr;
 	return;
 }
 
-void MilesRescueFromEnemy(ObjectMaster* obj) {
+void MilesRescueFromEnemy(task* obj) {
 
-	EntityData1* data = obj->Data1;
-	EntityData1* p1 = EntityData1Ptrs[0];
-	EntityData1* p2 = EntityData1Ptrs[data->CharIndex ];
-	CharObj2* co2p2 = CharObj2Ptrs[data->CharIndex];
-	CharObj2* co2p1 = CharObj2Ptrs[0];
+	auto data = obj->twp;
+	auto p1 = EntityData1Ptrs[0];
+	char pnum = data->counter.b[0];
+	auto p2 = EntityData1Ptrs[pnum];
+	auto co2p2 = CharObj2Ptrs[pnum];
+	auto co2p1 = CharObj2Ptrs[0];
 
-	switch (data->Action)
+	switch (data->mode)
 	{
 	case 0:
 		co2p1->Powerups |= Powerups_Invincibility;
-		obj->DeleteSub = MilesRescueEnemyDelete;
+		obj->dest = MilesRescueEnemyDelete;
 		if (CurrentLevel < LevelIDs_Chaos0)
 			SetCameraEvent(CameraEvent_MilesRescue, CameraAdjustsIDs::None, CameraDirectIDs::Target);
 		p1->Action = 125;
 		p2->Action = 125;
-		data->Action++;
+		data->mode++;
 		break;
 	case 1:
 		p2->Position = p1->Position;
 		p2->Position.x = p1->Position.x - 100;
 		PlaySound(768, 0, 0, 0);
-		data->Action++;
+		data->mode++;
 		break;
 	case 2:
 		LookAt(&p2->Position, &p1->Position, nullptr, &p2->Rotation.y);
@@ -330,24 +333,25 @@ void MilesRescueFromEnemy(ObjectMaster* obj) {
 		co2p2->AnimationThing.Index = 15;
 		p2->Position.x += 4;
 
-		if (GetCollidingEntityA(p2) || ++data->InvulnerableTime == 50)
-			data->Action++;
+		if (GetCollidingEntityA(p2) || ++data->wtimer == 50)
+			data->mode++;
 		break;
 	case 3:
 		p2->Action = 4;
 		co2p2->Speed = { 1, 0, 0 };
-		HurtCharacter(data->CharIndex);
+		HurtCharacter(pnum);
 		PlaySound(33, 0, 0, 0);
 		isRescued = true;
 		p1->Action = 8;
 		co2p1->Speed = { 1.5, 4, 0 };
 		co2p1->Powerups &= 0x100u;
-		data->Action++;
+		data->mode++;
 		break;
 	default:
 		if (CurrentLevel < LevelIDs_Chaos0)
 			RemoveCameraEvent();
-		CheckThingButThenDeleteObject(obj);
+
+		FreeTask(obj);
 		return;
 	}
 }
@@ -370,8 +374,8 @@ void CheckPlayerDamage(unsigned __int8 player) {
 		rngRegularDeathRescue = rand() % 100 + 1;
 
 		if (rngRegularDeathRescue > 69 && EntityData1Ptrs[ID]) {
-			MilesRescueEnemy = LoadObject((LoadObj)2, 1, MilesRescueFromEnemy);
-			MilesRescueEnemy->Data1->CharIndex = ID;
+			MilesRescueEnemy = CreateElementalTask((LoadObj)2, 1, MilesRescueFromEnemy);
+			MilesRescueEnemy->twp->counter.b[0] = ID;
 		}
 		else
 			return KillPlayer(player);

@@ -55,9 +55,9 @@ void FadeoutScreen(ObjectMaster* obj);
 bool isInputModActive();
 
 
-void PlayCharacterLeaveAnimation(EntityData1* p1, CharObj2* co2, int playerID);
+void PlayCharacterLeaveAnimation(taskwk* p1, playerwk* co2, int playerID);
 void Rescue_Init();
-void PlayCharacterGrabAnimation(EntityData1* p1, CharObj2* co2);
+void PlayCharacterGrabAnimation(taskwk* p1, playerwk* co2);
 void FlySoundOnFrames(int playerID);
 
 void MilesAI_OnFrames(unsigned char playerID);
