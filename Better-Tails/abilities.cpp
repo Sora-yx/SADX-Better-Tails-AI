@@ -83,33 +83,42 @@ void speedHighwayBuilding_Follow(unsigned char playerID) {
 
 	auto P1 = playertwp[0];
 	auto P2 = playertwp[playerID];
+	auto p2CO2 = playerpwp[playerID];
 
-	if (P1->mode >= 46 && P1->mode <= 50)
-	{
-		disableCol = true;
-		P2->flag &= ~Status_Ball;
-		P2->ang = P1->ang;
+	if (P2->pos.y <= -18660.0f) {
 
-		if (P2->pos.y > -10790)
-		{
-			playerpwp[playerID]->mj.reqaction = 37;
-			P2->mode = followBuilding;
-			P2->pos.x = P1->pos.x + 10;
-			P2->pos.y = P1->pos.y + 2;
-			P2->pos.z = P1->pos.z + 10;
-		}
-		else if (P2->pos.y <= -10791 && P2->pos.y > -18659) {
-			playerpwp[playerID]->mj.reqaction = 12;
-			P2->mode = followBuilding;
-			P2->pos.x = P1->pos.x;
-			P2->pos.y = P1->pos.y - 7;
-			P2->pos.z = P1->pos.z;
+		if (P2->mode == 18) {
+			disableCol = false;
+			ForcePlayerAction(playerID, 24);
+			return;
 		}
 	}
-	else if (P2->pos.y <= -18660 && P2->mode > 90) {
-		disableCol = false;
-		playerpwp[playerID]->item &= 0x100u;
-		P2->mode = 1;
+	else {
+
+		if (P1->mode >= 46 && P1->mode <= 50)
+		{
+			if (!disableCol) {
+				ForcePlayerAction(playerID, 48);
+				P2->flag &= ~Status_Ball;
+				p2CO2->mj.reqaction = 37;
+				disableCol = true;
+			}
+
+			P2->ang = P1->ang;
+
+			if (P2->pos.y > -10790.0f)
+			{
+				P2->pos.x = P1->pos.x + 10.0f;
+				P2->pos.y = P1->pos.y + 2.0f;
+				P2->pos.z = P1->pos.z + 10.0f;
+			}
+			else if (P2->pos.y <= -10791.0f && P2->pos.y > -18659.0f) {
+				p2CO2->mj.reqaction = 12;
+				P2->pos.x = P1->pos.x;
+				P2->pos.y = P1->pos.y - 7.0f;
+				P2->pos.z = P1->pos.z;
+			}
+		}
 	}
 
 }
@@ -294,7 +303,7 @@ int copyDebugmode = 110;
 
 void PreventTailsAImode(unsigned char playerID) {
 
-	if (playertwp[playerID]->charID != Characters_Tails || !playertwp[playerID] || !playerpwp[playerID])
+	if (playertwp[playerID]->charID != Characters_Tails || !playerpwp[playerID])
 		return;
 
 	auto co2 = playerpwp[playerID];
