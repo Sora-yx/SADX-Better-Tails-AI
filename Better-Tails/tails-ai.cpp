@@ -165,7 +165,6 @@ void MilesAI_OnFrames(unsigned char playerID) { //Only run when TailsAI_Main is 
 	if (!IsIngame() || !playertwp[0] || !playertwp[playerID] || playertwp[playerID]->charID != Characters_Tails || !TailsAI_ptr)
 		return;
 
-
 	Miles_AbilitiesOnFrames(playerID);
 
 	if (isRescueAllowed)
@@ -191,6 +190,7 @@ void TailsAI_Main_R(task* obj) {
 
 	taskwk* data = obj->twp;
 	char pid = AIIndex;
+
 
 	if (FlagDeleteMilesAI && IsIngame())
 	{

@@ -243,32 +243,32 @@ void MilesAI_VictoryPose(task* obj) {
 	if (!isP1AndTailsAIEnabled(pnum) || !isAIActive)
 		return;
 
-
 	switch (data->mode)
 	{
 	case 0:
 		if (p1->smode == 0x13) {
 			disableCol = true;
+			ForcePlayerAction(pnum, 24);
+			p2->mode = 18;
 			p2->pos = UnitMatrix_GetPoint_Player(&p1->pos, &p2->ang, 0.0f, 0.0f, 7.0f);
 			p2->ang = p1->ang;
 
-			if (++data->wtimer == 10)
+			if (++data->wtimer == 10) {
+				disableCol = false;
 				data->mode++;
+			}
 		}
 		break;
 	case 1:
 
-		if (CurrentLevel == LevelIDs_IceCap && CurrentAct == 2)
-			ForcePlayerAction(pnum, 24);
-
-		if (((p2->flag & 3) == 0) || p2->pos.y > p1->pos.y + 2 || p2->pos.y < p1->pos.y - 2)
+		if (((p2->flag & 3) == 0) || p2->pos.y > p1->pos.y + 2.5f || p2->pos.y < p1->pos.y - 2.5f)
 		{
 			p2->pos = UnitMatrix_GetPoint_Player(&p1->pos, &p2->ang, 0.0f, 0.0f, 6.0f);  //fix floating victory pose
 		}
 
 		if (++data->btimer == 5) {
 
-			if ((p2->flag & Status_Ground) == 0 && (p2->flag & Status_OnColli) == 0) { //last failsafe
+			if ((p2->flag & 3) == 0) { //last failsafe
 				p2->pos = UnitMatrix_GetPoint_Player(&p1->pos, &p2->ang, 0.0f, 0.0f, -6.0f); //try other side
 			}
 			data->mode++;
@@ -278,7 +278,6 @@ void MilesAI_VictoryPose(task* obj) {
 	case 2:
 		p2->ang = p1->ang;
 		ForcePlayerAction(pnum, 19); //Force AI to Victory pose
-		disableCol = false;
 		break;
 	}
 }
