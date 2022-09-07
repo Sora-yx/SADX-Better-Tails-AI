@@ -1,7 +1,24 @@
 #include "stdafx.h"
 
 static FunctionHook<void, int> LoadCharacterBoss_t(LoadCharacterBoss);
-static FunctionHook<void, int> EV_Load2_t(EV_Load2);
+static FunctionHook<void, int> Ev_Load2_t(EV_Load2);
+static FunctionHook<void, taskwk*, motionwk2*, playerwk*> ProcessVertexWelds_t((intptr_t)ProcessVertexWelds);
+
+//Despite Tails AI being deleted right before a cutscene start, the game can still crash when trying to process the welds at the same time (race issue)
+//So we force the welds function to return until Tails AI is fully deleted.
+void ProcessVertexWelds_r(taskwk* a1, motionwk2* a2, playerwk* a3)
+{
+	if (EV_MainThread_ptr) //if a cutscene is playing and the game isn't trying to delete the welds, abort the process of welding.
+	{
+		if (a3 && a3->mj.jvmode != 2)
+		{
+			if (a1->charID == Characters_Tails && TailsAI_ptr)
+				return;
+		}
+	}
+
+	ProcessVertexWelds_t.Original(a1, a2, a3);
+}
 
 void __cdecl DisableTailsAI_Controller(Uint8 index)
 {
@@ -65,15 +82,17 @@ void RestorePlayerCollision(unsigned char ID) {
 }
 
 //remove AI when cutscene start
-void __cdecl EV_Load2_r(int a2)
+void __cdecl FreeNpcMilesPlayerTask_r(int a2)
 {
 	DeleteMilesAI();
 
-	return EV_Load2_t.Original(a2);
+	return Ev_Load2_t.Original(a2);
 }
 
 void __cdecl LoadCharacterBoss_r(int boss_id)
 {
+
+	DeleteMilesAI();
 	LoadCharacterBoss_t.Original(boss_id);
 
 	for (uint8_t i = 0; i < MaxPlayers; i++) {
@@ -94,7 +113,7 @@ void moveAItoPlayer(unsigned char playerID) {
 
 			if (CurrentCharacter != Characters_Big && CurrentCharacter != Characters_Gamma)
 				p2->pos = UnitMatrix_GetPoint_Player(&p1->pos, &p1->ang, -7.0f, 0.0f, 5.0f);
-			else	
+			else
 				p2->pos = UnitMatrix_GetPoint_Player(&p1->pos, &p1->ang, -10.0f, 0.0f, 8.0f);
 		}
 	}
@@ -127,8 +146,6 @@ bool isPlayerUsingSnowboard() {
 
 	return false;
 }
-
-
 
 //Fix AI Start Position in hub world
 
@@ -177,28 +194,6 @@ void FixAIHubTransition2() {
 	return;
 }
 
-//Manually Call Tails AI when necessary.
-void CallTailsAI_R() {
-	MusicIDs CurZic = MusicIDs_s_square;
-
-	if (CurrentLevel == LevelIDs_MysticRuins)
-		CurZic = MusicIDs_mstcln;
-
-	if (CurrentLevel == LevelIDs_EggCarrierOutside || CurrentLevel == LevelIDs_EggCarrierInside)
-		CurZic = MusicIDs_egcarer1;
-
-
-	unsigned char ID = getAI_ID();
-
-	if (ID > 0 && playertwp[ID] || ID > 0 && CharObj2Ptrs[ID] || IsAdventureComplete(SelectedCharacter) && SelectedCharacter != 6)
-		return PlayMusic(CurZic);
-
-	Load2PTails_r();
-
-	return PlayMusic(CurZic);
-}
-
-
 void GetPlayerSidePos(NJS_VECTOR* v1, taskwk* a2, float m)
 {
 	Float _sin = 0.0f;
@@ -244,7 +239,6 @@ void FadeoutScreen(ObjectMaster* obj) {
 		ScreenFade_DrawColor();
 	}
 }
-
 
 void SetCharaInfo(task* obj, int i) {
 	obj->twp->charID = (char)CurrentCharacter;
@@ -327,7 +321,6 @@ int GetRaceWinnerPlayer_r() {
 
 	unsigned char ID = getAI_ID();
 
-
 	if (ID > 0 && CurrentCharacter != Characters_Tails && playertwp[ID] != nullptr) {
 		if (playertwp[ID]->charID == Characters_Tails) {
 			return 1;
@@ -342,7 +335,6 @@ void FixTailsAI_Train(int ID, void* a2, int a3, void* a4)
 	moveAItoPlayer(AIIndex);
 	PlaySound(ID, a2, a3, a4);
 }
-
 
 void __cdecl FixTailsAI_BotAreaTransition(Uint8 charIndex, float x, float y, float z)
 {
@@ -365,10 +357,16 @@ void Fix_AIPos_ActTransition()
 void AI_Patches() {
 
 	WriteJump(GetRaceWinnerPlayer, GetRaceWinnerPlayer_r); //fix wrong victory pose for Tails AI.
-	EV_Load2_t.Hook(EV_Load2_r);
+	//delete Tails AI when a cutscene start
+	Ev_Load2_t.Hook(FreeNpcMilesPlayerTask_r);
+	//re create Tails AI after a cutscene ends. 
+	WriteJump(CreateNPCMilesPlayerTask, Load2PTails_r);
+	ProcessVertexWelds_t.Hook(ProcessVertexWelds_r); //fix a crash with welds on cutscene
+
 	LoadCharacterBoss_t.Hook(LoadCharacterBoss_r);
 
 	WriteData<6>((int*)0x460fcf, 0x90); //restore Miles's tail effect when AI
+
 
 	if (IsHubBanned)
 		return;
@@ -378,13 +376,9 @@ void AI_Patches() {
 	WriteCall((void*)0x64015A, FixTailsAI_Train);
 	WriteCall((void*)0x53A29B, FixTailsAI_Train);
 	WriteCall((void*)0x5339AB, FixTailsAI_BotAreaTransition);	//MR
-	WriteCall((void*)0x5339EA, FixTailsAI_BotAreaTransition);	
+	WriteCall((void*)0x5339EA, FixTailsAI_BotAreaTransition);
 	WriteCall((void*)0x51D2AD, FixTailsAI_BotAreaTransition);	//EC
-	WriteCall((void*)0x51D216, FixTailsAI_BotAreaTransition);	
+	WriteCall((void*)0x51D216, FixTailsAI_BotAreaTransition);
 	WriteCall((void*)0x51BDD0, FixTailsAI_ECAreaTransition);
-
-	WriteCall((void*)0x42f72d, CallTailsAI_R); //Manually Call Tails AI After few early Cutscene
-	WriteCall((void*)0x42f78c, CallTailsAI_R);
-	WriteCall((void*)0x42f747, CallTailsAI_R);
 
 }

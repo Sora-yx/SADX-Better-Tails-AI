@@ -31,7 +31,8 @@ FunctionPointer(long, Chao_Pleasure, (task* Chao), 0x75db80);
 FunctionPointer(void, Chao_SetBehavior, (task* Chao, long* a2), 0x71EF10);
 FunctionPointer(void, EV_Load2, (int num), 0x42FA30);
 FunctionPointer(int, EV_FreeNpcMilesPlayerTask, (), 0x42CDF0);
-
+VoidFunc(FreeNpcMilesPlayerTask, 0x47DB70);
+VoidFunc(CreateNPCMilesPlayerTask, 0x47DBB0);
 
 enum class CameraAdjustsIDs {
 	None,

@@ -15,7 +15,8 @@ void DeleteMilesAI()
 
 	if (id > 0) {
 		FlagDeleteMilesAI = true;
-		FreeTask((task*)GetCharacterObject(id));
+		auto AI = playertp[id];
+		FreeTask(AI);
 	}
 }
 
@@ -29,7 +30,7 @@ int CheckTailsAI_R(void) {
 		return 0x0;
 	}
 
-	if (NPCMilesStandByFlag || EV_MainThread_ptr || CurrentLevel == LevelIDs_SkyChase1 || CurrentLevel == LevelIDs_SkyChase2 || !isSA2Mod && CurrentLevel == LevelIDs_ChaoRace) {
+	if (NPCMilesStandByFlag || CurrentLevel == LevelIDs_SkyChase1 || CurrentLevel == LevelIDs_SkyChase2 || !isSA2Mod && CurrentLevel == LevelIDs_ChaoRace) {
 		return 0x0; //don't load AI
 	}
 
@@ -104,13 +105,17 @@ task* LoadTails()
 	obj->twp->pNum = pnum;
 	playertwp[pnum] = obj->twp;
 	playermwp[pnum] = (motionwk2*)obj->mwp;
-
 	return obj;
 }
 
 //Load Tails AI
 void Load2PTails_r() {
 
+	if (TailsAI_ptr != nullptr)
+	{
+		return;
+	}
+	
 	FlagAI = CheckTailsAI_R();
 
 	if (FlagAI != 1)
@@ -128,7 +133,7 @@ void Load2PTails_r() {
 			AIIndex = (char)CharacterBossActive ? 2 : 1;
 			AI->twp->counter.b[1] = Characters_Tails;
 			AI->twp->counter.b[0] = AIIndex;
-			AI->dest = (TaskFuncPtr)TailsAI_Delete;
+			AI->dest = TailsAI_Delete_r;
 			auto Chara = LoadTails(); //set the character
 			if (Chara) {
 				isAIActive = true;
@@ -145,6 +150,8 @@ void Load2PTails_r() {
 }
 
 void LoadCharacterAndAI() {
+
+	PrintDebug("Load Character..\n");
 
 	if (isFlyTravel)
 		CheckAndLoadMapPVM();
@@ -172,7 +179,8 @@ void MilesAI_OnFrames(unsigned char playerID) { //Only run when TailsAI_Main is 
 }
 
 //Reset value when Tails AI is deleted
-void TailsAI_Delete_r() {
+void TailsAI_Delete_r(task* obj) {
+
 	TailsAI_ptr = nullptr;
 	AIIndex = 1;
 	rngDeathZoneRescue = 0;
@@ -185,26 +193,25 @@ void TailsAI_Delete_r() {
 	return FUN_0042ce20();
 }
 
-
 void TailsAI_Main_R(task* obj) {
 
 	taskwk* data = obj->twp;
 	char pid = AIIndex;
 
-
-	if (FlagDeleteMilesAI && IsIngame())
+	if (FlagDeleteMilesAI)
 	{
 		FreeTask(obj);
 		return;
 	}
+
+	if (!playertwp[pid])
+		return;
 
 	if (isFlyTravel)
 		CheckAndLoadTailsTravelObjects(obj);
 
 	MilesAI_OnFrames(pid);
 
-
-	DisplayDebugStringFormatted(NJM_LOCATION(2, 1), "Tails AI Pointer: %d", TailsAI_ptr != nullptr);
 	//DisplayDebugStringFormatted(NJM_LOCATION(2, 1), "AI Distance: % f", getMilesDistance(playertwp[0], playertwp[AIIndex]));
 
 	if (data->mode == 0) {
@@ -213,6 +220,7 @@ void TailsAI_Main_R(task* obj) {
 
 	TailsAI_Main_t.Original(obj);
 }
+
 		
 void AI_Init(const HelperFunctions& helperFunctions) {
 
@@ -222,8 +230,8 @@ void AI_Init(const HelperFunctions& helperFunctions) {
 
 		//Allow Tails AI to spawn in acton stages, hub world, bosses and chao garden + fixes
 		WriteJump(CheckTailsAI, CheckTailsAI_R);
+		WriteJump(Load2PTails, Load2PTails_r);
 
-		WriteData<5>((void*)0x415948, 0x90); //remove the original load2PTails in LoadCharacter as we use a custom one
 		AI_Patches();
 
 		AI_Improvement();

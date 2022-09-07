@@ -23,6 +23,8 @@ extern "C" {
 	{
 		//LoadAI_OnFrames();
 
+		DisplayDebugStringFormatted(NJM_LOCATION(2, 1), "Tails AI Pointer: %d", TailsAI_ptr != nullptr);
+		DisplayDebugStringFormatted(NJM_LOCATION(2, 2), "Tails Obj Pointer: %d", playertwp[1] != nullptr);
 
 	}
 
