@@ -151,8 +151,6 @@ void Load2PTails_r() {
 
 void LoadCharacterAndAI() {
 
-	PrintDebug("Load Character..\n");
-
 	if (isFlyTravel)
 		CheckAndLoadMapPVM();
 
@@ -160,7 +158,7 @@ void LoadCharacterAndAI() {
 		Load2PTails_r();
 
 	if (isCharSelActive()) {
-		return LoadCharacter_r();
+		return LoadCharacter();
 	}
 
 	return LoadCharacter_t.Original();
@@ -226,14 +224,17 @@ void AI_Init(const HelperFunctions& helperFunctions) {
 
 	if (!isRandoActive()) {
 
-		LoadCharacter_t.Hook(LoadCharacterAndAI);
+
+		if (isCharSelActive())
+			WriteCall((void*)0x415A25, LoadCharacterAndAI);
+		else
+			LoadCharacter_t.Hook(LoadCharacterAndAI);
 
 		//Allow Tails AI to spawn in acton stages, hub world, bosses and chao garden + fixes
 		WriteJump(CheckTailsAI, CheckTailsAI_R);
 		WriteJump(Load2PTails, Load2PTails_r);
 
 		AI_Patches();
-
 		AI_Improvement();
 	}
 

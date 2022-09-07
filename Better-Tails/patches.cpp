@@ -68,7 +68,6 @@ void RestorePlayerCollision(unsigned char ID) {
 
 	auto data = playertwp[ID];
 
-
 	if (data->cwp)
 	{
 		if (data->cwp->nbInfo) {
@@ -91,7 +90,6 @@ void __cdecl FreeNpcMilesPlayerTask_r(int a2)
 
 void __cdecl LoadCharacterBoss_r(int boss_id)
 {
-
 	DeleteMilesAI();
 	LoadCharacterBoss_t.Original(boss_id);
 
