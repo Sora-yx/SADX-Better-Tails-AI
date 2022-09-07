@@ -2,7 +2,9 @@
 
 static FunctionHook<void, int> LoadCharacterBoss_t(LoadCharacterBoss);
 static FunctionHook<void, int> Ev_Load2_t(EV_Load2);
+static FunctionHook<void, Uint8, float, float, float> PositionPlayer_t(PositionPlayer);
 static FunctionHook<void, taskwk*, motionwk2*, playerwk*> ProcessVertexWelds_t((intptr_t)ProcessVertexWelds);
+
 
 //Despite Tails AI being deleted right before a cutscene start, the game can still crash when trying to process the welds at the same time (race issue)
 //So we force the welds function to return until Tails AI is fully deleted.
@@ -352,6 +354,15 @@ void Fix_AIPos_ActTransition()
 	ResetMilesAI(AIIndex, 24);
 }
 
+void __cdecl PositionPlayer_r(Uint8 charIndex, float x, float y, float z)
+{
+	PositionPlayer_t.Original(charIndex, x, y, z);
+
+	if (!charIndex && CurrentLevel >= LevelIDs_E101R)
+		moveAItoPlayer(AIIndex);
+
+}
+
 void AI_Patches() {
 
 	WriteJump(GetRaceWinnerPlayer, GetRaceWinnerPlayer_r); //fix wrong victory pose for Tails AI.
@@ -361,10 +372,10 @@ void AI_Patches() {
 	WriteJump(CreateNPCMilesPlayerTask, Load2PTails_r);
 	ProcessVertexWelds_t.Hook(ProcessVertexWelds_r); //fix a crash with welds on cutscene
 
+	PositionPlayer_t.Hook(PositionPlayer_r);
 	LoadCharacterBoss_t.Hook(LoadCharacterBoss_r);
 
 	WriteData<6>((int*)0x460fcf, 0x90); //restore Miles's tail effect when AI
-
 
 	if (IsHubBanned)
 		return;
@@ -373,10 +384,7 @@ void AI_Patches() {
 
 	WriteCall((void*)0x64015A, FixTailsAI_Train);
 	WriteCall((void*)0x53A29B, FixTailsAI_Train);
-	WriteCall((void*)0x5339AB, FixTailsAI_BotAreaTransition);	//MR
-	WriteCall((void*)0x5339EA, FixTailsAI_BotAreaTransition);
-	WriteCall((void*)0x51D2AD, FixTailsAI_BotAreaTransition);	//EC
-	WriteCall((void*)0x51D216, FixTailsAI_BotAreaTransition);
+
 	WriteCall((void*)0x51BDD0, FixTailsAI_ECAreaTransition);
 
 }

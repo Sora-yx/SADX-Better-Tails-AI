@@ -224,7 +224,6 @@ void AI_Init(const HelperFunctions& helperFunctions) {
 
 	if (!isRandoActive()) {
 
-
 		if (isCharSelActive())
 			WriteCall((void*)0x415A25, LoadCharacterAndAI);
 		else
