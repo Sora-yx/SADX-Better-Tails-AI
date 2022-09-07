@@ -9,7 +9,7 @@ static FunctionHook<void, task*> execTPCoaster_t((intptr_t)0x61D6E0);
 
 bool disableCol = false;
 
-void SpinDash_Check(unsigned char ID) {
+void SpinDash_Check(unsigned char ID, taskwk* data) {
 
 	if (!isNewTricksActive())
 		return;
@@ -23,6 +23,7 @@ void SpinDash_Check(unsigned char ID) {
 			return;
 		}
 
+		data->ang = pData->ang;
 		PressedButtons[ID] |= Buttons_B;
 		HeldButtons[ID] |= Buttons_B;
 	}
@@ -62,6 +63,7 @@ void snowboard_Follow(unsigned char playerID)
 	auto P2 = playertwp[playerID];
 
 	if (isPlayerUsingSnowboard()) {
+
 		if (CurrentLevel == LevelIDs_IceCap && CurrentAct == 2 && P1->pos.y > -3800) {
 			if (P2->flag & Status_Ground)
 				playerpwp[playerID]->spd.x = playerpwp[0]->spd.x + 0.6f;
@@ -513,7 +515,7 @@ void Miles_AbilitiesOnFrames(unsigned char pnum)
 	InvincibilityCheck(pnum);
 	PreventTailsAImode(pnum);
 	speedHighwayBuilding_Follow(pnum);
-	SpinDash_Check(pnum);
+	SpinDash_Check(pnum, playertwp[pnum]);
 	snowboard_Follow(pnum);
 
 	MoveAI_Vehicle();

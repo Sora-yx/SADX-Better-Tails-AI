@@ -336,11 +336,6 @@ void FixTailsAI_Train(int ID, void* a2, int a3, void* a4)
 	PlaySound(ID, a2, a3, a4);
 }
 
-void __cdecl FixTailsAI_BotAreaTransition(Uint8 charIndex, float x, float y, float z)
-{
-	PositionPlayer(charIndex, x, y, z);
-	moveAItoPlayer(AIIndex);
-}
 
 void __cdecl FixTailsAI_ECAreaTransition(unsigned __int8 playerNum, char action)
 {
@@ -384,7 +379,5 @@ void AI_Patches() {
 
 	WriteCall((void*)0x64015A, FixTailsAI_Train);
 	WriteCall((void*)0x53A29B, FixTailsAI_Train);
-
 	WriteCall((void*)0x51BDD0, FixTailsAI_ECAreaTransition);
-
 }
