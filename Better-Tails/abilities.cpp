@@ -64,16 +64,8 @@ void snowboard_Follow(unsigned char playerID)
 
 	if (isPlayerUsingSnowboard()) {
 
-		if (CurrentLevel == LevelIDs_IceCap && CurrentAct == 2 && P1->pos.y > -3800) {
-			if (P2->flag & Status_Ground)
-				playerpwp[playerID]->spd.x = playerpwp[0]->spd.x + 0.6f;
-		}
-		else {
-			P2->ang = P1->ang;
-			if (P1->flag & Status_Ground)
-				playerpwp[playerID]->spd.x = playerpwp[0]->spd.x + 0.8f;
-		}
-
+		P2->ang = P1->ang;
+		playerpwp[playerID]->spd.x = playerpwp[0]->spd.x + 0.3f;
 		SnowboardRespawn(playerID);
 	}
 }
