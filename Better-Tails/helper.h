@@ -2,6 +2,7 @@
 
 #define MaxPlayers 8
 
+extern HelperFunctions HelperFunctionsGlobal;
 extern HMODULE multi;
 extern bool IsChaoGardenBanned;
 extern bool IsHubBanned;

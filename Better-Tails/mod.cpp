@@ -2,11 +2,15 @@
 
 time_t t;
 HMODULE multi = NULL;
+HelperFunctions HelperFunctionsGlobal;
 
 extern "C" {
 
 	__declspec(dllexport) void __cdecl Init(const char* path, const HelperFunctions& helperFunctions)
 	{
+
+		HelperFunctionsGlobal = helperFunctions; // Save the helper pointer for external use
+
 		config(path);
 		srand((unsigned)time(&t));
 

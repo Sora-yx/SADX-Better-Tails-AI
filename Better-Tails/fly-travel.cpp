@@ -1,6 +1,8 @@
 #include "stdafx.h"
+#include "ScaleInfo.h"
 
 static FunctionHook<void, taskwk*> MovePlayerToStartPoint_t((intptr_t)MovePlayerToStartPoint);
+
 task* TailsGrab = nullptr;
 uint8_t isMoving = 0;
 task* TailsLanding = nullptr;
@@ -128,17 +130,13 @@ int setCursorPos(int curLevel, int curAct) {
 }
 
 void DisplayCursorAnimation() {
+
 	if (!isUIScale())
 		return;
 
 	SetMaterialAndSpriteColor_Float(1, 1, 1, 1);
 
 	float scale = 2.0f;
-	float x = (float)HorizontalResolution / 2.0f;
-	float y = (float)VerticalResolution / 2.0f;
-	float incr = 0x10 * scale;
-	float sclx = 10;
-	float scly = 1;
 
 	MilesCursor_SPRITE.sx = 2 * scale;
 	MilesCursor_SPRITE.sy = 2 * scale;
@@ -254,17 +252,16 @@ void PauseMenuMap_OriginalFunction() {
 }
 
 void __cdecl PauseMenu_Map_Display_r() {
-	if (GameState == 16) //pause menu
-	{
-		PauseMenuMap_OriginalFunction();
-		return;
-	}
 
 	if (Cursor < 0 || Cursor > 8)
 		return;
 
-	DisplayMilesMap_r(),
-		DisplayCursorAnimation();
+	HelperFunctionsGlobal.PushScaleUI(uiscale::Align::Align_Center, false, 1.0f, 1.0f);
+
+	DisplayMilesMap_r();
+	DisplayCursorAnimation();
+
+	HelperFunctionsGlobal.PopScaleUI();
 
 	return;
 }
@@ -526,6 +523,7 @@ void TailsAI_Grab(task* obj) {
 		if (GetCollidingEntityA((EntityData1*)p2)) {
 			p1->flag &= ~(Status_Attack | Status_Ball | Status_LightDash);
 			p1->mode = 125;
+			DisablePause();
 			data->mode = grabbed;
 		}
 		break;
@@ -536,7 +534,6 @@ void TailsAI_Grab(task* obj) {
 
 		UpdateP1Position(co2p1, co2p2, p1, p2);
 		CheckAndForceLeavingGrab(data);
-		DisablePause();
 		PlayCharacterGrabAnimation(p1, co2p1);
 
 		Cursor = setCursorPos(CurrentLevel, CurrentAct);
@@ -561,7 +558,7 @@ void TailsAI_Grab(task* obj) {
 		SetDebugFontSize(20);
 		DisplayDebugStringFormatted(NJM_LOCATION(2, 1), "Destination: %s", getDestinationText());
 		UpdatePlayerCursorPos();
-		DrawModelCallback_Queue((void(__cdecl*)(void*))PauseMenu_Map_DisplayCallback, 0, 22047.998f, QueuedModelFlagsB_EnableZWrite); //fix transparency issue
+		DrawModelCallback_Queue((void(__cdecl*)(void*))PauseMenu_Map_Display_r, 0, 22047.998f, QueuedModelFlagsB_EnableZWrite); //fix transparency issue
 
 		if (ControllerPointers[0]->PressedButtons & Buttons_A || ControllerPointers[0]->PressedButtons & Buttons_Start) {
 			if (!CheckFastTravelStoryProgression()) {
@@ -717,13 +714,6 @@ void CheckAndLoadTailsTravelObjects(task* obj) {
 }
 
 void FlyTravel_Init() {
-
-	if (isFlyTravel) {
-		WriteCall((void*)0x458b86, PauseMenu_Map_Display_r);
-		WriteCall((void*)0x458bd0, PauseMenu_Map_Display_r);
-		WriteCall((void*)0x458bb8, PauseMenu_Map_Display_r);
-		WriteCall((void*)0x458b6e, PauseMenu_Map_Display_r);
-	}
 
 	MovePlayerToStartPoint_t.Hook(MovePlayerToStartPoint_r);
 }
