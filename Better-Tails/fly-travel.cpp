@@ -37,7 +37,7 @@ int Cursor = -1;
 int MilesCurTex = 0;
 
 const char* DestinationText[9] = {
-	"Station Square (Main)", "Station Square (Hostel Pool", "Station Square Casino Area",
+	"Station Square (Main)", "Station Square (Hostel Pool)", "Station Square Casino Area",
 	"Station Square City Hall", "Egg Carrier (Outside)", "Mystic Ruins (Station)", "Mystic Ruins (Angel Island)",
 	"Mystic Ruins (Jungle Temple)", "Mystic Ruins (Big's House)"
 };
@@ -136,7 +136,7 @@ void DisplayCursorAnimation() {
 
 	SetMaterialAndSpriteColor_Float(1, 1, 1, 1);
 
-	float scale = 2.0f;
+	const float scale = 2.0f;
 
 	MilesCursor_SPRITE.sx = 2 * scale;
 	MilesCursor_SPRITE.sy = 2 * scale;
@@ -223,32 +223,6 @@ void __cdecl DisplayMilesMap_r()
 		texId += 3;
 		v12 = v3;
 	} while (v3 < 2);
-}
-
-void PauseMenuMap_OriginalFunction() {
-
-	switch ((unsigned __int16)((((unsigned __int16)CurrentAct | (unsigned __int16)(CurrentLevel << 8)) & 0xFF00) >> 8))
-	{
-	case 26u:
-	case 27u:
-	case 28u:
-		sub_62ECE0((unsigned __int8)CurrentAct, &Current_CharObj1->Position);
-		break;
-	case 29u:
-	case 30u:
-	case 31u:
-		sub_51C130((unsigned __int8)CurrentAct, &Current_CharObj1->Position);
-		break;
-	case 32u:
-		sub_525980((unsigned __int8)CurrentAct, &Current_CharObj1->Position);
-		break;
-	case LevelIDs_MysticRuins:
-		sub_52F9C0((unsigned __int8)CurrentAct, &Current_CharObj1->Position);
-		break;
-	case LevelIDs_Past:
-		sub_541BF0((unsigned __int8)CurrentAct, &Current_CharObj1->Position);
-		break;
-	}
 }
 
 void __cdecl PauseMenu_Map_Display_r() {
@@ -583,8 +557,8 @@ void TailsAI_Grab(task* obj) {
 		p2->mode = 15; //fly mode
 		UpdateP1Position(co2p1, co2p2, p1, p2);
 
-		co2p2->spd.y += 0.4f;
-		co2p2->spd.x += 0.8f;
+		co2p2->spd.y += 0.3f;
+		co2p2->spd.x += 0.6f;
 
 		if (++data->wtimer == 180) {
 			LoadDestination(pnum);
@@ -661,8 +635,8 @@ void TailsAI_Landing(task* obj) {
 		break;
 	case 1:
 		UpdateP1Position(co2p1, co2p2, p1, p2);
-		co2p2->spd.y -= 0.8f;
-		co2p2->spd.z += 0.8f;
+		co2p2->spd.y -= 0.7f;
+		co2p2->spd.z += 0.6f;
 
 		if (++data->wtimer== 140 || (p1->flag & 3)) {
 			data->mode++;
@@ -681,11 +655,9 @@ void TailsAI_Landing(task* obj) {
 	}
 }
 
-
 void CheckAndLoadTailsTravelObjects(task* obj) {
 
 	taskwk* data = obj->twp;
-
 	char pid = AIIndex;
 
 	if (!playertwp[pid])
