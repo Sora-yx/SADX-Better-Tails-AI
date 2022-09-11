@@ -134,7 +134,6 @@ void DisplayCursorAnimation() {
 	if (!isUIScale())
 		return;
 
-	SetMaterialAndSpriteColor_Float(1, 1, 1, 1);
 
 	const float scale = 2.0f;
 
@@ -186,8 +185,7 @@ void __cdecl DisplayMilesMap_r()
 	njSetTexture(&TravelMap_TEXLIST);
 
 	SetVtxColorB(0xFFFFFFFF);
-	njColorBlendingMode(0, NJD_COLOR_BLENDING_SRCALPHA);
-	njColorBlendingMode(NJD_DESTINATION_COLOR, NJD_COLOR_BLENDING_INVSRCALPHA);
+
 
 
 	if (Cursor >= Sstation && Cursor <= SChaos0)
@@ -231,10 +229,14 @@ void __cdecl PauseMenu_Map_Display_r() {
 		return;
 
 	HelperFunctionsGlobal.PushScaleUI(uiscale::Align::Align_Center, false, 1.0f, 1.0f);
-
+	SetMaterialAndSpriteColor_Float(1.0f, 1.0f, 1.0f, 1.0f);
+	njColorBlendingMode(0, NJD_COLOR_BLENDING_SRCALPHA);
+	njColorBlendingMode(NJD_DESTINATION_COLOR, NJD_COLOR_BLENDING_INVSRCALPHA);
 	DisplayMilesMap_r();
 	DisplayCursorAnimation();
 
+	njColorBlendingMode(0, NJD_COLOR_BLENDING_SRCALPHA);
+	njColorBlendingMode(NJD_DESTINATION_COLOR, NJD_COLOR_BLENDING_INVSRCALPHA);
 	HelperFunctionsGlobal.PopScaleUI();
 
 	return;
@@ -473,8 +475,16 @@ void TailsAI_Grab(task* obj) {
 	case initFly:
 		obj->dest = TailsAI_GrabDelete;
 		if (!isTailsAI_GrabAllowed()) {
-			if (++data->wtimer == 20)
+
+			SetDebugFontSize(23);
+			SetDebugFontColor(0xFF0000);
+			DisplayDebugStringFormatted(NJM_LOCATION(12, 12), "You cannot fast travel at the moment.");
+		
+			if (++data->wtimer == 60) {
+				SetDebugFontColor(0xFFFFFFFF);
 				FreeTask(obj);
+				return;
+			}
 		}
 		else {
 			data->pos = p2->pos;
@@ -494,9 +504,10 @@ void TailsAI_Grab(task* obj) {
 		}
 		break;
 	case checkGrab:
+
 		if (GetCollidingEntityA((EntityData1*)p2)) {
 			p1->flag &= ~(Status_Attack | Status_Ball | Status_LightDash);
-			p1->mode = 125;
+			p1->mode = 135;
 			DisablePause();
 			data->mode = grabbed;
 		}
@@ -627,7 +638,7 @@ void TailsAI_Landing(task* obj) {
 		obj->dest = TailsAI_LandingDelete;
 		data->pos = DestinationArray[Cursor].destination;
 		p1->ang = p2->ang;
-		p1->mode = 125;
+		p1->mode = 135;
 		p2->mode = 15;
 		co2p2->mj.reqaction = 37;
 		PlayCharacterGrabAnimation(p1, co2p1);

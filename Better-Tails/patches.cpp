@@ -353,7 +353,7 @@ void __cdecl PositionPlayer_r(Uint8 charIndex, float x, float y, float z)
 {
 	PositionPlayer_t.Original(charIndex, x, y, z);
 
-	if (!charIndex && CurrentLevel >= LevelIDs_E101R)
+	if (!charIndex && CurrentLevel >= LevelIDs_StationSquare)
 		moveAItoPlayer(AIIndex);
 
 }
