@@ -47,7 +47,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="helper.h">
+    <ClInclude Include="mod.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="stdafx.h">
@@ -60,6 +60,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SADX-Util.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="tailsAI.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

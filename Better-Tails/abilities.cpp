@@ -516,7 +516,7 @@ void Miles_AbilitiesOnFrames(unsigned char pnum)
 		MilesFasterRespawn(playertwp[0], playertwp[pnum]);
 }
 
-void AI_Improvement() {
+void AI_Improvement(const char* path) {
 
 	//Miles General Improvement
 	WriteCall((void*)0x597b14, LoadAISnowBoard_R);  //Load AI Snowboard when playing Sand Hill
@@ -524,7 +524,7 @@ void AI_Improvement() {
 	WriteCall((void*)0x4e9664, LoadAISnowBoard_R);
 	WriteCall((void*)0x462490, FixCollision);
 
-	FlyTravel_Init();
+	FlyTravel_Init(path);
 
 	if (isRescueAllowed)
 		Rescue_Init();

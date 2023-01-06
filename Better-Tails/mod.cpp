@@ -4,21 +4,6 @@ time_t t;
 HMODULE multi = NULL;
 HelperFunctions HelperFunctionsGlobal;
 
-FunctionPointer(int, SerifStatus, (void), 0x425740);
-
-
-
-void PrintVoiceDone()
-{
-	if (GameState != 15)
-		return;
-
-	//PrintDebug("current voice state: %d \n", SerifStatus());
-	SetDebugFontSize(20);
-	DisplayDebugStringFormatted(NJM_LOCATION(2, 1), "current voice state: %d\n", SerifStatus());
-}
-
-
 extern "C" {
 
 	__declspec(dllexport) void __cdecl Init(const char* path, const HelperFunctions& helperFunctions)
@@ -32,7 +17,7 @@ extern "C" {
 		WriteJump(TailsAI_Delete, TailsAI_Delete_r); //Reset value and stuff properly when Tails AI is deleted by the game.
 
 		//Tails AI Stuff (Load, Fixes...)
-		AI_Init(helperFunctions);
+		AI_Init(helperFunctions, path);
 
 		multi = GetModuleHandle("sadx-multiplayer");
 	}
@@ -40,7 +25,7 @@ extern "C" {
 	__declspec(dllexport) void __cdecl OnFrame()
 	{
 		//LoadAI_OnFrames();
-		PrintVoiceDone();
+
 
 		//DisplayDebugStringFormatted(NJM_LOCATION(2, 1), "Tails AI Pointer: %d", TailsAI_ptr != nullptr);
 

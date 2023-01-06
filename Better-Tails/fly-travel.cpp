@@ -7,6 +7,9 @@ task* TailsGrab = nullptr;
 uint8_t isMoving = 0;
 task* TailsLanding = nullptr;
 const int8_t cursorMaxPos = 8;
+std::string destTitle = "";
+
+std::vector<std::string> DestinationText;
 
 NJS_TEXANIM	MilesCursor_TEXANIM[]{
 	{ 0x10, 0x10, 0, 0, 0, 0, 0x100, 0x100, 0, 0x20 },
@@ -36,14 +39,9 @@ NJS_TEXLIST TravelMap_TEXLIST = { arrayptrandlength(TravelMap_TEXNAMES) };
 int Cursor = -1;
 int MilesCurTex = 0;
 
-const char* DestinationText[9] = {
-	"Station Square (Main)", "Station Square (Hostel Pool)", "Station Square Casino Area",
-	"Station Square City Hall", "Egg Carrier (Outside)", "Mystic Ruins (Station)", "Mystic Ruins (Angel Island)",
-	"Mystic Ruins (Jungle Temple)", "Mystic Ruins (Big's House)"
-};
-
 const char* getDestinationText() {
-	return DestinationText[Cursor];
+
+	return DestinationText[Cursor].c_str();
 }
 
 //Tails Grab Fly abilities
@@ -134,7 +132,6 @@ void DisplayCursorAnimation() {
 	if (!isUIScale())
 		return;
 
-
 	const float scale = 2.0f;
 
 	MilesCursor_SPRITE.sx = 2 * scale;
@@ -173,7 +170,7 @@ void UpdatePlayerCursorPos() {
 
 void __cdecl DisplayMilesMap_r()
 {
-	signed int v3 = 0;
+	signed int count = 0;
 	int texId = 0;
 	signed int diff = 0;
 	float posY = 0.0f;
@@ -183,10 +180,7 @@ void __cdecl DisplayMilesMap_r()
 	signed int v14 = 0;
 
 	njSetTexture(&TravelMap_TEXLIST);
-
 	SetVtxColorB(0xFFFFFFFF);
-
-
 
 	if (Cursor >= Sstation && Cursor <= SChaos0)
 		texId = 0;
@@ -217,10 +211,10 @@ void __cdecl DisplayMilesMap_r()
 
 			v14 = diff;
 		} while (diff < 3);
-		++v3;
+		++count;
 		texId += 3;
-		v12 = v3;
-	} while (v3 < 2);
+		v12 = count;
+	} while (count < 2);
 }
 
 void __cdecl PauseMenu_Map_Display_r() {
@@ -238,8 +232,6 @@ void __cdecl PauseMenu_Map_Display_r() {
 	njColorBlendingMode(0, NJD_COLOR_BLENDING_SRCALPHA);
 	njColorBlendingMode(NJD_DESTINATION_COLOR, NJD_COLOR_BLENDING_INVSRCALPHA);
 	HelperFunctionsGlobal.PopScaleUI();
-
-	return;
 }
 
 bool isTailsAI_GrabAllowed() {
@@ -541,7 +533,8 @@ void TailsAI_Grab(task* obj) {
 
 		CheckAndForceLeavingGrab(data);
 		SetDebugFontSize(20);
-		DisplayDebugStringFormatted(NJM_LOCATION(2, 1), "Destination: %s", getDestinationText());
+
+		DisplayDebugStringFormatted(NJM_LOCATION(2, 1), destTitle.c_str(), getDestinationText());
 		UpdatePlayerCursorPos();
 		DrawModelCallback_Queue((void(__cdecl*)(void*))PauseMenu_Map_Display_r, 0, 22047.998f, QueuedModelFlagsB_EnableZWrite); //fix transparency issue
 
@@ -591,7 +584,7 @@ void TailsAI_Grab(task* obj) {
 	case errorMove:
 		SetDebugFontSize(23);
 		SetDebugFontColor(0xFF0000);
-		DisplayDebugStringFormatted(NJM_LOCATION(12, 12), "You cannot fly here at the moment.");
+		DisplayDebugStringFormatted(NJM_LOCATION(12, 12), "You cannot fly there at the moment.");
 		if (++data->btimer == 60) {
 			data->id = 0;
 			data->wtimer = 0;
@@ -696,7 +689,33 @@ void CheckAndLoadTailsTravelObjects(task* obj) {
 	}
 }
 
-void FlyTravel_Init() {
+void SetDestinationStringToArray(const char* path)
+{
+	const IniFile* ini = new IniFile(std::string(path) + "\\system\\flyTravelStrings.ini");
+
+	if (!ini)
+	{
+		PrintDebug("Failed to get Fly travel strings... destination texts won't show up.\n");
+		return;
+	}
+
+	std::string title = ini->getString("0", "title", "");
+	destTitle = title + ": %s";
+
+	uint8_t i = 1;
+	while (ini->hasGroup(std::to_string(i)))
+	{
+		std::string s = std::to_string(i);
+		std::string text = ini->getString(s, "dest", "");
+		DestinationText.push_back(text);
+		i++;
+	}
+
+	delete ini;
+}
+
+void FlyTravel_Init(const char* path) {
 
 	MovePlayerToStartPoint_t.Hook(MovePlayerToStartPoint_r);
+	SetDestinationStringToArray(path);
 }

@@ -221,7 +221,7 @@ void TailsAI_Main_R(task* obj) {
 }
 
 		
-void AI_Init(const HelperFunctions& helperFunctions) {
+void AI_Init(const HelperFunctions& helperFunctions, const char* path) {
 
 	if (!isRandoActive()) {
 
@@ -235,7 +235,7 @@ void AI_Init(const HelperFunctions& helperFunctions) {
 		WriteJump(Load2PTails, Load2PTails_r);
 
 		AI_Patches();
-		AI_Improvement();
+		AI_Improvement(path);
 	}
 
 	TailsAI_Main_t.Hook(TailsAI_Main_R);

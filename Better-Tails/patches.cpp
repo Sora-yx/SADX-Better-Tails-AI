@@ -338,7 +338,6 @@ void __cdecl PositionPlayer_r(Uint8 charIndex, float x, float y, float z)
 
 	if (!charIndex && CurrentLevel >= LevelIDs_StationSquare)
 		moveAItoPlayer(AIIndex);
-
 }
 
 void AI_Patches() {

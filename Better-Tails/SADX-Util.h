@@ -29,7 +29,6 @@ FunctionPointer(int, isAngelIslandOpen, (), 0x534570);
 
 FunctionPointer(long, Chao_Pleasure, (task* Chao), 0x75db80);
 FunctionPointer(void, Chao_SetBehavior, (task* Chao, long* a2), 0x71EF10);
-FunctionPointer(void, EV_Load2, (int num), 0x42FA30);
 FunctionPointer(int, EV_FreeNpcMilesPlayerTask, (), 0x42CDF0);
 VoidFunc(FreeNpcMilesPlayerTask, 0x47DB70);
 VoidFunc(CreateNPCMilesPlayerTask, 0x47DBB0);
@@ -113,5 +112,3 @@ FunctionPointer(int, NpcGetAnalogForBrake, (NJS_VECTOR* a1, float* a2, Angle* a3
 DataPointer(int, NPCMilesStandByFlag, 0x03b2a304);
 DataPointer(NJS_ACTION, action_m_m9002_miles, 0x3C84DC4);
 DataPointer(NJS_ACTION, action_m_m9001_miles, 0x3C84DCC);
-
-ObjectFunc(EV_ClrFace, 0x4310F0);

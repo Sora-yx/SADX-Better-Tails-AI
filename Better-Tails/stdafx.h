@@ -7,6 +7,7 @@
 
 #include <vector>
 #include <algorithm>
+#include <sstream>
 #include <stdlib.h>
 
 #include "SADXModLoader.h"
@@ -14,8 +15,9 @@
 #include "FunctionHook.h"
 #include "IniFile.hpp"
 
-#include "helper.h"
 #include "SADX-Util.h"
+#include "mod.h"
+#include "tailsAI.h"
 #include "util.h"
 
 #include <fstream>
