@@ -721,5 +721,4 @@ void FlyTravel_Init(const char* path) {
 
 	MovePlayerToStartPoint_t.Hook(MovePlayerToStartPoint_r);
 	SetDestinationStringToArray(path);
-
 }

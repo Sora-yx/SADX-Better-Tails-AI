@@ -68,7 +68,7 @@ void LoadAISnowBoard_R(); //Load Snowboard for Tails AI
 
 bool isPlayerUsingSnowboard();
 void speedHighwayBuilding_Follow(unsigned char playerID);
-
+void DisableTailsAICol(char pnum);
 
 void PlayCharacterLeaveAnimation(taskwk* p1, playerwk* co2, int playerID);
 void Rescue_Init();

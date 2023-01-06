@@ -3,7 +3,7 @@
 static FunctionHook<void, int> LoadCharacterBoss_t(LoadCharacterBoss);
 static FunctionHook<void, int> Ev_Load2_t(EV_Load2);
 static FunctionHook<void, Uint8, float, float, float> PositionPlayer_t(PositionPlayer);
-
+static int EnableColTimer = 0;
 
 void __cdecl DisableTailsAI_Controller(Uint8 index)
 {
@@ -97,11 +97,9 @@ void moveAItoPlayer(unsigned char playerID) {
 			if (CurrentCharacter != Characters_Big && CurrentCharacter != Characters_Gamma)
 				p2->pos = UnitMatrix_GetPoint_Player(&p1->pos, &p1->ang, -7.0f, 0.0f, 5.0f);
 			else
-				p2->pos = UnitMatrix_GetPoint_Player(&p1->pos, &p1->ang, -10.0f, 0.0f, 8.0f);
+				p2->pos = UnitMatrix_GetPoint_Player(&p1->pos, &p1->ang, -10.0f, 0.0f, 8.0f);	
 		}
 	}
-
-	return;
 }
 
 void moveAItoPlayer(unsigned char playerID, float posX, float posZ) {
@@ -116,10 +114,9 @@ void moveAItoPlayer(unsigned char playerID, float posX, float posZ) {
 				p2->pos = UnitMatrix_GetPoint_Player(&p1->pos, &p1->ang, posX, 0.0f, posZ);
 			else
 				p2->pos = UnitMatrix_GetPoint_Player(&p1->pos, &p1->ang, posX - 3.0f, 0.0f, posZ + 3.0f);
+
 		}
 	}
-
-	return;
 }
 
 bool isPlayerUsingSnowboard() {
@@ -315,7 +312,9 @@ int GetRaceWinnerPlayer_r() {
 
 void FixTailsAI_Train(int ID, void* a2, int a3, void* a4)
 {
+	DisableTailsAICol(AIIndex);
 	moveAItoPlayer(AIIndex);
+	
 	PlaySound(ID, a2, a3, a4);
 }
 
@@ -365,6 +364,7 @@ void AI_Patches() {
 	WriteData<6>((int*)0x460fcf, 0x90); //restore Miles's tail effect when AI
 	WriteCall((void*)0x4E95DC, LeaveSnowBoard); //make tails leave snowboard at the end of ice cap
 
+
 	if (IsHubBanned)
 		return;
 
@@ -373,4 +373,5 @@ void AI_Patches() {
 	WriteCall((void*)0x64015A, FixTailsAI_Train);
 	WriteCall((void*)0x53A29B, FixTailsAI_Train);
 	WriteCall((void*)0x51BDD0, FixTailsAI_ECAreaTransition);
+	WriteCall((void*)0x62EECA, FixTailsAI_ECAreaTransition); //fix hostel respawn pos
 }

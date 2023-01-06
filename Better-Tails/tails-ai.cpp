@@ -219,6 +219,12 @@ void TailsAI_Main_R(task* obj) {
 	TailsAI_Main_t.Original(obj);
 }
 
+void DisableTailsAICol(char pnum)
+{
+	if (playertwp[pnum])
+		CharColliOff(playertwp[pnum]);
+}
+
 		
 void AI_Init(const HelperFunctions& helperFunctions, const char* path) {
 

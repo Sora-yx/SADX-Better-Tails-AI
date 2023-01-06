@@ -47,7 +47,7 @@ void SnowboardRespawn(unsigned char playerID) {
 	if (milesAI->mode< boardSlide || milesAI->mode > boardHurt) {
 
 		if (isPlayerUsingSnowboard()) {
-			CharColliOff(milesAI);
+			DisableTailsAICol(playerID);
 			playertwp[playerID]->flag &= ~(Status_Attack | Status_Ball | Status_LightDash);
 			playerpwp[playerID]->p.height = PhysicsArray[Characters_Tails].CollisionSize; //Reset Miles physic properly
 			playerpwp[playerID]->p.center_height = PhysicsArray[Characters_Tails].YOff;
@@ -97,7 +97,7 @@ void speedHighwayBuilding_Follow(unsigned char playerID) {
 				ForcePlayerAction(playerID, 48);
 				P2->flag &= ~Status_Ball;
 				p2CO2->mj.reqaction = 37;
-				CharColliOff(P2);
+				DisableTailsAICol(playerID);
 				disableCol = true;
 			}
 
@@ -138,14 +138,13 @@ void LoadAISnowBoard_R() {
 		{
 			board->Data1->CharID = ID;
 			board->Data1->CharIndex = ID;
-			CharColliOff(playertwp[ID]);
+			DisableTailsAICol(ID);
 			disableCol = true;
 
 			return;
 		}
 	}
 }
-
 
 int CharacterPetmodeNumber[8] = { 72, 64, 64, 54, 54, 50, 56, 52 };
 
@@ -247,7 +246,7 @@ void MilesAI_VictoryPose(task* obj) {
 	case 0:
 		if (p1->smode == 0x13) {
 			disableCol = true;
-			CharColliOff(p2);
+			DisableTailsAICol(pnum);
 			ForcePlayerAction(pnum, 24);
 			p2->mode = 18;
 			p2->pos = UnitMatrix_GetPoint_Player(&p1->pos, &p2->ang, 0.0f, 0.0f, 7.0f);
@@ -361,7 +360,7 @@ void AI_SitInCart(taskwk* p1, taskwk* milesData, task* miles)
 	if (p1->mode == 45 && milesData->mode != passengerCart)
 	{
 		disableCol = true;
-		CharColliOff(milesData);
+		DisableTailsAICol(pnum);
 		milesData->flag &= ~Status_Ball;
 		EV_SetAction(miles, &action_m_m9002_miles, &MILES_TEXLIST, 1.0f, 3, 0);
 		milesData->mode = passengerCart;
@@ -396,7 +395,7 @@ void AI_HubWorld_Vehicle(taskwk* p1, taskwk* milesData, task* miles)
 		if (CurrentLevel != LevelIDs_StationSquare && CurrentAct != 3)
 			EV_SetAction(miles, &action_m_m9002_miles, &MILES_TEXLIST, 1.0f, 3, 0);
 		disableCol = true;
-		CharColliOff(milesData);
+		DisableTailsAICol(AIIndex);
 		milesData->mode = 18;
 	}
 
