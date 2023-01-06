@@ -16,7 +16,8 @@ void DeleteMilesAI()
 	if (id > 0) {
 		FlagDeleteMilesAI = true;
 		auto AI = playertp[id];
-		FreeTask(AI);
+		if (AI)
+			FreeTask(AI);
 	}
 }
 
@@ -88,7 +89,7 @@ int CheckTailsAI_R(void) {
 			return 0x0; //Don't load Tails in the past if story option is enabled.
 	}
 
-	if (CurrentLevel == LevelIDs_PerfectChaos)
+	if (CurrentLevel == LevelIDs_EggViper || CurrentLevel == LevelIDs_PerfectChaos)
 		return 0x0;  //Fight harder, for no reason.
 
 	isAIActive = true;

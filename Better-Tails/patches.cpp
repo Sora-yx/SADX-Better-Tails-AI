@@ -3,24 +3,7 @@
 static FunctionHook<void, int> LoadCharacterBoss_t(LoadCharacterBoss);
 static FunctionHook<void, int> Ev_Load2_t(EV_Load2);
 static FunctionHook<void, Uint8, float, float, float> PositionPlayer_t(PositionPlayer);
-static FunctionHook<void, taskwk*, motionwk2*, playerwk*> ProcessVertexWelds_t((intptr_t)ProcessVertexWelds);
 
-
-//Despite Tails AI being deleted right before a cutscene start, the game can still crash when trying to process the welds at the same time (race issue)
-//So we force the welds function to return until Tails AI is fully deleted.
-void ProcessVertexWelds_r(taskwk* a1, motionwk2* a2, playerwk* a3)
-{
-	if (EV_MainThread_ptr) //if a cutscene is playing and the game isn't trying to delete the welds, abort the process of welding.
-	{
-		if (a3 && a3->mj.jvmode != 2)
-		{
-			if (a1->charID == Characters_Tails && TailsAI_ptr)
-				return;
-		}
-	}
-
-	ProcessVertexWelds_t.Original(a1, a2, a3);
-}
 
 void __cdecl DisableTailsAI_Controller(Uint8 index)
 {
@@ -365,7 +348,7 @@ void AI_Patches() {
 	Ev_Load2_t.Hook(FreeNpcMilesPlayerTask_r);
 	//re create Tails AI after a cutscene ends. 
 	WriteJump(CreateNPCMilesPlayerTask, Load2PTails_r);
-	ProcessVertexWelds_t.Hook(ProcessVertexWelds_r); //fix a crash with welds on cutscene
+	WriteData<1>((int*)0x42FD98, 0x3); //Load Event Char: change task lvl index from 1 to 3 (fix cutscene char crash, race process weld issue)
 
 	PositionPlayer_t.Hook(PositionPlayer_r);
 	LoadCharacterBoss_t.Hook(LoadCharacterBoss_r);

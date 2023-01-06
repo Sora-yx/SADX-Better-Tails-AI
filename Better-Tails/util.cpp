@@ -142,17 +142,18 @@ bool isTailsAI()
 	return true;
 }
 
-
+typedef bool (CALLBACK* multiE) (void);
 bool isMultiEnabled()
 {
 	if (!multi)
 		return false;
 
-	bool result = (bool)GetProcAddress(multi, "multi_is_active");
+	multiE result = (multiE)GetProcAddress(multi, "multi_is_active");
 
 	if (result)
 	{
-		return true;
+		auto res = result();
+		return res;
 	}
 
 	return false;

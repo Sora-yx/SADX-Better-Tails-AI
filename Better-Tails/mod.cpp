@@ -4,11 +4,25 @@ time_t t;
 HMODULE multi = NULL;
 HelperFunctions HelperFunctionsGlobal;
 
+FunctionPointer(int, SerifStatus, (void), 0x425740);
+
+
+
+void PrintVoiceDone()
+{
+	if (GameState != 15)
+		return;
+
+	//PrintDebug("current voice state: %d \n", SerifStatus());
+	SetDebugFontSize(20);
+	DisplayDebugStringFormatted(NJM_LOCATION(2, 1), "current voice state: %d\n", SerifStatus());
+}
+
+
 extern "C" {
 
 	__declspec(dllexport) void __cdecl Init(const char* path, const HelperFunctions& helperFunctions)
 	{
-
 		HelperFunctionsGlobal = helperFunctions; // Save the helper pointer for external use
 
 		config(path);
@@ -26,8 +40,11 @@ extern "C" {
 	__declspec(dllexport) void __cdecl OnFrame()
 	{
 		//LoadAI_OnFrames();
+		PrintVoiceDone();
 
-		DisplayDebugStringFormatted(NJM_LOCATION(2, 1), "Tails AI Pointer: %d", TailsAI_ptr != nullptr);
+		//DisplayDebugStringFormatted(NJM_LOCATION(2, 1), "Tails AI Pointer: %d", TailsAI_ptr != nullptr);
+
+
 
 	}
 
