@@ -85,7 +85,7 @@ void FlyTravel_Init(const char* path);
 
 void CheckAndLoadMapPVM();
 unsigned char getAI_ID();
-void RemovePlayerCollision(unsigned char ID);
+void RemovePlayerAttackCol(unsigned char ID);
 void RestorePlayerCollision(unsigned char ID);
 void moveAItoPlayer(unsigned char playerID, float posX, float posZ);
 void Miles_AbilitiesOnFrames(unsigned char pnum);

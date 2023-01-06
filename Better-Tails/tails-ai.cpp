@@ -186,7 +186,6 @@ void TailsAI_Delete_r(task* obj) {
 	isChaoPetByAI = false; //just to be safe
 	isAIActive = false;
 	isRescued = false;
-	disableCol = false;
 	FlagDeleteMilesAI = false;
 	rngRegularDeathRescue = 0;
 	return FUN_0042ce20();
@@ -214,7 +213,7 @@ void TailsAI_Main_R(task* obj) {
 	//DisplayDebugStringFormatted(NJM_LOCATION(2, 1), "AI Distance: % f", getMilesDistance(playertwp[0], playertwp[AIIndex]));
 
 	if (data->mode == 0) {
-		RemovePlayerCollision(pid);
+		RemovePlayerAttackCol(pid);
 	}
 
 	TailsAI_Main_t.Original(obj);

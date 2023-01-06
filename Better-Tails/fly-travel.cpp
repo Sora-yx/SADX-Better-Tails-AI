@@ -41,7 +41,10 @@ int MilesCurTex = 0;
 
 const char* getDestinationText() {
 
-	return DestinationText[Cursor].c_str();
+	if (DestinationText[Cursor].size() > 1)
+		return DestinationText[Cursor].c_str();
+	else
+		return "";
 }
 
 //Tails Grab Fly abilities
@@ -718,4 +721,5 @@ void FlyTravel_Init(const char* path) {
 
 	MovePlayerToStartPoint_t.Hook(MovePlayerToStartPoint_r);
 	SetDestinationStringToArray(path);
+
 }

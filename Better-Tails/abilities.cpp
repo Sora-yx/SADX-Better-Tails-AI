@@ -47,6 +47,7 @@ void SnowboardRespawn(unsigned char playerID) {
 	if (milesAI->mode< boardSlide || milesAI->mode > boardHurt) {
 
 		if (isPlayerUsingSnowboard()) {
+			CharColliOff(milesAI);
 			playertwp[playerID]->flag &= ~(Status_Attack | Status_Ball | Status_LightDash);
 			playerpwp[playerID]->p.height = PhysicsArray[Characters_Tails].CollisionSize; //Reset Miles physic properly
 			playerpwp[playerID]->p.center_height = PhysicsArray[Characters_Tails].YOff;
@@ -83,6 +84,7 @@ void speedHighwayBuilding_Follow(unsigned char playerID) {
 
 		if (P2->mode == 18) {
 			disableCol = false;
+			CharColliOn(P2);
 			ForcePlayerAction(playerID, 24);
 			return;
 		}
@@ -95,6 +97,7 @@ void speedHighwayBuilding_Follow(unsigned char playerID) {
 				ForcePlayerAction(playerID, 48);
 				P2->flag &= ~Status_Ball;
 				p2CO2->mj.reqaction = 37;
+				CharColliOff(P2);
 				disableCol = true;
 			}
 
@@ -135,7 +138,9 @@ void LoadAISnowBoard_R() {
 		{
 			board->Data1->CharID = ID;
 			board->Data1->CharIndex = ID;
+			CharColliOff(playertwp[ID]);
 			disableCol = true;
+
 			return;
 		}
 	}
@@ -242,6 +247,7 @@ void MilesAI_VictoryPose(task* obj) {
 	case 0:
 		if (p1->smode == 0x13) {
 			disableCol = true;
+			CharColliOff(p2);
 			ForcePlayerAction(pnum, 24);
 			p2->mode = 18;
 			p2->pos = UnitMatrix_GetPoint_Player(&p1->pos, &p2->ang, 0.0f, 0.0f, 7.0f);
@@ -249,6 +255,7 @@ void MilesAI_VictoryPose(task* obj) {
 
 			if (++data->wtimer == 10) {
 				disableCol = false;
+				CharColliOn(p2);
 				data->mode++;
 			}
 		}
@@ -324,14 +331,6 @@ void PreventTailsAImode(unsigned char playerID) {
 	}
 }
 
-void FixCollision(taskwk* entity) {
-
-	if (disableCol)
-		return;
-
-	EntryColliList(entity);
-}
-
 void ResetMilesAI(char pnum, char mode)
 {
 	auto milesData = playertwp[AIIndex];
@@ -345,6 +344,7 @@ void ResetMilesAI(char pnum, char mode)
 		ForcePlayerAction(pnum, mode);
 
 	disableCol = false;
+	CharColliOn(milesData);
 	EV_ClrAction(miles);
 	milesData->mode = 1;
 	co2Miles->mj.reqaction = 1;
@@ -361,6 +361,7 @@ void AI_SitInCart(taskwk* p1, taskwk* milesData, task* miles)
 	if (p1->mode == 45 && milesData->mode != passengerCart)
 	{
 		disableCol = true;
+		CharColliOff(milesData);
 		milesData->flag &= ~Status_Ball;
 		EV_SetAction(miles, &action_m_m9002_miles, &MILES_TEXLIST, 1.0f, 3, 0);
 		milesData->mode = passengerCart;
@@ -395,6 +396,7 @@ void AI_HubWorld_Vehicle(taskwk* p1, taskwk* milesData, task* miles)
 		if (CurrentLevel != LevelIDs_StationSquare && CurrentAct != 3)
 			EV_SetAction(miles, &action_m_m9002_miles, &MILES_TEXLIST, 1.0f, 3, 0);
 		disableCol = true;
+		CharColliOff(milesData);
 		milesData->mode = 18;
 	}
 
@@ -522,7 +524,6 @@ void AI_Improvement(const char* path) {
 	WriteCall((void*)0x597b14, LoadAISnowBoard_R);  //Load AI Snowboard when playing Sand Hill
 	WriteCall((void*)0x4ea091, LoadAISnowBoard_R);  //Load AI Snowboard when playing Ice Cap.
 	WriteCall((void*)0x4e9664, LoadAISnowBoard_R);
-	WriteCall((void*)0x462490, FixCollision);
 
 	FlyTravel_Init(path);
 

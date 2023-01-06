@@ -27,7 +27,7 @@ unsigned char getAI_ID() {
 	return 0;
 }
 
-void RemovePlayerCollision(unsigned char ID) {
+void RemovePlayerAttackCol(unsigned char ID) {
 
 	if (!playertwp[0] || ID > 0 && !playertwp[ID] || EV_MainThread_ptr || CharacterBossActive || AIIndex > 1)
 		return;
@@ -340,6 +340,16 @@ void __cdecl PositionPlayer_r(Uint8 charIndex, float x, float y, float z)
 		moveAItoPlayer(AIIndex);
 }
 
+void __cdecl LeaveSnowBoard(uint8_t pnum, char action)
+{
+	if (isAIActive)
+	{
+		ForcePlayerAction(AIIndex, action);
+	}
+
+	return ForcePlayerAction(pnum, action);
+}
+
 void AI_Patches() {
 
 	WriteJump(GetRaceWinnerPlayer, GetRaceWinnerPlayer_r); //fix wrong victory pose for Tails AI.
@@ -353,6 +363,7 @@ void AI_Patches() {
 	LoadCharacterBoss_t.Hook(LoadCharacterBoss_r);
 
 	WriteData<6>((int*)0x460fcf, 0x90); //restore Miles's tail effect when AI
+	WriteCall((void*)0x4E95DC, LeaveSnowBoard); //make tails leave snowboard at the end of ice cap
 
 	if (IsHubBanned)
 		return;
