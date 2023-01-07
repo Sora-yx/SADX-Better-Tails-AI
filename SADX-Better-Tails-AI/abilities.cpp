@@ -233,7 +233,11 @@ void MilesAI_VictoryPose(task* obj) {
 			DisableTailsAICol(pnum);
 			ForcePlayerAction(pnum, 24);
 			p2->mode = AIObjControl;
-			p2->pos = UnitMatrix_GetPoint_Player(&p1->pos, &p2->ang, 0.0f, 0.0f, 7.0f);
+			float res = GetDistance(&p2->pos, &p1->pos);
+			if (res > 10.0f)
+			{
+				p2->pos = UnitMatrix_GetPoint_Player(&p1->pos, &p2->ang, 0.0f, 0.0f, 7.0f);
+			}
 			p2->ang = p1->ang;
 
 			if (++data->wtimer == 10) {
