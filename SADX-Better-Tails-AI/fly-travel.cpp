@@ -568,6 +568,7 @@ void TailsAI_Grab(task* obj) {
 		EnablePause();
 		PlayCharacterLeaveAnimation(p1, co2p1, pnum);
 		isMoving = 0;
+		p1->flag &= ~Status_Ball;
 		FreeTask(obj);
 		break;
 	case errorMove:
