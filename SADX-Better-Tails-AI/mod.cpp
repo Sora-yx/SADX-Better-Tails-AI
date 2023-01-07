@@ -1,4 +1,5 @@
-#include "stdafx.h"
+#include "pch.h"
+#include <time.h>
 
 time_t t;
 HMODULE multi = NULL;
@@ -18,7 +19,8 @@ extern "C" {
 		//Tails AI Stuff (Load, Fixes...)
 		AI_Init(helperFunctions, path);
 
-		multi = GetModuleHandle("sadx-multiplayer");
+
+		multi = GetModuleHandleW(L"sadx-multiplayer");
 	}
 
 	__declspec(dllexport) void __cdecl OnFrame()

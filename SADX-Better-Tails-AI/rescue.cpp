@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "pch.h"
 
 //This is the rescue page, the idea here is to edit the deathzones and the death function to add code so Tails can save you.
 

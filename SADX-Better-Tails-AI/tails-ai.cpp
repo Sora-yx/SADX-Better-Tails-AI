@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "pch.h"
 
 bool isAIActive = false;
 bool FlagDeleteMilesAI = false;
@@ -21,7 +21,7 @@ void DeleteMilesAI()
 
 //Tails AI Flag Check
 int CheckTailsAI_R(void) {
-	bool isSA2Mod = GetModuleHandle("sadx-sa2-mod");
+	bool isSA2Mod = GetModuleHandle(L"sadx-sa2-mod");
 
 	if (isMultiEnabled())
 	{

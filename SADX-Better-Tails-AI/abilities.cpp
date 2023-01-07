@@ -1,6 +1,4 @@
-#include "stdafx.h"
-
-//every improvement and new abilities for Tails go here.
+#include "pch.h"
 
 static FunctionHook<void, task*> Chao_Main_t((intptr_t)Chao_Main);
 static FunctionHook<void, int> EV_Load2_t(EV_Load2);

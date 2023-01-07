@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "pch.h"
 #include "ScaleInfo.h"
 
 static FunctionHook<void, taskwk*> MovePlayerToStartPoint_t((intptr_t)MovePlayerToStartPoint);

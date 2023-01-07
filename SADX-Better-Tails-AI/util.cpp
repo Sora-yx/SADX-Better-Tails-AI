@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "pch.h"
 
 float getMilesDistance(taskwk* p1, taskwk* p2)
 {
@@ -21,7 +21,7 @@ bool isUIScale() {
 }
 
 bool isCharSelActive() {
-	bool charSel = GetModuleHandle("SADXCharSel");
+	bool charSel = GetModuleHandle(L"SADXCharSel");
 
 	if (charSel)
 		return true;
@@ -30,7 +30,7 @@ bool isCharSelActive() {
 }
 
 bool isRandoActive() {
-	bool Rando = GetModuleHandle("SADX-Randomizer");
+	bool Rando = GetModuleHandle(L"SADX-Randomizer");
 
 	if (Rando)
 		return true;
@@ -39,8 +39,8 @@ bool isRandoActive() {
 }
 
 bool isInputModActive() {
-	bool Input = GetModuleHandle("input-mod");
-	bool Input2 = GetModuleHandle("sadx-input-mod");
+	bool Input = GetModuleHandle(L"input-mod") != nullptr;
+	bool Input2 = GetModuleHandle(L"sadx-input-mod") != nullptr;
 
 	if (Input || Input2)
 		return true;
@@ -49,7 +49,7 @@ bool isInputModActive() {
 }
 
 bool isNewTricksActive() {
-	bool tricks = GetModuleHandle("sadx-new-tricks");
+	bool tricks = GetModuleHandle(L"sadx-new-tricks") != nullptr;
 
 	if (tricks)
 		return true;

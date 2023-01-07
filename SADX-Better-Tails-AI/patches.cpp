@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "pch.h"
 
 static FunctionHook<void, int> LoadCharacterBoss_t(LoadCharacterBoss);
 static FunctionHook<void, int> Ev_Load2_t(EV_Load2);
