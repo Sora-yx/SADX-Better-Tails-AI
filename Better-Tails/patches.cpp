@@ -3,7 +3,6 @@
 static FunctionHook<void, int> LoadCharacterBoss_t(LoadCharacterBoss);
 static FunctionHook<void, int> Ev_Load2_t(EV_Load2);
 static FunctionHook<void, Uint8, float, float, float> PositionPlayer_t(PositionPlayer);
-static int EnableColTimer = 0;
 
 void __cdecl DisableTailsAI_Controller(Uint8 index)
 {

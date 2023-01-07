@@ -1,5 +1,7 @@
 #pragma once
 
+const float spdYGain = 0.8f;
+const float spdYFall = -0.8f;
 
 struct MilesAI_Spawn {
 	int curCharacter;
@@ -48,6 +50,7 @@ enum EMilesMap {
 
 enum milesAI_CustomAction
 {
+	AIObjControl = 18,
 	boardSlide = 48,
 	boardHurt = 54,
 	debugAction = 110,
@@ -111,3 +114,5 @@ void SnowboardRespawn(unsigned char ID);
 void AI_Improvement(const char* path);
 int isCharacterPetting();
 void FadeoutScreen(ObjectMaster* obj);
+bool isFlyTravelEnabled();
+bool isRescue();

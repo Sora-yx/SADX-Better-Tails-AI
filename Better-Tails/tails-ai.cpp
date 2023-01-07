@@ -166,15 +166,15 @@ void LoadCharacterAndAI() {
 }
 
 
-void MilesAI_OnFrames(unsigned char playerID) { //Only run when TailsAI_Main is active
+void MilesAI_OnFrames(taskwk* data, unsigned char aiID) { //Only run when TailsAI_Main is active
 
-	if (!IsIngame() || !playertwp[0] || !playertwp[playerID] || playertwp[playerID]->charID != Characters_Tails || !TailsAI_ptr)
+	if (!IsIngame() || !playertwp[0] || !playertwp[aiID] || playertwp[aiID]->charID != Characters_Tails || !TailsAI_ptr)
 		return;
 
-	Miles_AbilitiesOnFrames(playerID);
+	Miles_AbilitiesOnFrames(aiID);
 
 	if (isRescueAllowed)
-		CheckMilesBossRescue(playerID);
+		CheckMilesBossRescue(aiID);
 }
 
 //Reset value when Tails AI is deleted
@@ -208,7 +208,7 @@ void TailsAI_Main_R(task* obj) {
 	if (isFlyTravel)
 		CheckAndLoadTailsTravelObjects(obj);
 
-	MilesAI_OnFrames(pid);
+	MilesAI_OnFrames(data, pid);
 
 	//DisplayDebugStringFormatted(NJM_LOCATION(2, 1), "AI Distance: % f", getMilesDistance(playertwp[0], playertwp[AIIndex]));
 

@@ -9,6 +9,12 @@ task* MilesRescueTaskPtr = nullptr;
 bool isRescued = false;
 int rngDeathZoneRescue = 0;
 int rngRegularDeathRescue = 0;
+uint8_t rescueChance = 65;
+
+bool isRescue()
+{
+	return MilesRescueObj || TailsRescueLanding || MilesRescueTaskPtr;
+}
 
 void CameraEvent_MilesRescue(_OBJ_CAMERAPARAM* camparam) {
 
@@ -33,7 +39,8 @@ MilesAI_Fly RescueArray[]{
 	{ LevelIDs_EggViper, 0, 260, 12.8, 0},
 	{ LevelIDs_StationSquare, 0,  273.946, 93.7993, 345.299},
 	{ LevelIDs_StationSquare, 1,  -14.823, 122.437, 1339.01},
-	{ LevelIDs_StationSquare, 2,  399.721, -54.527, 994.518},
+	{ LevelIDs_StationSquare, 2,  399.721, -54.527, 994.5
+},
 	{ LevelIDs_StationSquare, 3,  63.2726, 152.052, 1511.99},
 	{ LevelIDs_StationSquare, 4,  -470.063, 105.65, 2034.67},
 	{ LevelIDs_StationSquare, 5,  695.884, 87.0144, 1771.52},
@@ -63,7 +70,7 @@ bool isMilesSaving() {
 }
 
 //reset PTR when objects are deleted
-void TailsAI_LandingDelete2(task* obj) {
+void TailsAI_LandingRescueDelete(task* obj) {
 	rngDeathZoneRescue = 0;
 	TailsRescueLanding = nullptr;
 	MilesRescueObj = nullptr;
@@ -78,8 +85,8 @@ const char* const Sonic_message01[] = {
 	NULL,
 };
 
-//Actually need a second separate object for the landing part, otherwise Tails AI behavior become dumb, idk, kill me, game sucks.
-void TailsAI_Landing2(task* obj) {
+
+void TailsAI_LandingRescue(task* obj) {
 
 	auto data = obj->twp;
 	auto p1 = playertwp[0];
@@ -94,22 +101,23 @@ void TailsAI_Landing2(task* obj) {
 	}
 
 	LookAt(&p2->pos, &data->pos, nullptr, &p2->ang.y);
-	FlySoundOnFrames(pnum);
+
 
 	switch (data->mode) {
 	case 0: 
 	{
 		isRescued = true;
-		obj->dest = TailsAI_LandingDelete2;
+		obj->dest = TailsAI_LandingRescueDelete;
 		co2p2->mj.reqaction = 37;
 		PlayCharacterGrabAnimation(p1, co2p1);
+		FlySoundOnFrames(pnum);
 		data->mode++;
 	}
 	break;
 	case 1:
 		UpdateP1Position(co2p1, co2p2, p1, p2);
-		co2p2->spd.y -= 0.3f;
-
+		FlySoundOnFrames(pnum);
+	
 		if (++data->btimer == 30) {
 
 			data->smode = rand() % 2;
@@ -128,19 +136,25 @@ void TailsAI_Landing2(task* obj) {
 
 		break;
 	case 2:
+		FlySoundOnFrames(pnum);
+		co2p2->spd.y = spdYFall;
 		UpdateP1Position(co2p1, co2p2, p1, p2);
-		co2p2->spd.y -= 0.4f;
-		if (++data->wtimer == 90 || ((p1->flag & 3))) {
+
+		if (++data->wtimer == 80 || ((p1->flag & 3))) {
 			data->btimer = 0;
 			data->mode++;
 		}
 		break;
 	case 3:
+
+		CharColliOn(p1);
+		CharColliOn(p2);
 		co2p2->item &= 0x100u;
 		co2p1->item &= 0x100u;
 		EnableController(0);
 		PlayCharacterLeaveAnimation(p1, co2p1, pnum);
 		RestoreAIControl(pnum);
+
 		if (++data->btimer == 20) {
 
 			FreeTask(obj);
@@ -163,6 +177,8 @@ void MilesRescuesCharacterFall(task* obj) {
 
 	switch (data->mode) {
 	case initMilesFalling: //Set tails above player
+		CharColliOff(p1);
+		CharColliOff(p2);
 		p1co2->spd = { 0, 0, 0 };
 		p1co2->item |= Powerups_Invincibility;
 		p2co2->item |= Powerups_Invincibility;
@@ -174,12 +190,13 @@ void MilesRescuesCharacterFall(task* obj) {
 		break;
 	case catchPlayer:
 		if (p2->pos.y - p1->pos.y <= GetCharacterPositionY(p1) + 5.0f) {
+
 			p1co2->spd.y = 0.0f;
 			p2->flag &= ~(Status_Attack | Status_Ball | Status_LightDash);
 			p2->mode = 15;
 			p2co2->mj.reqaction = 37;
 			p1->flag &= ~(Status_Attack | Status_Ball | Status_LightDash);
-			p1->mode = 20;
+
 			PlayCharacterGrabAnimation(p1, p1co2);
 			data->mode++;
 		}
@@ -191,11 +208,16 @@ void MilesRescuesCharacterFall(task* obj) {
 		}
 		break;
 	case playerGrabbed:
+		p2->mode = 15;
+		p2co2->spd.y += 0.07f;
+
 		if (++data->counter.w[1] == 140) {
 			LoadObject(LoadObj_Data1, 1, FadeoutScreen);
 		}
-		if (++data->wtimer == 200) { //get Altitude
-			p2co2->spd.y = 3.5f;
+
+		if (++data->wtimer == 200) //get Altitude
+		{ 
+	
 			NJS_VECTOR getPos = CheckRescueArray(); //move player to safe point (ie: last grabbed checkpoint or specific spot in hub world)
 			if (getPos.x != -1 && getPos.y != -1 && getPos.z != -1) {
 				p1->pos = getPos;
@@ -209,15 +231,14 @@ void MilesRescuesCharacterFall(task* obj) {
 			data->mode++;
 		}
 		else {
+	
 			UpdateP1Position(p1co2, p2co2, p1, p2);
-			p2co2->spd.y += 0.5f;
-			p2co2->spd.x += 0.3f;
 		}
 		break;
 	case landingTransition:
 
 		if (!TailsRescueLanding) {
-			TailsRescueLanding = CreateElementalTask((LoadObj)2, 1, TailsAI_Landing2);
+			TailsRescueLanding = CreateElementalTask((LoadObj)2, 1, TailsAI_LandingRescue);
 		}
 
 		if (TailsRescueLanding) {
@@ -264,7 +285,7 @@ void PlayCharacterDeathSound_r(ObjectMaster* a1, int pid) {
 	if (!MilesRescueObj && !TailsRescueLanding && !rngDeathZoneRescue) {
 		rngDeathZoneRescue = rand() % 100 + 1;
 
-		if (BannedRescueLevel() || isRescued && CurrentLevel < LevelIDs_StationSquare || rngDeathZoneRescue < 65) {
+		if (BannedRescueLevel() || isRescued && CurrentLevel < LevelIDs_StationSquare || rngDeathZoneRescue < 100 - rescueChance) {
 
 			PlayCharacterDeathSound(a1, pid); //kill the player
 			return;		
@@ -300,7 +321,7 @@ void CheckMilesBossRescue(unsigned char ID) {
 	if (!MilesRescueObj && !TailsRescueLanding && !rngDeathZoneRescue) {
 		rngDeathZoneRescue = rand() % 100 + 1;
 
-		if (!playertwp[ID] || playertwp[ID]->counter.b[1] != Characters_Tails  || rngDeathZoneRescue < 65) {
+		if (!playertwp[ID] || playertwp[ID]->counter.b[1] != Characters_Tails  || rngDeathZoneRescue < 100 - rescueChance) {
 			return;
 		}
 	}

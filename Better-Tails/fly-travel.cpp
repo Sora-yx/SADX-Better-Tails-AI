@@ -39,6 +39,11 @@ NJS_TEXLIST TravelMap_TEXLIST = { arrayptrandlength(TravelMap_TEXNAMES) };
 int Cursor = -1;
 int MilesCurTex = 0;
 
+bool isFlyTravelEnabled()
+{
+	return TailsGrab || TailsLanding;
+}
+
 const char* getDestinationText() {
 
 	if (DestinationText[Cursor].size() > 1)
@@ -49,20 +54,18 @@ const char* getDestinationText() {
 
 //Tails Grab Fly abilities
 MilesAI_Fly DestinationArray[]{
-	{ LevelIDs_StationSquare, 3,  42.5287, 363.153, 1799.71, {300, 280}}, //Station (main)
-	{ LevelIDs_StationSquare, 4, -473.697, 202.824, 2051.46, {170, 320 }}, //Hostel pool
-	{ LevelIDs_StationSquare, 1, -445.595, 380.35, 1462.26, {170, 150}},	//Casino area
-	{ LevelIDs_StationSquare, 0, 275.532, 250.9145, 328.018, {300, 60}}, //chaos 0
-	{ LevelIDs_EggCarrierOutside, 0,  97.0032, 950.573, 817.829, {420, 160}},
-	{ LevelIDs_MysticRuins, 0, -48.1315, 300.108, 1033.91, {180, 300}},	//station
+	{ LevelIDs_StationSquare, 3,  42.5287, 373.153, 1799.71, {300, 280}}, //Station (main)
+	{ LevelIDs_StationSquare, 4, -473.697, 212.824, 2051.46, {170, 320 }}, //Hostel pool
+	{ LevelIDs_StationSquare, 1, -445.595, 390.35, 1462.26, {170, 150}},	//Casino area
+	{ LevelIDs_StationSquare, 0, 275.532, 260.9145, 328.018, {300, 60}}, //chaos 0
+	{ LevelIDs_EggCarrierOutside, 0,  97.0032, 960.573, 817.829, {420, 160}},
+	{ LevelIDs_MysticRuins, 0, -48.1315, 310.108, 1033.91, {180, 300}},	//station
 	{ LevelIDs_MysticRuins, 1, -9.2187, -15.838, 2220.16, {352, 310}}, //angel island
-	{ LevelIDs_MysticRuins, 2, -515.191, 287.349, -865.042, {245, 180}},	//jungle lost world
-	{ LevelIDs_MysticRuins, 2,  1307.67, 284.549, -814.303, {455, 195}}, //jungle big's house
+	{ LevelIDs_MysticRuins, 2, -515.191, 297.349, -865.042, {245, 180}},	//jungle lost world
+	{ LevelIDs_MysticRuins, 2,  1307.67, 294.549, -814.303, {455, 195}}, //jungle big's house
 };
 
 void LoadDestination(int playerID) {
-	ControllerPointers[playerID]->PressedButtons = 0;
-	ControllerPointers[playerID]->HeldButtons = 0;
 	DisableTailsAI_Controller(playerID);
 	LastLevel = CurrentLevel;
 	LastAct = CurrentAct;
@@ -327,7 +330,7 @@ void PlayCharacterLeaveAnimation(taskwk* p1, playerwk* co2, int playerID) {
 
 
 	if ( (co2->equipment & Upgrades_SuperSonic) == 0)
-		ForcePlayerAction(playerID, 24);
+		ForcePlayerAction(playerID, 17);
 
 	switch (p1->charID) {
 	case Characters_Sonic:
@@ -379,7 +382,6 @@ float GetCharacterPositionY(taskwk* p1) {
 }
 
 void UpdateP1Position(playerwk* co2p1, playerwk* co2p2, taskwk* p1, taskwk* p2) {
-	co2p2->spd = co2p1->spd;
 	p1->pos = p2->pos;
 	p1->pos.y -= GetCharacterPositionY(p1);
 	p1->ang = p2->ang;
@@ -389,7 +391,6 @@ void UpdateP1Position(playerwk* co2p1, playerwk* co2p2, taskwk* p1, taskwk* p2) 
 void RestoreAIControl(unsigned char ID) {
 	ControllerPointers[ID]->PressedButtons = 0;
 	ControllerPointers[ID]->HeldButtons = 0;
-	DisableTailsAI_Controller(ID);
 	return;
 }
 
@@ -471,7 +472,7 @@ void TailsAI_Grab(task* obj) {
 		obj->dest = TailsAI_GrabDelete;
 		if (!isTailsAI_GrabAllowed()) {
 
-			SetDebugFontSize(23);
+			SetDebugFontSize(24);
 			SetDebugFontColor(0xFF0000);
 			DisplayDebugStringFormatted(NJM_LOCATION(12, 12), "You cannot fast travel at the moment.");
 		
@@ -555,6 +556,8 @@ void TailsAI_Grab(task* obj) {
 				data->id = 0;
 				data->wtimer = 0;
 				data->counter.w[1] = 0;
+				CharColliOff(p1);
+				CharColliOff(p2);
 				data->mode = movetoDestination;
 			}
 		}
@@ -562,10 +565,10 @@ void TailsAI_Grab(task* obj) {
 	case movetoDestination:
 		FlySoundOnFrames(pnum);
 		p2->mode = 15; //fly mode
+		co2p2->spd.y = spdYGain;
+		co2p2->spd.x = 0.3f;
 		UpdateP1Position(co2p1, co2p2, p1, p2);
 
-		co2p2->spd.y += 0.3f;
-		co2p2->spd.x += 0.6f;
 
 		if (++data->wtimer == 180) {
 			LoadDestination(pnum);
@@ -585,7 +588,7 @@ void TailsAI_Grab(task* obj) {
 		FreeTask(obj);
 		break;
 	case errorMove:
-		SetDebugFontSize(23);
+		SetDebugFontSize(24);
 		SetDebugFontColor(0xFF0000);
 		DisplayDebugStringFormatted(NJM_LOCATION(12, 12), "You cannot fly there at the moment.");
 		if (++data->btimer == 60) {
@@ -599,6 +602,7 @@ void TailsAI_Grab(task* obj) {
 
 void TailsAI_LandingDelete(task* obj) {
 	if (TailsLanding) {
+
 		isMoving = 0;
 		Cursor = -1;
 		TailsLanding = nullptr;
@@ -621,6 +625,8 @@ void TailsAI_Landing(task* obj) {
 
 	if (EV_MainThread_ptr)
 	{
+		CharColliOn(p1);
+		CharColliOn(p2);
 		TailsAI_LandingDelete(obj);
 		FreeTask(obj);
 		return;
@@ -629,7 +635,8 @@ void TailsAI_Landing(task* obj) {
 	LookAt(&p2->pos, &data->pos, nullptr, &p2->ang.y);
 	FlySoundOnFrames(pnum);
 
-	switch (data->mode) {
+	switch (data->mode) 
+	{
 	case 0:
 		obj->dest = TailsAI_LandingDelete;
 		data->pos = DestinationArray[Cursor].destination;
@@ -641,19 +648,21 @@ void TailsAI_Landing(task* obj) {
 		data->mode++;
 		break;
 	case 1:
+		PlayCharacterGrabAnimation(p1, co2p1);
+		co2p2->spd.y = spdYFall;
+		co2p2->spd.z = 0.5f;
 		UpdateP1Position(co2p1, co2p2, p1, p2);
-		co2p2->spd.y -= 0.7f;
-		co2p2->spd.z += 0.6f;
 
-		if (++data->wtimer== 140 || (p1->flag & 3)) {
+
+		if (++data->wtimer == 140 || (p1->flag & 3)) {
 			data->mode++;
 		}
 		break;
 	case 2:
-
+		CharColliOn(p1);
+		CharColliOn(p2);
 		PlayCharacterLeaveAnimation(p1, co2p1, pnum);
 		RestoreAIControl(pnum);
-		ForcePlayerAction(0, 24);
 		EnableTailsAI_Controller(pnum);
 		EnableControl();
 		EnablePause();

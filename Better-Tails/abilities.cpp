@@ -82,7 +82,7 @@ void speedHighwayBuilding_Follow(unsigned char playerID) {
 
 	if (P2->pos.y <= -18660.0f) {
 
-		if (P2->mode == 18) {
+		if (P2->mode == AIObjControl) {
 			disableCol = false;
 			CharColliOn(P2);
 			ForcePlayerAction(playerID, 24);
@@ -248,7 +248,7 @@ void MilesAI_VictoryPose(task* obj) {
 			disableCol = true;
 			DisableTailsAICol(pnum);
 			ForcePlayerAction(pnum, 24);
-			p2->mode = 18;
+			p2->mode = AIObjControl;
 			p2->pos = UnitMatrix_GetPoint_Player(&p1->pos, &p2->ang, 0.0f, 0.0f, 7.0f);
 			p2->ang = p1->ang;
 
@@ -300,32 +300,38 @@ void ScoreDisplayMain_R(task* obj) {
 
 int copyDebugmode = 110;
 
-void PreventTailsAImode(unsigned char playerID) {
+void PreventTailsAImode(unsigned char aiID) {
 
-	if (playertwp[playerID]->charID != Characters_Tails || !playerpwp[playerID])
+	if (playertwp[aiID]->charID != Characters_Tails || !playerpwp[aiID])
 		return;
 
-	auto co2 = playerpwp[playerID];
-	auto data = playertwp[playerID];
+	auto co2 = playerpwp[aiID];
+	auto aiData = playertwp[aiID];
 
 	if (CurrentLevel == LevelIDs_MysticRuins && CurrentAct == 0)
 	{
-		if (data->mode == 38)
+		if (aiData->mode == 38)
 		{
-			data->mode = 1;
-			data->pos.x += 5.0f;
+			aiData->mode = 1;
+			aiData->pos.x += 5.0f;
 		}
 	}
 
 	if (DebugMode)
 	{
-		copyDebugmode = data->mode;
+		if (playertwp[0])
+		{
+			GetPlayerSidePos(&aiData->pos, playertwp[0], 20.0f);
+			SetPlayerPosition(aiID, 0, &aiData->pos, 0);
+		}
+
+		copyDebugmode = aiData->mode;
 	}
 	else {
-		if (data->mode == copyDebugmode)
+		if (aiData->mode == copyDebugmode)
 		{
-			data->flag &= ~Status_Ball;
-			data->mode = 1;
+			aiData->flag &= ~Status_Ball;
+			aiData->mode = 1;
 		}
 	}
 }
@@ -396,10 +402,10 @@ void AI_HubWorld_Vehicle(taskwk* p1, taskwk* milesData, task* miles)
 			EV_SetAction(miles, &action_m_m9002_miles, &MILES_TEXLIST, 1.0f, 3, 0);
 		disableCol = true;
 		DisableTailsAICol(AIIndex);
-		milesData->mode = 18;
+		milesData->mode = AIObjControl;
 	}
 
-	if (milesData->mode == 18)
+	if (milesData->mode == AIObjControl)
 	{
 		milesData->ang = p1->ang;
 		milesData->pos = UnitMatrix_GetPoint_Player(&p1->pos, &p1->ang, 2.0f, 1.0f, 5.0f);
@@ -407,7 +413,7 @@ void AI_HubWorld_Vehicle(taskwk* p1, taskwk* milesData, task* miles)
 
 	char nextmode = p1->smode;
 
-	if ((nextmode == 24 || nextmode == 5) && milesData->mode == 18)
+	if ((nextmode == 24 || nextmode == 5) && milesData->mode == AIObjControl)
 	{
 		ResetMilesAI(AIIndex, nextmode);
 	}
@@ -416,8 +422,8 @@ void AI_HubWorld_Vehicle(taskwk* p1, taskwk* milesData, task* miles)
 
 void MoveAI_Vehicle()
 {
-	if (!playertwp[0])
-		return;
+	if (!playertwp[0] || isFlyTravelEnabled() || isRescue())
+		return;			 
 
 	auto milesData = playertwp[AIIndex];
 	auto miles = (task*)PlayerPtrs[AIIndex];
