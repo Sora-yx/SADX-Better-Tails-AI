@@ -10,6 +10,7 @@ bool isFlyTravel = true;
 bool isRescueAllowed = true;
 bool isMSBanned = false;
 bool fasterRespawn = true;
+uint8_t rescueChance = 65;
 
 void config(const char* path)
 {
@@ -29,6 +30,11 @@ void config(const char* path)
 	IsStoryIA = config->getBool("AI", "IsStoryIA", true);
 	isFlyTravel = config->getBool("AI", "isFlyTravel", true);
 	isRescueAllowed = config->getBool("AI", "isRescueAllowed", true);
+
+	int chance = config->getInt("AI", "rescueChance", 65);
+	if (chance > -1 && chance < 101)
+		rescueChance = chance;
+
 	fasterRespawn = config->getBool("AI", "fasterRespawn", true);
 
 	delete config;

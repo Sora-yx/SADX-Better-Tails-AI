@@ -5,7 +5,6 @@ HMODULE multi = NULL;
 HelperFunctions HelperFunctionsGlobal;
 
 extern "C" {
-
 	__declspec(dllexport) void __cdecl Init(const char* path, const HelperFunctions& helperFunctions)
 	{
 		HelperFunctionsGlobal = helperFunctions; // Save the helper pointer for external use
@@ -26,11 +25,7 @@ extern "C" {
 	{
 		//LoadAI_OnFrames();
 
-
 		//DisplayDebugStringFormatted(NJM_LOCATION(2, 1), "Tails AI Pointer: %d", TailsAI_ptr != nullptr);
-
-
-
 	}
 
 	__declspec(dllexport) ModInfo SADXModInfo = { ModLoaderVer };

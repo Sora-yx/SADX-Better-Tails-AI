@@ -1,6 +1,5 @@
 #pragma once
 
-
 VoidFunc(FUN_0042ce20, 0x42ce20); //Called with Delete Tails AI
 
 FunctionPointer(int, GetCutsceneFlagArray, (int cutscene), 0x42fb10);
@@ -89,7 +88,6 @@ static inline void SetNPCMilesFlyMode(unsigned __int8 pnum)
 		call SetMilesFly_Ptr
 	}
 }
-
 
 // signed int __usercall TailsAI_RangeOut@<eax>(taskwk *p1@<eax>, taskwk *p2@<ecx>, task *a3@<edi>)
 static const void* const TailsAI_RangeOut_Ptr = (void*)0x47DC20;

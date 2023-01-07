@@ -9,7 +9,6 @@ task* MilesRescueTaskPtr = nullptr;
 bool isRescued = false;
 int rngDeathZoneRescue = 0;
 int rngRegularDeathRescue = 0;
-uint8_t rescueChance = 65;
 
 bool isRescue()
 {
@@ -17,20 +16,19 @@ bool isRescue()
 }
 
 void CameraEvent_MilesRescue(_OBJ_CAMERAPARAM* camparam) {
-
 	unsigned char ID = getAI_ID();
 
 	if (!ID)
 		return;
 
-	CameraTask.camxpos = playertwp[ID]->pos.x;	
-	CameraTask.camypos = playertwp[ID]->pos.y;	
+	CameraTask.camxpos = playertwp[ID]->pos.x;
+	CameraTask.camypos = playertwp[ID]->pos.y;
 	CameraTask.camzpos = playertwp[ID]->pos.z;
 	CameraTask.camxpos += 30;
 	CameraTask.camypos += 30;
 	CameraTask.camzpos += 30;
-	CameraTask.tgtxpos = playertwp[ID]->pos.x;	
-	CameraTask.tgtypos = playertwp[ID]->pos.y;	
+	CameraTask.tgtxpos = playertwp[ID]->pos.x;
+	CameraTask.tgtypos = playertwp[ID]->pos.y;
 	CameraTask.tgtzpos = playertwp[ID]->pos.z;
 }
 
@@ -84,9 +82,7 @@ const char* const Sonic_message01[] = {
 	NULL,
 };
 
-
 void TailsAI_LandingRescue(task* obj) {
-
 	auto data = obj->twp;
 	auto p1 = playertwp[0];
 	char pnum = data->counter.b[0];
@@ -95,15 +91,14 @@ void TailsAI_LandingRescue(task* obj) {
 	auto co2p1 = playerpwp[0];
 	auto co2p2 = playerpwp[pnum];
 
-	if (!p1|| !p2 || !IsIngame()) {
+	if (!p1 || !p2 || !IsIngame()) {
 		return;
 	}
 
 	LookAt(&p2->pos, &data->pos, nullptr, &p2->ang.y);
 
-
 	switch (data->mode) {
-	case 0: 
+	case 0:
 	{
 		isRescued = true;
 		obj->dest = TailsAI_LandingRescueDelete;
@@ -116,9 +111,8 @@ void TailsAI_LandingRescue(task* obj) {
 	case 1:
 		UpdateP1Position(co2p1, co2p2, p1, p2);
 		FlySoundOnFrames(pnum);
-	
-		if (++data->btimer == 30) {
 
+		if (++data->btimer == 30) {
 			data->smode = rand() % 2;
 			if (data->smode != 0) {
 				if (p1->counter.b[1] == Characters_Sonic) {
@@ -155,7 +149,6 @@ void TailsAI_LandingRescue(task* obj) {
 		RestoreAIControl(pnum);
 
 		if (++data->btimer == 20) {
-
 			FreeTask(obj);
 		}
 		break;
@@ -163,7 +156,6 @@ void TailsAI_LandingRescue(task* obj) {
 }
 
 void MilesRescuesCharacterFall(task* obj) {
-
 	auto data = obj->twp;
 	auto p1 = playertwp[0];
 	char pnum = data->counter.b[0];
@@ -189,7 +181,6 @@ void MilesRescuesCharacterFall(task* obj) {
 		break;
 	case catchPlayer:
 		if (p2->pos.y - p1->pos.y <= GetCharacterPositionY(p1) + 5.0f) {
-
 			p1co2->spd.y = 0.0f;
 			p2->flag &= ~(Status_Attack | Status_Ball | Status_LightDash);
 			p2->mode = 15;
@@ -215,8 +206,7 @@ void MilesRescuesCharacterFall(task* obj) {
 		}
 
 		if (++data->wtimer == 200) //get Altitude
-		{ 
-	
+		{
 			NJS_VECTOR getPos = CheckRescueArray(); //move player to safe point (ie: last grabbed checkpoint or specific spot in hub world)
 			if (getPos.x != -1 && getPos.y != -1 && getPos.z != -1) {
 				p1->pos = getPos;
@@ -230,7 +220,6 @@ void MilesRescuesCharacterFall(task* obj) {
 			data->mode++;
 		}
 		else {
-	
 			UpdateP1Position(p1co2, p2co2, p1, p2);
 		}
 		break;
@@ -259,8 +248,7 @@ void CheckAndCallMilesRescue(int playerID) {
 }
 
 bool BannedRescueLevel() {
-
-	if (CurrentLevel == LevelIDs_SpeedHighway && CurrentAct == 1 || CurrentLevel == LevelIDs_SkyDeck && CurrentAct == 1 || CurrentLevel == LevelIDs_IceCap && CurrentAct == 2 
+	if (CurrentLevel == LevelIDs_SpeedHighway && CurrentAct == 1 || CurrentLevel == LevelIDs_SkyDeck && CurrentAct == 1 || CurrentLevel == LevelIDs_IceCap && CurrentAct == 2
 		|| CurrentLevel == LevelIDs_TwinklePark && CurrentAct == 0 || CurrentLevel >= LevelIDs_TwinkleCircuit) {
 		return true;
 	}
@@ -269,14 +257,13 @@ bool BannedRescueLevel() {
 }
 
 void PlayCharacterDeathSound_r(ObjectMaster* a1, int pid) {
-
 	unsigned char ID = getAI_ID();
 
 	if (ID > 0 && (!playertwp[ID] || playertwp[ID]->counter.b[1] != Characters_Tails)) {
 		PlayCharacterDeathSound(a1, pid); //kill the player
 		return;
 	}
-	
+
 	if (isMilesSaving() || rngDeathZoneRescue) {
 		return;
 	}
@@ -285,9 +272,8 @@ void PlayCharacterDeathSound_r(ObjectMaster* a1, int pid) {
 		rngDeathZoneRescue = rand() % 100 + 1;
 
 		if (BannedRescueLevel() || isRescued && CurrentLevel < LevelIDs_StationSquare || rngDeathZoneRescue < 100 - rescueChance) {
-
 			PlayCharacterDeathSound(a1, pid); //kill the player
-			return;		
+			return;
 		}
 	}
 
@@ -302,10 +288,10 @@ static void __declspec(naked) PlayCharacterDeathSoundAsm(ObjectMaster* eax, int 
 	__asm
 	{
 		push[esp + 04h]
-		push eax 
+		push eax
 		call PlayCharacterDeathSound_r
-		pop eax 
-		add esp, 4 
+		pop eax
+		add esp, 4
 		retn
 	}
 }
@@ -317,10 +303,11 @@ void CheckMilesBossRescue(unsigned char ID) {
 	if (CurrentLevel == LevelIDs_EggHornet && playertwp[0]->pos.y > 94.0f || CurrentLevel == LevelIDs_EggViper && (playertwp[0]->pos.y > -150.0f || EggViper_Health < 3))
 		return;
 
-	if (!MilesRescueObj && !TailsRescueLanding && !rngDeathZoneRescue) {
+	if (!MilesRescueObj && !TailsRescueLanding && !rngDeathZoneRescue)
+	{
 		rngDeathZoneRescue = rand() % 100 + 1;
 
-		if (!playertwp[ID] || playertwp[ID]->counter.b[1] != Characters_Tails  || rngDeathZoneRescue < 100 - rescueChance) {
+		if (!playertwp[ID] || playertwp[ID]->counter.b[1] != Characters_Tails || rngDeathZoneRescue < 100 - rescueChance) {
 			return;
 		}
 	}
@@ -337,7 +324,6 @@ void MilesRescueEnemyDelete(task* obj) {
 }
 
 void MilesRescueFromEnemy(task* obj) {
-
 	auto data = obj->twp;
 	auto p1 = playertwp[0];
 	char pnum = data->counter.b[0];
@@ -353,8 +339,7 @@ void MilesRescueFromEnemy(task* obj) {
 		if (CurrentLevel < LevelIDs_Chaos0)
 			SetCameraEvent(CameraEvent_MilesRescue, CameraAdjustsIDs::None, CameraDirectIDs::Target);
 
-
-		p1->mode = 20;
+		p1->mode = 136;
 		p2->mode = 2;
 		data->mode++;
 		break;
@@ -379,8 +364,7 @@ void MilesRescueFromEnemy(task* obj) {
 		HurtCharacter(pnum);
 		PlaySound(33, 0, 0, 0);
 		isRescued = true;
-		p1->mode = 8;
-		co2p1->spd = { 1.5f, 4.0f, 0.0f };
+		EnemyBounceThing(0, 1.5f, 4.0f, 0.0f);
 		co2p1->item &= 0x100u;
 		data->mode++;
 		break;
@@ -389,13 +373,13 @@ void MilesRescueFromEnemy(task* obj) {
 		if (CurrentLevel < LevelIDs_Chaos0)
 			RemoveCameraEvent();
 
+		ForcePlayerAction(0, 17);
 		FreeTask(obj);
 		return;
 	}
 }
 
 void CheckPlayerDamage(unsigned __int8 player) {
-
 	unsigned char ID = getAI_ID();
 
 	if (ID == 0)
@@ -411,12 +395,14 @@ void CheckPlayerDamage(unsigned __int8 player) {
 	if (!MilesRescueTaskPtr && !rngRegularDeathRescue && !isRescued) {
 		rngRegularDeathRescue = rand() % 100 + 1;
 
-		if (rngRegularDeathRescue > 69 && playertwp[ID]) {
+		if (rngDeathZoneRescue < 100 - rescueChance) {
 			MilesRescueTaskPtr = CreateElementalTask((LoadObj)2, 1, MilesRescueFromEnemy);
 			MilesRescueTaskPtr->twp->counter.b[0] = ID;
 		}
 		else
+		{
 			return KillPlayer(player);
+		}
 	}
 }
 

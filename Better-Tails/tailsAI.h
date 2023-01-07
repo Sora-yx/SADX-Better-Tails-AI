@@ -56,9 +56,7 @@ enum milesAI_CustomAction
 	debugAction = 110,
 	passengerCart = 115,
 	followBuilding
-
 };
-
 
 extern int rngDeathZoneRescue;
 extern int rngRegularDeathRescue;

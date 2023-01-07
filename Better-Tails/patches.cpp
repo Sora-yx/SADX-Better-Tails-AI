@@ -15,7 +15,6 @@ void __cdecl EnableTailsAI_Controller(Uint8 index)
 }
 
 unsigned char getAI_ID() {
-
 	if (!playertwp[AIIndex])
 		return 0;
 
@@ -27,18 +26,16 @@ unsigned char getAI_ID() {
 }
 
 void RemovePlayerAttackCol(unsigned char ID) {
-
 	if (!playertwp[0] || ID > 0 && !playertwp[ID] || EV_MainThread_ptr || CharacterBossActive || AIIndex > 1)
 		return;
 
 	auto data = playertwp[0];
+	auto AI = playertwp[ID];
 
 	if (data->cwp)
 	{
 		if (data->cwp->nbInfo) {
-
 			for (int8_t i = 0; i < data->cwp->nbInfo; i++) {
-
 				playertwp[0]->cwp->info->damage &= ~0x20u; //Remove damage on other players
 			}
 		}
@@ -46,7 +43,6 @@ void RemovePlayerAttackCol(unsigned char ID) {
 }
 
 void RestorePlayerCollision(unsigned char ID) {
-
 	if (!playertwp[ID])
 		return;
 
@@ -55,9 +51,7 @@ void RestorePlayerCollision(unsigned char ID) {
 	if (data->cwp)
 	{
 		if (data->cwp->nbInfo) {
-
 			for (int8_t i = 0; i < data->cwp->nbInfo; i++) {
-
 				playertwp[ID]->cwp->info->damage |= 0x20u; //Remstore damage on other players
 			}
 		}
@@ -78,14 +72,12 @@ void __cdecl LoadCharacterBoss_r(int boss_id)
 	LoadCharacterBoss_t.Original(boss_id);
 
 	for (uint8_t i = 0; i < MaxPlayers; i++) {
-
 		RestorePlayerCollision(i);
 	}
 }
 
 //teleport AI to Player
 void moveAItoPlayer(unsigned char playerID) {
-
 	if (isAIActive)
 	{
 		if (isP1AndTailsAIEnabled(playerID))
@@ -96,7 +88,7 @@ void moveAItoPlayer(unsigned char playerID) {
 			if (CurrentCharacter != Characters_Big && CurrentCharacter != Characters_Gamma)
 				p2->pos = UnitMatrix_GetPoint_Player(&p1->pos, &p1->ang, -7.0f, 0.0f, 5.0f);
 			else
-				p2->pos = UnitMatrix_GetPoint_Player(&p1->pos, &p1->ang, -10.0f, 0.0f, 8.0f);	
+				p2->pos = UnitMatrix_GetPoint_Player(&p1->pos, &p1->ang, -10.0f, 0.0f, 8.0f);
 		}
 	}
 }
@@ -113,13 +105,11 @@ void moveAItoPlayer(unsigned char playerID, float posX, float posZ) {
 				p2->pos = UnitMatrix_GetPoint_Player(&p1->pos, &p1->ang, posX, 0.0f, posZ);
 			else
 				p2->pos = UnitMatrix_GetPoint_Player(&p1->pos, &p1->ang, posX - 3.0f, 0.0f, posZ + 3.0f);
-
 		}
 	}
 }
 
 bool isPlayerUsingSnowboard() {
-
 	if (CurrentCharacter == Characters_Sonic && playertwp[0]->mode >= 62 && playertwp[0]->mode <= 68)
 		return true;
 
@@ -297,7 +287,6 @@ void __cdecl LoadCharacter_r()
 }
 
 int GetRaceWinnerPlayer_r() {
-
 	unsigned char ID = getAI_ID();
 
 	if (ID > 0 && CurrentCharacter != Characters_Tails && playertwp[ID] != nullptr) {
@@ -313,10 +302,9 @@ void FixTailsAI_Train(int ID, void* a2, int a3, void* a4)
 {
 	DisableTailsAICol(AIIndex);
 	moveAItoPlayer(AIIndex);
-	
+
 	PlaySound(ID, a2, a3, a4);
 }
-
 
 void __cdecl FixTailsAI_ECAreaTransition(unsigned __int8 playerNum, char action)
 {
@@ -349,11 +337,10 @@ void __cdecl LeaveSnowBoard(uint8_t pnum, char action)
 }
 
 void AI_Patches() {
-
 	WriteJump(GetRaceWinnerPlayer, GetRaceWinnerPlayer_r); //fix wrong victory pose for Tails AI.
 	//delete Tails AI when a cutscene start
 	Ev_Load2_t.Hook(FreeNpcMilesPlayerTask_r);
-	//re create Tails AI after a cutscene ends. 
+	//re create Tails AI after a cutscene ends.
 	WriteJump(CreateNPCMilesPlayerTask, Load2PTails_r);
 	WriteData<1>((int*)0x42FD98, 0x3); //Load Event Char: change task lvl index from 1 to 3 (fix cutscene char crash, race process weld issue)
 
@@ -362,7 +349,6 @@ void AI_Patches() {
 
 	WriteData<6>((int*)0x460fcf, 0x90); //restore Miles's tail effect when AI
 	WriteCall((void*)0x4E95DC, LeaveSnowBoard); //make tails leave snowboard at the end of ice cap
-
 
 	if (IsHubBanned)
 		return;
@@ -373,4 +359,7 @@ void AI_Patches() {
 	WriteCall((void*)0x53A29B, FixTailsAI_Train);
 	WriteCall((void*)0x51BDD0, FixTailsAI_ECAreaTransition);
 	WriteCall((void*)0x62EECA, FixTailsAI_ECAreaTransition); //fix hostel respawn pos
+
+	//WriteData((TaskFuncPtr*)0x47DA1C, KnucklesTheEchidna);
+	//WriteData((CollisionData***)0x461832, &Knuckles_Collision);
 }

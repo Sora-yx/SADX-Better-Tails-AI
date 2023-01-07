@@ -1,6 +1,5 @@
 #include "stdafx.h"
 
-
 bool isAIActive = false;
 bool FlagDeleteMilesAI = false;
 int FlagAI = 0;
@@ -19,7 +18,6 @@ void DeleteMilesAI()
 			FreeTask(AI);
 	}
 }
-
 
 //Tails AI Flag Check
 int CheckTailsAI_R(void) {
@@ -73,7 +71,6 @@ int CheckTailsAI_R(void) {
 
 	if (CurrentCharacter == Characters_Big) {
 		if (CurrentLevel == LevelIDs_StationSquare) {
-
 			if (EventFlagArray[EventFlags_Big_TwinkleParkClear] == false)
 				return 0x0; //fix Sonic AI fight
 		}
@@ -110,12 +107,11 @@ task* LoadTails()
 
 //Load Tails AI
 void Load2PTails_r() {
-
 	if (TailsAI_ptr != nullptr)
 	{
 		return;
 	}
-	
+
 	FlagAI = CheckTailsAI_R();
 
 	if (FlagAI != 1)
@@ -150,7 +146,6 @@ void Load2PTails_r() {
 }
 
 void LoadCharacterAndAI() {
-
 	if (isFlyTravel)
 		CheckAndLoadMapPVM();
 
@@ -164,22 +159,18 @@ void LoadCharacterAndAI() {
 	return LoadCharacter_t.Original();
 }
 
-
 void MilesAI_OnFrames(taskwk* data, unsigned char aiID) { //Only run when TailsAI_Main is active
-
 	if (!playertwp[0] || !playertwp[aiID] || playertwp[aiID]->charID != Characters_Tails || !TailsAI_ptr)
 		return;
 
-
 	Miles_AbilitiesOnFrames(aiID);
 
-	if (isRescueAllowed && IsIngame())
+	if (isRescueAllowed)
 		CheckMilesBossRescue(aiID);
 }
 
 //Reset value when Tails AI is deleted
 void TailsAI_Delete_r(task* obj) {
-
 	TailsAI_ptr = nullptr;
 	AIIndex = 1;
 	rngDeathZoneRescue = 0;
@@ -192,7 +183,6 @@ void TailsAI_Delete_r(task* obj) {
 }
 
 void TailsAI_Main_R(task* obj) {
-
 	taskwk* data = obj->twp;
 	char pid = AIIndex;
 
@@ -210,8 +200,6 @@ void TailsAI_Main_R(task* obj) {
 
 	MilesAI_OnFrames(data, pid);
 
-	//DisplayDebugStringFormatted(NJM_LOCATION(2, 1), "AI Distance: % f", getMilesDistance(playertwp[0], playertwp[AIIndex]));
-
 	if (data->mode == 0) {
 		RemovePlayerAttackCol(pid);
 	}
@@ -225,11 +213,8 @@ void DisableTailsAICol(char pnum)
 		CharColliOff(playertwp[pnum]);
 }
 
-		
 void AI_Init(const HelperFunctions& helperFunctions, const char* path) {
-
 	if (!isRandoActive()) {
-
 		if (isCharSelActive())
 			WriteCall((void*)0x415A25, LoadCharacterAndAI);
 		else

@@ -45,7 +45,6 @@ bool isFlyTravelEnabled()
 }
 
 const char* getDestinationText() {
-
 	if (DestinationText[Cursor].size() > 1)
 		return DestinationText[Cursor].c_str();
 	else
@@ -74,7 +73,6 @@ void LoadDestination(int playerID) {
 }
 
 void __cdecl MovePlayerToStartPoint_r(taskwk* data) {
-
 	if (isMoving > 0 && isFlyTravel) {
 		playertwp[0]->pos = DestinationArray[Cursor].destination;
 		playertwp[0]->pos.y -= 6.5f;
@@ -134,7 +132,6 @@ int setCursorPos(int curLevel, int curAct) {
 }
 
 void DisplayCursorAnimation() {
-
 	if (!isUIScale())
 		return;
 
@@ -224,7 +221,6 @@ void __cdecl DisplayMilesMap_r()
 }
 
 void __cdecl PauseMenu_Map_Display_r() {
-
 	if (Cursor < 0 || Cursor > 8)
 		return;
 
@@ -241,7 +237,6 @@ void __cdecl PauseMenu_Map_Display_r() {
 }
 
 bool isTailsAI_GrabAllowed() {
-
 	auto p1 = playertwp[0];
 
 	if (CurrentLevel == LevelIDs_MysticRuins && CurrentAct == 0)
@@ -274,7 +269,6 @@ bool isTailsAI_GrabAllowed() {
 }
 
 void CheckAndForceLeavingGrab(taskwk* data) {
-
 	if (data->mode >= grabbed && data->mode <= leaving)
 	{
 		if (ControllerPointers[0]->PressedButtons & Buttons_B) {
@@ -285,7 +279,6 @@ void CheckAndForceLeavingGrab(taskwk* data) {
 }
 
 void FlySoundOnFrames(int playerID) {
-
 	auto ai = playertwp[playerID];
 
 	if (GameState != 15 || !ai || !TailsAI_ptr)
@@ -303,9 +296,7 @@ void FlySoundOnFrames(int playerID) {
 }
 
 void PlayCharacterGrabAnimation(taskwk* p1, playerwk* co2) {
-
 	switch (p1->charID) {
-
 	case Characters_Sonic:
 		if ((co2->equipment & Upgrades_SuperSonic) == 0)
 			co2->mj.reqaction = 47;
@@ -327,9 +318,7 @@ void PlayCharacterGrabAnimation(taskwk* p1, playerwk* co2) {
 }
 
 void PlayCharacterLeaveAnimation(taskwk* p1, playerwk* co2, int playerID) {
-
-
-	if ( (co2->equipment & Upgrades_SuperSonic) == 0)
+	if ((co2->equipment & Upgrades_SuperSonic) == 0)
 		ForcePlayerAction(playerID, 17);
 
 	switch (p1->charID) {
@@ -395,7 +384,6 @@ void RestoreAIControl(unsigned char ID) {
 }
 
 int CheckFastTravelStoryProgression() {
-
 	if (DestinationArray[Cursor].level == CurrentLevel && CurrentAct == DestinationArray[Cursor].act)
 		return 0;
 
@@ -431,7 +419,6 @@ int CheckFastTravelStoryProgression() {
 		return 0;
 	}
 
-
 	return 1;
 }
 
@@ -442,7 +429,6 @@ void TailsAI_GrabDelete(task* obj) {
 }
 
 void TailsAI_Grab(task* obj) {
-
 	auto data = obj->twp;
 	auto p1 = playertwp[0];
 	auto pnum = data->pNum;
@@ -453,7 +439,6 @@ void TailsAI_Grab(task* obj) {
 
 	if (data->mode != movetoDestination && (!p1
 		|| !p2 || GameState != 15 || TailsLanding || isMilesSaving())) {
-
 		if (p2) {
 			if (p2->mode == 125) //failsafe if the player start fly travel but leave the level/act
 				p2->mode = 1;
@@ -471,11 +456,10 @@ void TailsAI_Grab(task* obj) {
 	case initFly:
 		obj->dest = TailsAI_GrabDelete;
 		if (!isTailsAI_GrabAllowed()) {
-
 			SetDebugFontSize(24);
 			SetDebugFontColor(0xFF0000);
 			DisplayDebugStringFormatted(NJM_LOCATION(12, 12), "You cannot fast travel at the moment.");
-		
+
 			if (++data->wtimer == 60) {
 				SetDebugFontColor(0xFFFFFFFF);
 				FreeTask(obj);
@@ -569,7 +553,6 @@ void TailsAI_Grab(task* obj) {
 		co2p2->spd.x = 0.3f;
 		UpdateP1Position(co2p1, co2p2, p1, p2);
 
-
 		if (++data->wtimer == 180) {
 			LoadDestination(pnum);
 
@@ -602,7 +585,6 @@ void TailsAI_Grab(task* obj) {
 
 void TailsAI_LandingDelete(task* obj) {
 	if (TailsLanding) {
-
 		isMoving = 0;
 		Cursor = -1;
 		TailsLanding = nullptr;
@@ -610,7 +592,6 @@ void TailsAI_LandingDelete(task* obj) {
 }
 
 void TailsAI_Landing(task* obj) {
-
 	auto data = obj->twp;
 	auto p1 = playertwp[0];
 	auto pnum = data->pNum;
@@ -635,7 +616,7 @@ void TailsAI_Landing(task* obj) {
 	LookAt(&p2->pos, &data->pos, nullptr, &p2->ang.y);
 	FlySoundOnFrames(pnum);
 
-	switch (data->mode) 
+	switch (data->mode)
 	{
 	case 0:
 		obj->dest = TailsAI_LandingDelete;
@@ -652,7 +633,6 @@ void TailsAI_Landing(task* obj) {
 		co2p2->spd.y = spdYFall;
 		co2p2->spd.z = 0.5f;
 		UpdateP1Position(co2p1, co2p2, p1, p2);
-
 
 		if (++data->wtimer == 140 || (p1->flag & 3)) {
 			data->mode++;
@@ -672,7 +652,6 @@ void TailsAI_Landing(task* obj) {
 }
 
 void CheckAndLoadTailsTravelObjects(task* obj) {
-
 	taskwk* data = obj->twp;
 	char pid = AIIndex;
 
@@ -687,11 +666,9 @@ void CheckAndLoadTailsTravelObjects(task* obj) {
 	}
 
 	if (data->mode > 0) {
-
 		if (isInputModActive() && ControllerPointers[0]->PressedButtons & Buttons_C || !isInputModActive() && ControllerPointers[0]->PressedButtons & Buttons_Y)
 		{
 			if (playertwp[pid]->charID == Characters_Tails && playertwp[pid]->mode < 3 && playertwp[0]->mode < 3) {
-
 				if (!TailsGrab) {
 					TailsGrab = CreateElementalTask((LoadObj)2, 1, TailsAI_Grab);
 					TailsGrab->twp->pNum = pid;
@@ -727,7 +704,6 @@ void SetDestinationStringToArray(const char* path)
 }
 
 void FlyTravel_Init(const char* path) {
-
 	MovePlayerToStartPoint_t.Hook(MovePlayerToStartPoint_r);
 	SetDestinationStringToArray(path);
 }

@@ -39,7 +39,6 @@ bool isRandoActive() {
 }
 
 bool isInputModActive() {
-
 	bool Input = GetModuleHandle("input-mod");
 	bool Input2 = GetModuleHandle("sadx-input-mod");
 
@@ -56,17 +55,16 @@ bool isNewTricksActive() {
 		return true;
 
 	return false;
-
 }
 
 NJS_VECTOR UnitMatrix_GetPoint_Player(NJS_VECTOR* orig, Angle3* rot, float x, float y, float z) {
 	NJS_VECTOR point;
-	
+
 	njPushMatrix(_nj_unit_matrix_);
 	njTranslateV(0, orig);
 
 	njRotateY(0, (unsigned __int16)(-0x8000 - (rot->y)));
-		
+
 	njTranslate(0, x, y, z);
 	njGetTranslation(_nj_current_matrix_ptr_, &point);
 	njPopMatrix(1u);
@@ -127,7 +125,6 @@ void PlayerLookAt(NJS_VECTOR* from, NJS_VECTOR* to, Angle* outx, Angle* outy) {
 float GetDistance(NJS_VECTOR* orig, NJS_VECTOR* dest) {
 	return sqrtf(powf(dest->x - orig->x, 2) + powf(dest->y - orig->y, 2) + powf(dest->z - orig->z, 2));
 }
-
 
 bool isInHubWorld()
 {

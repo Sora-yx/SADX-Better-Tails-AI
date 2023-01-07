@@ -10,14 +10,12 @@ static FunctionHook<void, task*> execTPCoaster_t((intptr_t)0x61D6E0);
 bool disableCol = false;
 
 void SpinDash_Check(unsigned char ID, taskwk* data) {
-
 	if (!isNewTricksActive())
 		return;
 
 	auto pData = playertwp[0];
 
 	if (pData->charID == Characters_Sonic && pData->mode == 4 || pData->charID == Characters_Knuckles && pData->mode == 59) {
-
 		if (playertwp[ID]->flag & 0x10)
 		{
 			return;
@@ -45,7 +43,6 @@ void SnowboardRespawn(unsigned char playerID) {
 	auto milesAI = playertwp[playerID];
 
 	if (milesAI->mode< boardSlide || milesAI->mode > boardHurt) {
-
 		if (isPlayerUsingSnowboard()) {
 			DisableTailsAICol(playerID);
 			playertwp[playerID]->flag &= ~(Status_Attack | Status_Ball | Status_LightDash);
@@ -57,14 +54,12 @@ void SnowboardRespawn(unsigned char playerID) {
 	}
 }
 
-
 void snowboard_Follow(unsigned char playerID)
 {
 	auto P1 = playertwp[0];
 	auto P2 = playertwp[playerID];
 
 	if (isPlayerUsingSnowboard()) {
-
 		P2->ang = P1->ang;
 		playerpwp[playerID]->spd.x = playerpwp[0]->spd.x + 0.3f;
 		SnowboardRespawn(playerID);
@@ -72,7 +67,6 @@ void snowboard_Follow(unsigned char playerID)
 }
 
 void speedHighwayBuilding_Follow(unsigned char playerID) {
-
 	if (CurrentCharacter != Characters_Sonic || CurrentLevel != LevelIDs_SpeedHighway && CurrentAct != 1)
 		return;
 
@@ -81,7 +75,6 @@ void speedHighwayBuilding_Follow(unsigned char playerID) {
 	auto p2CO2 = playerpwp[playerID];
 
 	if (P2->pos.y <= -18660.0f) {
-
 		if (P2->mode == AIObjControl) {
 			disableCol = false;
 			CharColliOn(P2);
@@ -90,7 +83,6 @@ void speedHighwayBuilding_Follow(unsigned char playerID) {
 		}
 	}
 	else {
-
 		if (P1->mode >= 46 && P1->mode <= 50)
 		{
 			if (!disableCol) {
@@ -117,12 +109,10 @@ void speedHighwayBuilding_Follow(unsigned char playerID) {
 			}
 		}
 	}
-
 }
 
 //Load Tails AI Snowboard when playing Sonic
 void LoadAISnowBoard_R() {
-
 	ForcePlayerAction(0, 0x2c);
 
 	unsigned char ID = getAI_ID();
@@ -156,7 +146,6 @@ bool isChaoPetByAI = false;
 int chaoHappyTimer = 0;
 
 void MakeAIPetChao(task* Chao) {
-
 	auto data = Chao->twp;
 	auto p1 = playertwp[0];
 	auto ID = getAI_ID();
@@ -197,7 +186,6 @@ void MakeAIPetChao(task* Chao) {
 }
 
 void CheckAndMakeAIPetChao(task* Chao) {
-
 	unsigned char ID = getAI_ID();
 
 	if (!ID)
@@ -212,7 +200,6 @@ void CheckAndMakeAIPetChao(task* Chao) {
 }
 
 void Chao_Main_R(task* obj) {
-
 	auto p1 = playertwp[0];
 
 	if (IsPlayerInsideSphere(&obj->twp->pos, 10)) {
@@ -231,7 +218,6 @@ void Chao_Main_R(task* obj) {
 }
 
 void MilesAI_VictoryPose(task* obj) {
-
 	auto data = obj->twp;
 	auto pnum = data->pNum;
 
@@ -267,7 +253,6 @@ void MilesAI_VictoryPose(task* obj) {
 		}
 
 		if (++data->btimer == 5) {
-
 			if ((p2->flag & 3) == 0) { //last failsafe
 				p2->pos = UnitMatrix_GetPoint_Player(&p1->pos, &p2->ang, 0.0f, 0.0f, -6.0f); //try other side
 			}
@@ -284,11 +269,9 @@ void MilesAI_VictoryPose(task* obj) {
 
 //While load result: Teleport AI close to the player and Force Victory Pose.
 void ScoreDisplayMain_R(task* obj) {
-
 	unsigned char ID = getAI_ID();
 
 	if (ID > 0) {
-
 		if (obj->twp->mode == 0) {
 			task* victory = CreateElementalTask((LoadObj)(LoadObj_Data1 | LoadObj_Data2), 2, MilesAI_VictoryPose);
 			victory->twp->pNum = ID;
@@ -301,7 +284,6 @@ void ScoreDisplayMain_R(task* obj) {
 int copyDebugmode = 110;
 
 void PreventTailsAImode(unsigned char aiID) {
-
 	if (playertwp[aiID]->charID != Characters_Tails || !playerpwp[aiID])
 		return;
 
@@ -355,7 +337,6 @@ void ResetMilesAI(char pnum, char mode)
 	co2Miles->mj.reqaction = 1;
 }
 
-
 void AI_SitInCart(taskwk* p1, taskwk* milesData, task* miles)
 {
 	char pnum = milesData->pNum;
@@ -383,7 +364,6 @@ void AI_SitInCart(taskwk* p1, taskwk* milesData, task* miles)
 			ResetMilesAI(AIIndex, 28);
 		}
 	}
-
 }
 
 void AI_HubWorld_Vehicle(taskwk* p1, taskwk* milesData, task* miles)
@@ -417,7 +397,6 @@ void AI_HubWorld_Vehicle(taskwk* p1, taskwk* milesData, task* miles)
 	{
 		ResetMilesAI(AIIndex, nextmode);
 	}
-
 }
 
 void MoveAI_Vehicle()
@@ -505,7 +484,6 @@ void MilesFasterRespawn(taskwk* p1, taskwk* p2)
 	}
 }
 
-
 void Miles_AbilitiesOnFrames(unsigned char pnum)
 {
 	MoveAI_Vehicle();
@@ -519,13 +497,11 @@ void Miles_AbilitiesOnFrames(unsigned char pnum)
 	SpinDash_Check(pnum, playertwp[pnum]);
 	snowboard_Follow(pnum);
 
-
 	if (fasterRespawn)
 		MilesFasterRespawn(playertwp[0], playertwp[pnum]);
 }
 
 void AI_Improvement(const char* path) {
-
 	//Miles General Improvement
 	WriteCall((void*)0x597b14, LoadAISnowBoard_R);  //Load AI Snowboard when playing Sand Hill
 	WriteCall((void*)0x4ea091, LoadAISnowBoard_R);  //Load AI Snowboard when playing Ice Cap.
