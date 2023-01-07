@@ -39,8 +39,7 @@ MilesAI_Fly RescueArray[]{
 	{ LevelIDs_EggViper, 0, 260, 12.8, 0},
 	{ LevelIDs_StationSquare, 0,  273.946, 93.7993, 345.299},
 	{ LevelIDs_StationSquare, 1,  -14.823, 122.437, 1339.01},
-	{ LevelIDs_StationSquare, 2,  399.721, -54.527, 994.5
-},
+	{ LevelIDs_StationSquare, 2,  399.721, -54.527, 994.5},
 	{ LevelIDs_StationSquare, 3,  63.2726, 152.052, 1511.99},
 	{ LevelIDs_StationSquare, 4,  -470.063, 105.65, 2034.67},
 	{ LevelIDs_StationSquare, 5,  695.884, 87.0144, 1771.52},

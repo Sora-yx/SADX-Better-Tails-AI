@@ -423,7 +423,7 @@ void AI_HubWorld_Vehicle(taskwk* p1, taskwk* milesData, task* miles)
 void MoveAI_Vehicle()
 {
 	if (!playertwp[0] || isFlyTravelEnabled() || isRescue())
-		return;			 
+		return;
 
 	auto milesData = playertwp[AIIndex];
 	auto miles = (task*)PlayerPtrs[AIIndex];
@@ -508,7 +508,9 @@ void MilesFasterRespawn(taskwk* p1, taskwk* p2)
 
 void Miles_AbilitiesOnFrames(unsigned char pnum)
 {
-	if (!playertwp[0] || !playertwp[pnum])
+	MoveAI_Vehicle();
+
+	if (!IsIngame())
 		return;
 
 	InvincibilityCheck(pnum);
@@ -517,7 +519,6 @@ void Miles_AbilitiesOnFrames(unsigned char pnum)
 	SpinDash_Check(pnum, playertwp[pnum]);
 	snowboard_Follow(pnum);
 
-	MoveAI_Vehicle();
 
 	if (fasterRespawn)
 		MilesFasterRespawn(playertwp[0], playertwp[pnum]);
