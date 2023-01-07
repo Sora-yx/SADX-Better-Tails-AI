@@ -319,7 +319,7 @@ void PlayCharacterGrabAnimation(taskwk* p1, playerwk* co2) {
 
 void PlayCharacterLeaveAnimation(taskwk* p1, playerwk* co2, int playerID) {
 	if ((co2->equipment & Upgrades_SuperSonic) == 0)
-		ForcePlayerAction(playerID, 17);
+		ForcePlayerAction(playerID, 24);
 
 	switch (p1->charID) {
 	case Characters_Sonic:
@@ -680,7 +680,9 @@ void CheckAndLoadTailsTravelObjects(task* obj) {
 
 void SetDestinationStringToArray(const char* path)
 {
-	const IniFile* ini = new IniFile(std::string(path) + "\\system\\flyTravelStrings.ini");
+	std::string iniPath = "\\system\\flyTravelStrings.ini";
+	std::string fullPath = path + iniPath;
+	const IniFile* ini = new IniFile(std::string(HelperFunctionsGlobal.GetReplaceablePath(fullPath.c_str())));
 
 	if (!ini)
 	{

@@ -31,7 +31,7 @@ void config(const char* path)
 	isFlyTravel = config->getBool("AI", "isFlyTravel", true);
 	isRescueAllowed = config->getBool("AI", "isRescueAllowed", true);
 
-	int chance = config->getInt("AI", "rescueChance", 65);
+	int chance = config->getInt("AI", "rescueChance", rescueChance);
 	if (chance > -1 && chance < 101)
 		rescueChance = chance;
 

@@ -131,6 +131,7 @@ void TailsAI_LandingRescue(task* obj) {
 	case 2:
 		FlySoundOnFrames(pnum);
 		co2p2->spd.y = spdYFall;
+		co2p1->spd.y = spdYFall;
 		UpdateP1Position(co2p1, co2p2, p1, p2);
 
 		if (++data->wtimer == 80 || ((p1->flag & 3))) {
@@ -145,8 +146,11 @@ void TailsAI_LandingRescue(task* obj) {
 		co2p2->item &= 0x100u;
 		co2p1->item &= 0x100u;
 		EnableController(0);
+
 		PlayCharacterLeaveAnimation(p1, co2p1, pnum);
 		RestoreAIControl(pnum);
+		p2->mode = 15;
+		co2p2->mj.reqaction = 37;
 
 		if (++data->btimer == 20) {
 			FreeTask(obj);
