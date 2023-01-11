@@ -45,7 +45,8 @@ bool isFlyTravelEnabled()
 }
 
 const char* getDestinationText() {
-	if (DestinationText[Cursor].size() > 1)
+
+	if (DestinationText.size() > 1)
 		return DestinationText[Cursor].c_str();
 	else
 		return "";
@@ -681,13 +682,15 @@ void CheckAndLoadTailsTravelObjects(task* obj) {
 
 void SetDestinationStringToArray(const char* path)
 {
-	std::string iniPath = "\\system\\flyTravelStrings.ini";
-	std::string fullPath = path + iniPath;
-	const IniFile* ini = new IniFile(std::string(HelperFunctionsGlobal.GetReplaceablePath(fullPath.c_str())));
+	std::string iniPath = "SYSTEM\\flyTravelStrings.ini";
 
-	if (!ini)
+	auto originFilePath = HelperFunctionsGlobal.GetReplaceablePath(iniPath.c_str()); //used to make other mods able to replace the strings
+	const IniFile* ini = new IniFile(std::string(originFilePath));
+
+	if (!IsPathExist(originFilePath))
 	{
 		PrintDebug("Failed to get Fly travel strings... destination texts won't show up.\n");
+		delete ini;
 		return;
 	}
 

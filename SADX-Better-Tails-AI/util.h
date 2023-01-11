@@ -22,3 +22,4 @@ bool isCharSelActive();
 bool isRandoActive();
 bool isUIScale();
 bool isMultiEnabled();
+bool IsPathExist(const std::string& s);
