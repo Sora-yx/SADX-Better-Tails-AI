@@ -685,14 +685,14 @@ void SetDestinationStringToArray(const char* path)
 	std::string iniPath = "SYSTEM\\flyTravelStrings.ini";
 
 	auto originFilePath = HelperFunctionsGlobal.GetReplaceablePath(iniPath.c_str()); //used to make other mods able to replace the strings
-	const IniFile* ini = new IniFile(std::string(originFilePath));
 
 	if (!IsPathExist(originFilePath))
 	{
 		PrintDebug("Failed to get Fly travel strings... destination texts won't show up.\n");
-		delete ini;
 		return;
 	}
+
+	const IniFile* ini = new IniFile(std::string(originFilePath));
 
 	std::string title = ini->getString("0", "title", "");
 	destTitle = title + ": %s";
