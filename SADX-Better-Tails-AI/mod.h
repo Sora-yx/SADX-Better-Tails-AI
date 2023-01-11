@@ -22,7 +22,7 @@ extern bool isRescueAllowed;
 extern bool isRescued;
 extern bool isMSBanned;
 extern bool fasterRespawn;
-extern uint8_t rescueChance;
+extern int rescueChance;
 extern bool chillInGarden;
 
 void AI_Init(const HelperFunctions& helperFunctions);

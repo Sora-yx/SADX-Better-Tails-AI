@@ -10,7 +10,7 @@ bool isFlyTravel = true;
 bool isRescueAllowed = true;
 bool isMSBanned = false;
 bool fasterRespawn = true;
-uint8_t rescueChance = 65;
+int rescueChance = 65;
 
 void config(const char* path)
 {

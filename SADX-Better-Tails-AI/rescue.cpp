@@ -114,7 +114,7 @@ void TailsAI_LandingRescue(task* obj) {
 		FlySoundOnFrames(pnum);
 
 		if (++data->btimer == 30) {
-			data->smode = 1;
+			data->smode = rand () % 2;
 			if (data->smode != 0) {
 				if (p1->counter.b[1] == Characters_Sonic) 
 				{
@@ -265,7 +265,8 @@ bool BannedRescueLevel() {
 void PlayCharacterDeathSound_r(ObjectMaster* a1, int pid) {
 	unsigned char ID = getAI_ID();
 
-	if (ID > 0 && (!playertwp[ID] || playertwp[ID]->counter.b[1] != Characters_Tails)) {
+	if (ID == 0 || ID > 0 && (!playertwp[ID] || playertwp[ID]->counter.b[1] != Characters_Tails))
+	{
 		PlayCharacterDeathSound(a1, pid); //kill the player
 		return;
 	}
@@ -274,17 +275,18 @@ void PlayCharacterDeathSound_r(ObjectMaster* a1, int pid) {
 		return;
 	}
 
-	if (!MilesRescueObj && !TailsRescueLanding && !rngDeathZoneRescue) {
+	if (!MilesRescueObj && !TailsRescueLanding && !rngDeathZoneRescue) 
+	{
 		rngDeathZoneRescue = rand() % 100 + 1;
 
-		if (BannedRescueLevel() || isRescued && CurrentLevel < LevelIDs_StationSquare || rngDeathZoneRescue < 100 - rescueChance) {
+		if (BannedRescueLevel() || isRescued && CurrentLevel < LevelIDs_StationSquare || rngDeathZoneRescue > rescueChance) 
+		{
 			PlayCharacterDeathSound(a1, pid); //kill the player
 			return;
 		}
 	}
 
-	if (ID > 0)
-		CheckAndCallMilesRescue(ID);
+	CheckAndCallMilesRescue(ID);
 
 	return;
 }
@@ -313,7 +315,8 @@ void CheckMilesBossRescue(unsigned char ID) {
 	{
 		rngDeathZoneRescue = rand() % 100 + 1;
 
-		if (!playertwp[ID] || playertwp[ID]->counter.b[1] != Characters_Tails || rngDeathZoneRescue < 100 - rescueChance) {
+		if (!playertwp[ID] || playertwp[ID]->counter.b[1] != Characters_Tails ||  rngDeathZoneRescue > rescueChance) 
+		{
 			return;
 		}
 	}
@@ -363,11 +366,12 @@ void MilesRescueFromEnemy(task* obj) {
 
 		if (GetCollidingEntityA((EntityData1*)p2) || ++data->wtimer == 50)
 			data->mode++;
+
 		break;
 	case 3:
 		p2->mode = 4;
 		co2p2->spd = { 1.0f, 0.0f, 0.0f };
-		HurtCharacter(pnum);
+		p1->mode = 1;
 		PlaySound(33, 0, 0, 0);
 		isRescued = true;
 		EnemyBounceThing(0, 1.5f, 4.0f, 0.0f);
@@ -379,7 +383,6 @@ void MilesRescueFromEnemy(task* obj) {
 		if (CurrentLevel < LevelIDs_Chaos0)
 			RemoveCameraEvent();
 
-		ForcePlayerAction(0, 17);
 		FreeTask(obj);
 		return;
 	}
@@ -398,10 +401,11 @@ void CheckPlayerDamage(unsigned __int8 player) {
 	if (isMilesSaving() || rngRegularDeathRescue)
 		return;
 
-	if (!MilesRescueTaskPtr && !rngRegularDeathRescue && !isRescued) {
+	if (!MilesRescueTaskPtr && !rngRegularDeathRescue && !isRescued) 
+	{
 		rngRegularDeathRescue = rand() % 100 + 1;
 
-		if (rngDeathZoneRescue < 100 - rescueChance) {
+		if (rescueChance > rngRegularDeathRescue) {
 			MilesRescueTaskPtr = CreateElementalTask((LoadObj)2, 1, MilesRescueFromEnemy);
 			MilesRescueTaskPtr->twp->counter.b[0] = ID;
 		}
