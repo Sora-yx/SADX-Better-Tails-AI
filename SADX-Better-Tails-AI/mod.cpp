@@ -17,7 +17,7 @@ extern "C" {
 		WriteJump(TailsAI_Delete, TailsAI_Delete_r); //Reset value and stuff properly when Tails AI is deleted by the game.
 
 		//Tails AI Stuff (Load, Fixes...)
-		AI_Init(helperFunctions, path);
+		AI_Init(helperFunctions);
 
 
 		multi = GetModuleHandleW(L"sadx-multiplayer");

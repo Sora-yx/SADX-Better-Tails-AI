@@ -7,9 +7,9 @@ task* TailsGrab = nullptr;
 uint8_t isMoving = 0;
 task* TailsLanding = nullptr;
 const int8_t cursorMaxPos = 8;
-std::string destTitle = "";
+static std::string destTitle = "";
 
-std::vector<std::string> DestinationText;
+static std::vector<std::string> DestinationText;
 
 NJS_TEXANIM	MilesCursor_TEXANIM[]{
 	{ 0x10, 0x10, 0, 0, 0, 0, 0x100, 0x100, 0, 0x20 },
@@ -680,7 +680,7 @@ void CheckAndLoadTailsTravelObjects(task* obj) {
 	}
 }
 
-void SetDestinationStringToArray(const char* path)
+void SetDestinationStringToArray()
 {
 	std::string iniPath = "SYSTEM\\flyTravelStrings.ini";
 
@@ -709,7 +709,7 @@ void SetDestinationStringToArray(const char* path)
 	delete ini;
 }
 
-void FlyTravel_Init(const char* path) {
+void FlyTravel_Init() {
 	MovePlayerToStartPoint_t.Hook(MovePlayerToStartPoint_r);
-	SetDestinationStringToArray(path);
+	SetDestinationStringToArray();
 }

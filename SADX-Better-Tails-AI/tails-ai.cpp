@@ -213,8 +213,10 @@ void DisableTailsAICol(char pnum)
 		CharColliOff(playertwp[pnum]);
 }
 
-void AI_Init(const HelperFunctions& helperFunctions, const char* path) {
-	if (!isRandoActive()) {
+void AI_Init(const HelperFunctions& helperFunctions) {
+
+	if (!isRandoActive()) 
+	{
 		if (isCharSelActive())
 			WriteCall((void*)0x415A25, LoadCharacterAndAI);
 		else
@@ -225,7 +227,7 @@ void AI_Init(const HelperFunctions& helperFunctions, const char* path) {
 		WriteJump(Load2PTails, Load2PTails_r);
 
 		AI_Patches();
-		AI_Improvement(path);
+		AI_Improvement();
 	}
 
 	TailsAI_Main_t.Hook(TailsAI_Main_R);

@@ -76,13 +76,12 @@ void Rescue_Init();
 void PlayCharacterGrabAnimation(taskwk* p1, playerwk* co2);
 void FlySoundOnFrames(int playerID);
 
-void MilesAI_OnFrames(unsigned char playerID);
 bool isNewTricksActive();
 float getMilesDistance(taskwk* p1, taskwk* p2);
 
 void GetPlayerSidePos(NJS_VECTOR* v1, taskwk* a2, float m);
 
-void FlyTravel_Init(const char* path);
+void FlyTravel_Init();
 
 void CheckAndLoadMapPVM();
 unsigned char getAI_ID();
@@ -109,7 +108,7 @@ void CheckAndLoadTailsTravelObjects(task* obj);
 void TailsAI_Delete_r(task* obj);
 void AI_Patches();
 void SnowboardRespawn(unsigned char ID);
-void AI_Improvement(const char* path);
+void AI_Improvement();
 int isCharacterPetting();
 void FadeoutScreen(ObjectMaster* obj);
 bool isFlyTravelEnabled();

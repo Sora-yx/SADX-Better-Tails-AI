@@ -25,4 +25,4 @@ extern bool fasterRespawn;
 extern uint8_t rescueChance;
 extern bool chillInGarden;
 
-void AI_Init(const HelperFunctions& helperFunctions, const char* path);
+void AI_Init(const HelperFunctions& helperFunctions);

@@ -10,6 +10,7 @@ bool isRescued = false;
 int rngDeathZoneRescue = 0;
 int rngRegularDeathRescue = 0;
 
+
 bool isRescue()
 {
 	return MilesRescueObj || TailsRescueLanding || MilesRescueTaskPtr;
@@ -77,7 +78,7 @@ void TailsAI_RescueDelete(task* obj) {
 	MilesRescueObj = nullptr;
 }
 
-const char* const Sonic_message01[] = {
+const char* Sonic_message01[] = {
 	"	 	 Thanks Tails!   \n",
 	NULL,
 };
@@ -113,12 +114,13 @@ void TailsAI_LandingRescue(task* obj) {
 		FlySoundOnFrames(pnum);
 
 		if (++data->btimer == 30) {
-			data->smode = rand() % 2;
+			data->smode = 1;
 			if (data->smode != 0) {
-				if (p1->counter.b[1] == Characters_Sonic) {
-					if (TextLanguage == 1)
-						DisplayHintText(Sonic_message01, 100);
+				if (p1->counter.b[1] == Characters_Sonic) 
+				{
 
+					DisplayHintText(Sonic_message01, 100);
+					
 					if (VoiceLanguage)
 						PlayVoice(64871);
 				}
@@ -410,8 +412,32 @@ void CheckPlayerDamage(unsigned __int8 player) {
 	}
 }
 
+void SetRescueStringToVariable()
+{
+	std::string iniPath = "SYSTEM\\rescueStrings.ini";
+
+	auto originFilePath = HelperFunctionsGlobal.GetReplaceablePath(iniPath.c_str()); //used to make other mods able to replace the strings
+
+	if (!IsPathExist(originFilePath))
+	{
+		PrintDebug("Failed to get rescue strings... texts won't show up.\n");
+		return;
+	}
+
+	const IniFile* ini = new IniFile(std::string(originFilePath));
+
+	std::string s = std::to_string(0);
+	std::string text = ini->getString(s, "text", "");
+	const uint16_t size = text.length() + 1;
+	char* textChar = new char[size];
+	strcpy_s(textChar, size, text.c_str());
+	Sonic_message01[0] = textChar;
+	delete ini;
+}
+
 void Rescue_Init() {
 	WriteCall((void*)0x44af87, PlayCharacterDeathSoundAsm);
 	WriteCall((void*)0x44affe, PlayCharacterDeathSoundAsm);
 	WriteCall((void*)0x450785, CheckPlayerDamage);
+	SetRescueStringToVariable();
 }
