@@ -10,8 +10,12 @@ const int8_t cursorMaxPos = 8;
 static std::string destTitle = "";
 
 static std::vector<std::string> DestinationText;
+static const uint8_t defaultFrames = 15;
+static uint16_t nbFrames = defaultFrames;
+static int frameTransition = 2;
 
-NJS_TEXANIM	MilesCursor_TEXANIM[]{
+std::vector<NJS_TEXANIM> MilesCursor_TEXANIM
+{
 	{ 0x10, 0x10, 0, 0, 0, 0, 0x100, 0x100, 0, 0x20 },
 	{ 0x10, 0x10, 0, 0, 0, 0, 0x100, 0x100, 1, 0x20 },
 	{ 0x10, 0x10, 0, 0, 0, 0, 0x100, 0x100, 2, 0x20 },
@@ -29,15 +33,15 @@ NJS_TEXANIM	MilesCursor_TEXANIM[]{
 	{ 0x10, 0x10, 0, 0, 0, 0, 0x100, 0x100, 14, 0x20 }
 };
 
-NJS_TEXNAME MilesCursor_TEXNAMES[15];
+NJS_TEXNAME MilesCursor_TEXNAMES[17];
 NJS_TEXLIST MilesCursor_TEXLIST = { arrayptrandlength(MilesCursor_TEXNAMES) };
-NJS_SPRITE MilesCursor_SPRITE = { { 0, 0, 0 }, 1.0, 1.0, 0, &MilesCursor_TEXLIST, MilesCursor_TEXANIM };
+NJS_SPRITE MilesCursor_SPRITE = { { 0, 0, 0 }, 1.0, 1.0, 0, &MilesCursor_TEXLIST, MilesCursor_TEXANIM.data() };
 
 NJS_TEXNAME TravelMap_TEXNAMES[30];
 NJS_TEXLIST TravelMap_TEXLIST = { arrayptrandlength(TravelMap_TEXNAMES) };
 
-int Cursor = -1;
-int MilesCurTex = 0;
+static int Cursor = -1;
+static int MilesCurTex = 0;
 
 bool isFlyTravelEnabled()
 {
@@ -141,15 +145,12 @@ void DisplayCursorAnimation() {
 	MilesCursor_SPRITE.sx = 2 * scale;
 	MilesCursor_SPRITE.sy = 2 * scale;
 
-	if (MilesCurTex >= 14)
-		MilesCurTex = 0;
-
-	if (FrameCounterUnpaused % 10 == 0 && MilesCurTex < 15)
-		MilesCurTex++;
-
 	MilesCursor_SPRITE.p.x = DestinationArray[Cursor].cursor.x;
 	MilesCursor_SPRITE.p.y = DestinationArray[Cursor].cursor.y;
+
 	njDrawSprite2D_Queue(&MilesCursor_SPRITE, MilesCurTex, -1.501f, NJD_SPRITE_ALPHA | NJD_SPRITE_COLOR, QueuedModelFlagsB_SomeTextureThing);
+
+	MilesCurTex = FrameCounterUnpaused / frameTransition % nbFrames;
 }
 
 void UpdatePlayerCursorPos() {
@@ -709,7 +710,46 @@ void SetDestinationStringToArray()
 	delete ini;
 }
 
+void SetFlyTravelCursorAnim()
+{
+	std::string iniPath = "SYSTEM\\cursorInfoT.ini";
+
+	auto originFilePath = HelperFunctionsGlobal.GetReplaceablePath(iniPath.c_str()); //used to make other mods able to edit the cursor anim data
+
+	if (!IsPathExist(originFilePath))
+	{
+		PrintDebug("Failed to get mod cursor info...\n");
+		return;
+	}
+
+	//get cursor anim data...
+	const IniFile* ini = new IniFile(std::string(originFilePath));
+	nbFrames = ini->getInt("cursorAnim", "nbFrames", nbFrames);
+	frameTransition = ini->getInt("cursorAnim", "frameTransition", frameTransition);
+	delete(ini);
+
+	//if the user increased the number of tex ids the anim should use, fill the array with the changes.
+	if (nbFrames > defaultFrames) 
+	{
+		uint16_t difference = nbFrames - defaultFrames;
+
+		for (uint16_t i = defaultFrames; i < nbFrames; i++)
+		{
+			NJS_TEXANIM newData = { 0x10, 0x10, 0, 0, 0, 0, 0x100, 0x100, i, 0x20 };
+			MilesCursor_TEXANIM.push_back(newData);
+		}	
+	}	
+
+	//if the user edited the number of tex ids the anim should use; resize the array and update the sprite with the new tex anim data.
+	if (nbFrames != defaultFrames)
+	{
+		MilesCursor_TEXANIM.resize(nbFrames);
+		MilesCursor_SPRITE.tanim = MilesCursor_TEXANIM.data();
+	}
+}
+
 void FlyTravel_Init() {
 	MovePlayerToStartPoint_t.Hook(MovePlayerToStartPoint_r);
 	SetDestinationStringToArray();
+	SetFlyTravelCursorAnim();
 }
