@@ -85,8 +85,7 @@ void FlyTravel_Init();
 
 void CheckAndLoadMapPVM();
 unsigned char getAI_ID();
-void RemovePlayerAttackCol(unsigned char ID);
-void RestorePlayerCollision(unsigned char ID);
+
 void moveAItoPlayer(unsigned char playerID, float posX, float posZ);
 void Miles_AbilitiesOnFrames(unsigned char pnum);
 void ResetMilesAI(char pnum, char action);
@@ -97,16 +96,13 @@ bool isTailsAI();
 bool isP1AndTailsAIEnabled(char playerID);
 
 void Load2PTails_r();
-void RestoreAIControl(unsigned char ID);
-void FixAIHubTransition();
-void FixAIHubTransition2();
-void LoadCharacterAndAI();
+
 void LookAt(NJS_VECTOR* from, NJS_VECTOR* to, Angle* outx, Angle* outy);
 void moveAItoPlayer(unsigned char playerID);
 bool isMilesSaving();
 void CheckAndLoadTailsTravelObjects(task* obj);
 void TailsAI_Delete_r(task* obj);
-void AI_Patches();
+
 void SnowboardRespawn(unsigned char ID);
 void AI_Improvement();
 int isCharacterPetting();

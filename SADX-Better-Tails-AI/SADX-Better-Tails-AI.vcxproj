@@ -151,6 +151,7 @@
   <ItemGroup>
     <ClInclude Include="framework.h" />
     <ClInclude Include="mod.h" />
+    <ClInclude Include="patches.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="SADX-Util.h" />
     <ClInclude Include="tailsAI.h" />

@@ -20,6 +20,7 @@
 #include "SADX-Util.h"
 #include "mod.h"
 #include "tailsAI.h"
+#include "patches.h"
 #include "util.h"
 
 #endif //PCH_H

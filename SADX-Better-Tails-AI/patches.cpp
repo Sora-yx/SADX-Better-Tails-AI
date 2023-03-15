@@ -14,7 +14,8 @@ void __cdecl EnableTailsAI_Controller(Uint8 index)
 	ControllerEnabled[index] = 1;
 }
 
-unsigned char getAI_ID() {
+unsigned char getAI_ID() 
+{
 	if (!playertwp[AIIndex])
 		return 0;
 
@@ -25,24 +26,25 @@ unsigned char getAI_ID() {
 	return 0;
 }
 
-void RemovePlayerAttackCol(unsigned char ID) {
-	if (!playertwp[0] || ID > 0 && !playertwp[ID] || EV_MainThread_ptr || CharacterBossActive || AIIndex > 1)
+void RemoveAttackSolidColFlags(uint8_t pID) 
+{
+	if (!playertwp[pID] || EV_MainThread_ptr || CharacterBossActive || AIIndex > 1)
 		return;
 
-	auto data = playertwp[0];
-	auto AI = playertwp[ID];
+	auto pData = playertwp[pID];
 
-	if (data->cwp)
+	if (pData->cwp && pData->cwp->nbInfo)
 	{
-		if (data->cwp->nbInfo) {
-			for (int8_t i = 0; i < data->cwp->nbInfo; i++) {
-				playertwp[0]->cwp->info->damage &= ~0x20u; //Remove damage on other players
-			}
+		for (int8_t i = 0; i < pData->cwp->nbInfo; i++)
+		{
+			playertwp[pID]->cwp->info[i].damage &= ~0x20u; //Remove damage on other players
+			playertwp[pID]->cwp->info[i].push &= ~0x1u; //remove push flag on other players
 		}
 	}
 }
 
-void RestorePlayerCollision(unsigned char ID) {
+void RestorePlayerCollision(unsigned char ID) 
+{
 	if (!playertwp[ID])
 		return;
 
@@ -50,9 +52,12 @@ void RestorePlayerCollision(unsigned char ID) {
 
 	if (data->cwp)
 	{
-		if (data->cwp->nbInfo) {
-			for (int8_t i = 0; i < data->cwp->nbInfo; i++) {
-				playertwp[ID]->cwp->info->damage |= 0x20u; //Remstore damage on other players
+		if (data->cwp->nbInfo) 
+		{
+			for (int8_t i = 0; i < data->cwp->nbInfo; i++) 
+			{
+				playertwp[ID]->cwp->info[i].damage |= 0x20u; //Restore damage on other players
+				playertwp[ID]->cwp->info[i].push |= 0x1u; //Restore push flag on other players
 			}
 		}
 	}
@@ -71,7 +76,8 @@ void __cdecl LoadCharacterBoss_r(int boss_id)
 	DeleteMilesAI();
 	LoadCharacterBoss_t.Original(boss_id);
 
-	for (uint8_t i = 0; i < MaxPlayers; i++) {
+	for (uint8_t i = 0; i < MaxPlayers; i++) 
+	{
 		RestorePlayerCollision(i);
 	}
 }
@@ -286,7 +292,8 @@ void __cdecl LoadCharacter_r()
 	}
 }
 
-int GetRaceWinnerPlayer_r() {
+int GetRaceWinnerPlayer_r() 
+{
 	unsigned char ID = getAI_ID();
 
 	if (ID > 0 && CurrentCharacter != Characters_Tails && playertwp[ID] != nullptr) {
@@ -336,7 +343,8 @@ void __cdecl LeaveSnowBoard(uint8_t pnum, char action)
 	return ForcePlayerAction(pnum, action);
 }
 
-void AI_Patches() {
+void AI_Patches() 
+{
 	WriteJump(GetRaceWinnerPlayer, GetRaceWinnerPlayer_r); //fix wrong victory pose for Tails AI.
 	//delete Tails AI when a cutscene start
 	Ev_Load2_t.Hook(FreeNpcMilesPlayerTask_r);

@@ -11,7 +11,8 @@ void DeleteMilesAI()
 {
 	char id = getAI_ID();
 
-	if (id > 0) {
+	if (id > 0) 
+	{
 		FlagDeleteMilesAI = true;
 		auto AI = playertp[id];
 		if (AI)
@@ -183,8 +184,8 @@ void TailsAI_Delete_r(task* obj) {
 }
 
 void TailsAI_Main_R(task* obj) {
-	taskwk* data = obj->twp;
-	char pid = AIIndex;
+	taskwk* aiDATA = obj->twp;
+	char aiID = AIIndex;
 
 	if (FlagDeleteMilesAI)
 	{
@@ -192,16 +193,20 @@ void TailsAI_Main_R(task* obj) {
 		return;
 	}
 
-	if (!playertwp[pid])
+	if (!playertwp[aiID])
 		return;
 
 	if (isFlyTravel)
 		CheckAndLoadTailsTravelObjects(obj);
 
-	MilesAI_OnFrames(data, pid);
+	MilesAI_OnFrames(aiDATA, aiID);
 
-	if (data->mode == 0) {
-		RemovePlayerAttackCol(pid);
+	if (aiDATA->mode == 0) 
+	{
+		for (uint8_t i = 0; i < MaxPlayers; i++)
+		{
+			RemoveAttackSolidColFlags(i);
+		}
 	}
 
 	TailsAI_Main_t.Original(obj);

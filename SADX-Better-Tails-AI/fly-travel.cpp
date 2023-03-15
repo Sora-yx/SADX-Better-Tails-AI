@@ -33,7 +33,7 @@ std::vector<NJS_TEXANIM> MilesCursor_TEXANIM
 	{ 0x10, 0x10, 0, 0, 0, 0, 0x100, 0x100, 14, 0x20 }
 };
 
-NJS_TEXNAME MilesCursor_TEXNAMES[17];
+NJS_TEXNAME MilesCursor_TEXNAMES[15];
 NJS_TEXLIST MilesCursor_TEXLIST = { arrayptrandlength(MilesCursor_TEXNAMES) };
 NJS_SPRITE MilesCursor_SPRITE = { { 0, 0, 0 }, 1.0, 1.0, 0, &MilesCursor_TEXLIST, MilesCursor_TEXANIM.data() };
 
