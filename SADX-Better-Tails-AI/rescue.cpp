@@ -103,7 +103,7 @@ void TailsAI_LandingRescue(task* obj) {
 	{
 		isRescued = true;
 		obj->dest = TailsAI_LandingRescueDelete;
-		co2p2->mj.reqaction = 37;
+		co2p2->mj.reqaction = 39;
 		PlayCharacterGrabAnimation(p1, co2p1);
 		FlySoundOnFrames(pnum);
 		data->mode++;
@@ -152,7 +152,7 @@ void TailsAI_LandingRescue(task* obj) {
 		PlayCharacterLeaveAnimation(p1, co2p1, pnum);
 		RestoreAIControl(pnum);
 		p2->mode = 15;
-		co2p2->mj.reqaction = 37;
+		co2p2->mj.reqaction = 39;
 
 		if (++data->btimer == 20) {
 			FreeTask(obj);
@@ -189,7 +189,7 @@ void MilesRescuesCharacterFall(task* obj) {
 		if (p2->pos.y - p1->pos.y <= GetCharacterPositionY(p1) + 5.0f) {
 			p1co2->spd.y = 0.0f;
 			p2->flag &= ~(Status_Attack | Status_Ball | Status_LightDash);
-			p2->mode = 15;
+			p2->mode = AIFlyTravel;
 			p2co2->mj.reqaction = 37;
 			p1->flag &= ~(Status_Attack | Status_Ball | Status_LightDash);
 
@@ -204,7 +204,7 @@ void MilesRescuesCharacterFall(task* obj) {
 		}
 		break;
 	case playerGrabbed:
-		p2->mode = 15;
+
 		p2co2->spd.y += 0.07f;
 
 		if (++data->counter.w[1] == 140) {
@@ -348,20 +348,22 @@ void MilesRescueFromEnemy(task* obj) {
 		if (CurrentLevel < LevelIDs_Chaos0)
 			SetCameraEvent(CameraEvent_MilesRescue, CameraAdjustsIDs::None, CameraDirectIDs::Target);
 
-		p1->mode = 136;
-		p2->mode = 2;
+		p1->mode = AIFlyTravel;
 		data->mode++;
 		break;
 	case 1:
 		p2->pos = p1->pos;
 		p2->pos.x = p1->pos.x - 100.0f;
+		p2->mode = 4;
+		p2->flag |= Status_Ball;
+		co2p2->mj.reqaction = 15;
+
 		PlaySound(768, 0, 0, 0);
 		data->mode++;
 		break;
 	case 2:
 		LookAt(&p2->pos, &p1->pos, nullptr, &p2->ang.y);
-		p2->flag |= Status_Ball;
-		co2p2->mj.reqaction = 15;
+
 		p2->pos.x += 4;
 
 		if (GetCollidingEntityA((EntityData1*)p2) || ++data->wtimer == 50)
@@ -424,7 +426,7 @@ void SetRescueStringToVariable()
 
 	if (!IsPathExist(originFilePath))
 	{
-		PrintDebug("Failed to get rescue strings... texts won't show up.\n");
+		PrintDebug("Failed to get rescue strings... custom texts won't show up.\n");
 		return;
 	}
 

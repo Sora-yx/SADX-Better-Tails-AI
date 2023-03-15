@@ -14,6 +14,12 @@ static const uint8_t defaultFrames = 15;
 static uint16_t nbFrames = defaultFrames;
 static int frameTransition = 2;
 
+enum
+{
+	LvlChange = 1,
+	ActChange
+};
+
 std::vector<NJS_TEXANIM> MilesCursor_TEXANIM
 {
 	{ 0x10, 0x10, 0, 0, 0, 0, 0x100, 0x100, 0, 0x20 },
@@ -286,7 +292,8 @@ void FlySoundOnFrames(int playerID) {
 	if (GameState != 15 || !ai || !TailsAI_ptr)
 		return;
 
-	if (ai->charID == Characters_Tails && playertwp[0]->charID <= Characters_Tails) {
+	if (ai->charID == Characters_Tails && playertwp[0]->charID <= Characters_Tails) 
+	{
 		if (playertwp[playerID]->id == 0)
 			PlaySound(0x302, NULL, 0, NULL);
 
@@ -441,12 +448,14 @@ void TailsAI_Grab(task* obj) {
 
 	if (data->mode != movetoDestination && (!p1
 		|| !p2 || GameState != 15 || TailsLanding || isMilesSaving())) {
-		if (p2) {
-			if (p2->mode == 125) //failsafe if the player start fly travel but leave the level/act
+		if (p2) 
+		{
+			if (p2->mode == AIFlyTravel) //failsafe if the player start fly travel but leave the level/act
 				p2->mode = 1;
 		}
 		TailsGrab = nullptr;
 		FreeTask(obj);
+		return;
 	}
 
 	if ((++data->counter.w[1] == 230 && data->mode > initFly && data->mode < grabbed) || p2->charID != Characters_Tails) {
@@ -457,7 +466,8 @@ void TailsAI_Grab(task* obj) {
 	{
 	case initFly:
 		obj->dest = TailsAI_GrabDelete;
-		if (!isTailsAI_GrabAllowed()) {
+		if (!isTailsAI_GrabAllowed()) 
+		{
 			SetDebugFontSize(24);
 			SetDebugFontColor(0xFF0000);
 			DisplayDebugStringFormatted(NJM_LOCATION(12, 12), "You cannot fast travel at the moment.");
@@ -468,7 +478,8 @@ void TailsAI_Grab(task* obj) {
 				return;
 			}
 		}
-		else {
+		else 
+		{
 			data->pos = p2->pos;
 			data->mode = getAltitude;
 		}
@@ -478,9 +489,10 @@ void TailsAI_Grab(task* obj) {
 			Controllers[pnum].HeldButtons |= JumpButtons;
 			Controllers[pnum].PressedButtons |= JumpButtons;
 		}
-		else {
+		else 
+		{
 			p2->flag &= 0x100u;
-			p2->mode = 125;
+			p2->mode = AIFlyTravel;
 			co2p2->mj.reqaction = 37;
 			data->mode = checkGrab;
 		}
@@ -489,7 +501,7 @@ void TailsAI_Grab(task* obj) {
 
 		if (GetCollidingEntityA((EntityData1*)p2)) {
 			p1->flag &= ~(Status_Attack | Status_Ball | Status_LightDash);
-			p1->mode = 135;
+			p1->mode = AIFlyTravel;
 			DisablePause();
 			data->mode = grabbed;
 		}
@@ -504,7 +516,8 @@ void TailsAI_Grab(task* obj) {
 		PlayCharacterGrabAnimation(p1, co2p1);
 
 		Cursor = setCursorPos(CurrentLevel, CurrentAct);
-		if (Cursor > -1) {
+		if (Cursor > -1)
+		{
 			data->mode = transitionMap;
 		}
 		else {
@@ -536,9 +549,9 @@ void TailsAI_Grab(task* obj) {
 			else {
 				PlaySound(0x2, NULL, 0, NULL);
 				if (CurrentLevel == DestinationArray[Cursor].level)
-					isMoving = 2;
+					isMoving = ActChange;
 				else
-					isMoving = 1;
+					isMoving = LvlChange;
 				data->id = 0;
 				data->wtimer = 0;
 				data->counter.w[1] = 0;
@@ -550,15 +563,14 @@ void TailsAI_Grab(task* obj) {
 		break;
 	case movetoDestination:
 		FlySoundOnFrames(pnum);
-		p2->mode = 15; //fly mode
-		co2p2->spd.y = spdYGain;
-		co2p2->spd.x = 0.3f;
+		p2->pos.y += spdYGain;
+		p2->pos.x += 0.3f;
 		UpdateP1Position(co2p1, co2p2, p1, p2);
 
 		if (++data->wtimer == 180) {
 			LoadDestination(pnum);
 
-			if (isMoving == 2) //object isn't deleted between act transition unlike with level changes.
+			if (isMoving == ActChange) //object isn't deleted between act transition unlike with level changes.
 				FreeTask(obj);
 		}
 
@@ -625,19 +637,22 @@ void TailsAI_Landing(task* obj) {
 		obj->dest = TailsAI_LandingDelete;
 		data->pos = DestinationArray[Cursor].destination;
 		p1->ang = p2->ang;
-		p1->mode = 135;
-		p2->mode = 15;
-		co2p2->mj.reqaction = 37;
+		p1->mode = AIFlyTravel;
+		p2->mode = AIFlyTravel;
+		co2p2->mj.reqaction = 39;
 		PlayCharacterGrabAnimation(p1, co2p1);
 		data->mode++;
 		break;
 	case 1:
 		PlayCharacterGrabAnimation(p1, co2p1);
-		co2p2->spd.y = spdYFall;
-		co2p2->spd.z = 0.5f;
+		p2->pos.y -= spdYGain;
+
+		p2->pos.z += 0.3f;
 		UpdateP1Position(co2p1, co2p2, p1, p2);
 
-		if (++data->wtimer == 140 || (p1->flag & 3)) {
+		if (++data->wtimer == 140 || (p1->flag & 3)) 
+		{
+			p2->mode = 1;
 			data->mode++;
 		}
 		break;

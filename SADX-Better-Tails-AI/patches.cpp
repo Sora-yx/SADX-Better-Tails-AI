@@ -115,7 +115,8 @@ void moveAItoPlayer(unsigned char playerID, float posX, float posZ) {
 	}
 }
 
-bool isPlayerUsingSnowboard() {
+bool isPlayerUsingSnowboard() 
+{
 	if (CurrentCharacter == Characters_Sonic && playertwp[0]->mode >= 62 && playertwp[0]->mode <= 68)
 		return true;
 
@@ -124,7 +125,8 @@ bool isPlayerUsingSnowboard() {
 
 //Fix AI Start Position in hub world
 
-void FixAIHubTransition() {
+void FixAIHubTransition() 
+{
 	ForcePlayerAction(0, 0x18);
 
 	if (!IsHubBanned && isAIActive)
@@ -144,7 +146,8 @@ void FixAIHubTransition() {
 	return;
 }
 
-void FixAIHubTransition2() {
+void FixAIHubTransition2() 
+{
 	HudDisplayRingTimeLife_Check();
 
 	unsigned char ID = getAI_ID();
@@ -185,7 +188,8 @@ void GetPlayerSidePos(NJS_VECTOR* v1, taskwk* a2, float m)
 	}
 }
 
-void FadeoutScreen(ObjectMaster* obj) {
+void FadeoutScreen(ObjectMaster* obj) 
+{
 	EntityData1* data = obj->Data1;
 
 	if (++data->InvulnerableTime > 80) {
@@ -193,7 +197,8 @@ void FadeoutScreen(ObjectMaster* obj) {
 		ScreenFade_Color = *(NJS_COLOR*)&color;
 		CheckThingButThenDeleteObject(obj);
 	}
-	else {
+	else 
+	{
 		int color = 0x0000000;
 		ScreenFade_Color = *(NJS_COLOR*)&color;
 
@@ -215,7 +220,8 @@ void FadeoutScreen(ObjectMaster* obj) {
 	}
 }
 
-void SetCharaInfo(task* obj, int i) {
+void SetCharaInfo(task* obj, int i) 
+{
 	obj->twp->charID = (char)CurrentCharacter;
 	obj->twp->pNum = i;
 

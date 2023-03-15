@@ -1,6 +1,6 @@
 #pragma once
 
-const float spdYGain = 0.8f;
+const float spdYGain = 0.6f;
 const float spdYFall = -0.8f;
 
 struct MilesAI_Spawn {
@@ -55,7 +55,9 @@ enum milesAI_CustomAction
 	boardHurt = 54,
 	debugAction = 110,
 	passengerCart = 115,
-	followBuilding
+	followBuilding,
+	AIFlyTravel = 135,
+	AIRescue
 };
 
 extern int rngDeathZoneRescue;
