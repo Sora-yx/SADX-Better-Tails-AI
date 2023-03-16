@@ -57,7 +57,7 @@ enum milesAI_CustomAction
 	passengerCart = 115,
 	followBuilding,
 	AIFlyTravel = 135,
-	AIRescue
+	AIPet
 };
 
 extern int rngDeathZoneRescue;

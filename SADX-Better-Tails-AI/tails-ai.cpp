@@ -175,7 +175,6 @@ void TailsAI_Delete_r(task* obj) {
 	TailsAI_ptr = nullptr;
 	AIIndex = 1;
 	rngDeathZoneRescue = 0;
-	isChaoPetByAI = false; //just to be safe
 	isAIActive = false;
 	isRescued = false;
 	FlagDeleteMilesAI = false;
@@ -208,6 +207,7 @@ void TailsAI_Main_R(task* obj) {
 			RemoveAttackSolidColFlags(i);
 		}
 	}
+
 
 	TailsAI_Main_t.Original(obj);
 }

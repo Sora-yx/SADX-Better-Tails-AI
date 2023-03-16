@@ -628,7 +628,7 @@ void TailsAI_Landing(task* obj) {
 		return;
 	}
 
-	LookAt(&p2->pos, &data->pos, nullptr, &p2->ang.y);
+	LookAt(&p2->pos, &data->pos, &p2->ang.x, &p2->ang.y);
 	FlySoundOnFrames(pnum);
 
 	switch (data->mode)

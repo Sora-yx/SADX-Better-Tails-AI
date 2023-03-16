@@ -140,76 +140,159 @@ int isCharacterPetting() {
 	return CharacterPetmodeNumber[playertwp[0]->charID];
 }
 
-bool isChaoPetByAI = false;
-int chaoHappyTimer = 0;
+void ResetTailsAIChao(taskwk* twp)
+{
+	if (twp)
+		twp->mode = 1;
+}
 
-void MakeAIPetChao(task* Chao) {
-	auto data = Chao->twp;
-	auto p1 = playertwp[0];
-	auto ID = getAI_ID();
 
-	if (!ID)
-		return;
+static int8_t ChaoID[32] = { -1 };
 
-	auto p2 = playertwp[ID];
+void DeleteAIPet(task* tp)
+{
+	memset(ChaoID, -1, sizeof(ChaoID));
+	auto AI = playertwp[AIIndex];
+	ResetTailsAIChao(AI);
+}
 
-	if (p1->mode != isCharacterPetting()) {
-		if (p2->mode > 40) {
-			p2->mode = 1;
+int8_t SetChaoID()
+{
+	for (uint8_t i = 0; i < LengthOfArray(ChaoID); i++)
+	{
+		if (ChaoID[i] < 0)
+		{
+			return ChaoID[i] = i;
 		}
-		data->btimer = 0;
-		p2->id = 0;
 	}
 
-	float dist = GetDistance(&p2->pos, &data->pos);
+	PrintDebug("BTailsAI: Failed to get empty Chao slot, pet feature won't work\n");
+	return -1;
+}
 
-	switch (data->btimer)
+uint8_t IsChaoID(uint8_t ID)
+{
+	return ChaoID[ID];
+}
+
+void AIPetChao(task* tp)
+{
+	auto twp = tp->twp;
+	auto p1 = playertwp[0];
+	auto AI = playertwp[AIIndex];
+
+	if (!p1 || !AI || !TailsAI_ptr)
+		return;
+
+	auto AIwp = playerpwp[AIIndex];
+	const float dist = GetDistance(&AI->pos, &twp->pos);
+	const float Pdist = GetDistance(&AI->pos, &p1->pos);
+	int ID = 0;
+
+	switch (twp->mode)
 	{
 	case 0:
-		if (++p2->id == 40)
+		ID = SetChaoID();
+		if (ID < 0)
 		{
-			data->wtimer = 0;
-			data->btimer++;
+			FreeTask(tp);
+			return;
 		}
+		twp->counter.b[0] = ID;
+		tp->dest = DeleteAIPet;
+		twp->mode++;
 		break;
 	case 1:
-		if (dist < 9) {
-			chaoHappyTimer = 0;
-			p2->mode = 64;
-			playerpwp[ID]->mj.reqaction = 133;
-			isChaoPetByAI = true;
+		if (p1->mode == isCharacterPetting() && Pdist < 50.0f && (AI->flag & 3))
+		{
+			//browse player colli interraction
+			for (uint8_t i = 0; i < 16; i++)
+			{
+				auto target = p1->cwp->hit_info[i].hit_twp;
+
+				//if player is interracting with a Chao
+				if (target && target->cwp && target->cwp->mytask && target->cwp->mytask->exec == (TaskFuncPtr)Chao_Main)
+				{
+					auto task = target->cwp->mytask;
+					
+					//identify the current Chao...
+					if (task->ctp && task->ctp->twp->counter.b[0] == twp->counter.b[0])
+					{
+						twp->pos = tp->ptp->twp->pos;
+
+						if (AI->pos.y != p1->pos.y)
+						{
+							AI->pos.y = p1->pos.y;
+						}
+
+						twp->mode++;
+						break;
+					}
+				}
+			}
+		}
+		break;
+	case 2:
+		if (p1->mode == isCharacterPetting())
+		{
+			twp->pos = tp->ptp->twp->pos;
+			twp->ang = tp->ptp->twp->ang;
+
+			Angle angy = njArcTan2((AI->pos.x - twp->pos.x), (AI->pos.z - twp->pos.z));
+			AI->ang.y = -0x4000 - angy;
+
+			if (dist > 5.5f)
+			{
+				AIwp->spd.x = 0.5f;
+			}
+			else
+			{
+				AI->mode = AIPet;
+
+				if (Pdist < 3.0f)
+					AI->pos.x += 4.0f;
+
+				AIwp->mj.reqaction = 133;
+				twp->mode++;
+			}
+		}
+		else
+		{
+			ResetTailsAIChao(AI);
+			twp->mode = 1;
+		}
+
+		break;
+	case 3:
+		if (p1->mode != isCharacterPetting())
+		{
+			ResetTailsAIChao(AI);
+			twp->mode++;
+		}
+		else
+		{
+			Angle angy = njArcTan2((AI->pos.x - twp->pos.x), (AI->pos.z - twp->pos.z));
+			AI->ang.y = -0x4000 - angy;
+		}
+		break;
+	case 4:
+		if (++twp->wtimer >= 50)
+		{
+			Chao_SetBehavior(tp->ptp, (long*)Chao_Pleasure);
+			twp->wtimer = 0;
+			twp->mode = 1;
 		}
 		break;
 	}
 }
 
-void CheckAndMakeAIPetChao(task* Chao) {
-	unsigned char ID = getAI_ID();
+void Chao_Main_R(task* obj)
+{
+	chaowk* cwk = (chaowk*)obj->twp;
 
-	if (!ID)
-		return;
-
-	if (IsChaoGardenBanned || !playertwp[ID])
-		return;
-
-	if (CurrentLevel >= LevelIDs_SSGarden && CurrentLevel <= LevelIDs_MRGarden) {
-		MakeAIPetChao(Chao);
-	}
-}
-
-void Chao_Main_R(task* obj) {
-	auto p1 = playertwp[0];
-
-	if (IsPlayerInsideSphere(&obj->twp->pos, 10)) {
-		CheckAndMakeAIPetChao(obj);
-	}
-
-	if (p1 && p1->mode != isCharacterPetting() && isChaoPetByAI) {
-		if (++chaoHappyTimer == 120) {
-			Chao_SetBehavior(obj, (long*)Chao_Pleasure);
-			isChaoPetByAI = false;
-			chaoHappyTimer = 0;
-		}
+	if (cwk && !cwk->Timer && playertwp[1] && TailsAI_ptr)
+	{
+		CreateChildTask(2, AIPetChao, obj);
 	}
 
 	Chao_Main_t.Original(obj);
@@ -486,6 +569,7 @@ void MilesFasterRespawn(taskwk* p1, taskwk* p2)
 	}
 }
 
+
 void Miles_AbilitiesOnFrames(unsigned char pnum)
 {
 	MoveAI_Vehicle();
@@ -514,7 +598,9 @@ void AI_Improvement() {
 	if (isRescueAllowed)
 		Rescue_Init();
 
-	Chao_Main_t.Hook(Chao_Main_R);
+	if (!IsChaoGardenBanned)
+		Chao_Main_t.Hook(Chao_Main_R);
+
 	ScoreDisplay_main_t.Hook(ScoreDisplayMain_R);
 	execTPCoaster_t.Hook(execTPCoaster_r);
 }

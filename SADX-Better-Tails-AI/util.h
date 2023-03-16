@@ -15,6 +15,8 @@ float GetSquare(NJS_VECTOR* orig, NJS_VECTOR* dest);
 float GetDistance(NJS_VECTOR* orig, NJS_VECTOR* dest);
 float CheckDistance(NJS_VECTOR* vec1, NJS_VECTOR* vec2);
 void PlayerLookAt(NJS_VECTOR* from, NJS_VECTOR* to, Angle* outx, Angle* outy);
+
+void PlayerMoveForward(taskwk* entity, float speed);
 float GetCharacterPositionY(taskwk* p1);
 void UpdateP1Position(playerwk* co2p1, playerwk* co2p2, taskwk* p1, taskwk* p2);
 
@@ -23,3 +25,6 @@ bool isRandoActive();
 bool isUIScale();
 bool isMultiEnabled();
 bool IsPathExist(const std::string& s);
+void ResetPlayerLook(uint8_t pnum);
+
+void MoveForward(taskwk* entity, float speed);

@@ -76,7 +76,8 @@ float GetSquare(NJS_VECTOR* orig, NJS_VECTOR* dest) {
 	return powf(dest->x - orig->x, 2) + powf(dest->y - orig->y, 2) + powf(dest->z - orig->z, 2);
 }
 
-float CheckDistance(NJS_VECTOR* vec1, NJS_VECTOR* vec2) {
+float CheckDistance(NJS_VECTOR* vec1, NJS_VECTOR* vec2) 
+{
 	float x_dist = vec2->x - vec1->x;
 	float y_dist = vec2->y - vec1->y;
 	float z_dist = vec2->z - vec1->z;
@@ -100,7 +101,8 @@ void LookAt(NJS_VECTOR* from, NJS_VECTOR* to, Angle* outx, Angle* outy) {
 		*outy = static_cast<Angle>(atan2f(unit.x, unit.z) * 65536.0f * 0.1591549762031479f);
 	}
 
-	if (outx) {
+	if (outx) 
+	{
 		if (from->y == to->y) {
 			*outx = 0;
 		}
@@ -113,12 +115,47 @@ void LookAt(NJS_VECTOR* from, NJS_VECTOR* to, Angle* outx, Angle* outy) {
 	}
 }
 
-void PlayerLookAt(NJS_VECTOR* from, NJS_VECTOR* to, Angle* outx, Angle* outy) {
+void PlayerLookAt(NJS_VECTOR* from, NJS_VECTOR* to, Angle* outx, Angle* outy) 
+{
 	LookAt(from, to, outx, outy);
 
 	if (outy) {
 		*outy = -(*outy) + 0x4000;
 	}
+}
+
+
+void ResetPlayerLook(uint8_t pnum)
+{
+	auto p = playertwp[pnum];
+	if (p) {
+		p->ewp->look.ang = { 0, 0, 0 };
+		p->ewp->look.mode = 0;
+		p->ewp->look.obj = 0;
+	}
+}
+
+void MoveForward(taskwk* entity, float speed)
+{
+	njPushMatrix(_nj_unit_matrix_);
+	njTranslateEx(&entity->pos);
+	njRotateY(0, entity->ang.y);
+	njRotateX(0, entity->ang.x);
+	njTranslate(0, 0, 0, speed);
+	njGetTranslation(0, &entity->pos);
+	njPopMatrix(1u);
+}
+
+
+void PlayerMoveForward(taskwk* entity, float speed)
+{
+	njPushMatrix(_nj_unit_matrix_);
+	njTranslateEx(&entity->pos);
+	njRotateX(0, entity->ang.x);
+	njRotateY(0, entity->ang.y);
+	njTranslate(0, 0, 0, speed);
+	njGetTranslation(0, &entity->pos);
+	njPopMatrix(1u);
 }
 
 //Sphere check functions
