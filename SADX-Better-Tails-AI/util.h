@@ -28,3 +28,8 @@ bool IsPathExist(const std::string& s);
 void ResetPlayerLook(uint8_t pnum);
 
 void MoveForward(taskwk* entity, float speed);
+
+void FadeoutScreen(task* obj);
+void SetTailsAILookAt(taskwk* AI, taskwk* twp);
+
+uint16_t GetSitCartAction(uint8_t curChar);

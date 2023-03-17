@@ -238,8 +238,7 @@ void AIPetChao(task* tp)
 			twp->pos = tp->ptp->twp->pos;
 			twp->ang = tp->ptp->twp->ang;
 
-			Angle angy = njArcTan2((AI->pos.x - twp->pos.x), (AI->pos.z - twp->pos.z));
-			AI->ang.y = -0x4000 - angy;
+			SetTailsAILookAt(AI, twp);
 
 			if (dist > 5.5f)
 			{
@@ -271,8 +270,7 @@ void AIPetChao(task* tp)
 		}
 		else
 		{
-			Angle angy = njArcTan2((AI->pos.x - twp->pos.x), (AI->pos.z - twp->pos.z));
-			AI->ang.y = -0x4000 - angy;
+			SetTailsAILookAt(AI, twp);
 		}
 		break;
 	case 4:
@@ -426,10 +424,14 @@ void AI_SitInCart(taskwk* p1, taskwk* milesData, task* miles)
 {
 	char pnum = milesData->pNum;
 
-	if (CurrentLevel == LevelIDs_TwinklePark && CurrentAct == 1 && p1->mode == 45)
+
+	const int P1CartAction = GetSitCartAction(p1->counter.b[1]);
+
+	if (CurrentLevel == LevelIDs_TwinklePark && CurrentAct == 1 && p1->mode == P1CartAction)
 		return;
 
-	if (p1->mode == 45 && milesData->mode != passengerCart)
+
+	if (p1->mode == P1CartAction && milesData->mode != passengerCart)
 	{
 		disableCol = true;
 		DisableTailsAICol(pnum);
@@ -439,10 +441,16 @@ void AI_SitInCart(taskwk* p1, taskwk* milesData, task* miles)
 	}
 	else if (milesData->mode == passengerCart)
 	{
-		if (p1->mode == 45)
+		if (p1->mode == P1CartAction)
 		{
 			milesData->ang = p1->ang;
-			milesData->pos = UnitMatrix_GetPoint_Player(&p1->pos, &p1->ang, -4.5f, 4.5f, 2.0f);
+
+			if (CurrentCharacter == Characters_Gamma)
+				milesData->pos = UnitMatrix_GetPoint_Player(&p1->pos, &p1->ang, -10.5f, 11.5f, 3.0f);
+			else if (CurrentCharacter == Characters_Big)
+				milesData->pos = UnitMatrix_GetPoint_Player(&p1->pos, &p1->ang, -10.5f, 6.5f, 4.0f);
+			else
+				milesData->pos = UnitMatrix_GetPoint_Player(&p1->pos, &p1->ang, -4.5f, 4.5f, 2.5f);
 		}
 		else
 		{

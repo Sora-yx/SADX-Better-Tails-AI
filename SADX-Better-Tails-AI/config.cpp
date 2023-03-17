@@ -18,7 +18,7 @@ void config(const char* path)
 	IsChaoGardenBanned = config->getBool("Stage", "IsChaoGardenBanned", false);
 	IsHubBanned = config->getBool("Stage", "IsHubBanned", false);
 	IsBossBanned = config->getBool("Stage", "IsBossBanned", false);
-	IsTCBanned = config->getBool("Stage", "IsTCBanned", true);
+	IsTCBanned = config->getBool("Stage", "IsTCBanned", false);
 
 	banCharacter[0] = config->getBool("Roster", "Sonic", false);
 	isMSBanned = config->getBool("Roster", "isMSBanned", true);

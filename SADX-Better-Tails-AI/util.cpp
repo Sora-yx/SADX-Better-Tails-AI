@@ -209,3 +209,51 @@ bool IsPathExist(const std::string& s)
 	struct stat buffer;
 	return (stat(s.c_str(), &buffer) == 0);
 }
+
+void FadeoutScreen(task* obj)
+{
+	auto twp = obj->twp;
+
+	if (++twp->wtimer > 80) 
+	{
+		int color = 0x00000000;
+		ScreenFade_Color = *(NJS_COLOR*)&color;
+		FreeTask(obj);
+	}
+	else
+	{
+		int color = 0x0000000;
+		ScreenFade_Color = *(NJS_COLOR*)&color;
+
+		if (twp->wtimer < 120)
+		{
+			if (twp->wtimer < 60) {
+				twp->counter.b[1] += 4;
+
+				ScreenFade_Color.argb.a = twp->counter.b[1];
+			}
+			else {
+				ScreenFade_Color.argb.a = 0x0;
+			}
+		}
+		else {
+			twp->counter.b[1] -= 20;
+			ScreenFade_Color.argb.a = twp->counter.b[1];
+		}
+
+		ScreenFade_DrawColor();
+	}
+}
+
+void SetTailsAILookAt(taskwk* AI, taskwk* twp)
+{
+	Angle angy = njArcTan2((AI->pos.x - twp->pos.x), (AI->pos.z - twp->pos.z));
+	AI->ang.y = -0x4000 - angy;
+}
+
+uint16_t cartAction[] = { 45, 45, 43, 52, 45, 48, 53, 55 };
+
+uint16_t GetSitCartAction(uint8_t curChar)
+{
+	return cartAction[curChar];
+}

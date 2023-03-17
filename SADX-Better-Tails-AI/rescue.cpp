@@ -96,9 +96,10 @@ void TailsAI_LandingRescue(task* obj) {
 		return;
 	}
 
-	LookAt(&p2->pos, &data->pos, nullptr, &p2->ang.y);
+	SetTailsAILookAt(p2, data);
 
-	switch (data->mode) {
+	switch (data->mode) 
+	{
 	case 0:
 	{
 		isRescued = true;
@@ -110,15 +111,17 @@ void TailsAI_LandingRescue(task* obj) {
 	}
 	break;
 	case 1:
+		p2->pos.y -= 0.1f;
 		UpdateP1Position(co2p1, co2p2, p1, p2);
 		FlySoundOnFrames(pnum);
 
-		if (++data->btimer == 30) {
+		if (++data->btimer == 30) 
+		{
 			data->smode = rand () % 2;
-			if (data->smode != 0) {
+			if (data->smode != 0) 
+			{
 				if (p1->counter.b[1] == Characters_Sonic) 
 				{
-
 					DisplayHintText(Sonic_message01, 100);
 					
 					if (VoiceLanguage)
@@ -132,11 +135,12 @@ void TailsAI_LandingRescue(task* obj) {
 		break;
 	case 2:
 		FlySoundOnFrames(pnum);
-		co2p2->spd.y = spdYFall;
-		co2p1->spd.y = spdYFall;
+
+		p2->pos.y-= 0.5f;
 		UpdateP1Position(co2p1, co2p2, p1, p2);
 
-		if (++data->wtimer == 80 || ((p1->flag & 3))) {
+		if (++data->wtimer == 120 || (p1->flag & 3))
+		{
 			data->btimer = 0;
 			data->mode++;
 		}
@@ -154,7 +158,8 @@ void TailsAI_LandingRescue(task* obj) {
 		p2->mode = 15;
 		co2p2->mj.reqaction = 39;
 
-		if (++data->btimer == 20) {
+		if (++data->btimer == 20) 
+		{
 			FreeTask(obj);
 		}
 		break;
@@ -186,7 +191,7 @@ void MilesRescuesCharacterFall(task* obj) {
 		data->mode++;
 		break;
 	case catchPlayer:
-		if (p2->pos.y - p1->pos.y <= GetCharacterPositionY(p1) + 5.0f) {
+		if (p2->pos.y - p1->pos.y <= GetCharacterPositionY(p1) + 4.0f) {
 			p1co2->spd.y = 0.0f;
 			p2->flag &= ~(Status_Attack | Status_Ball | Status_LightDash);
 			p2->mode = AIFlyTravel;
@@ -200,24 +205,30 @@ void MilesRescuesCharacterFall(task* obj) {
 			p2->flag |= Status_Ball;
 			p2co2->mj.reqaction = 15;
 			p1co2->spd.y = -2.5f;
-			p2co2->spd.y = -4.5f;
+			p2co2->spd.y = -5.5f;
 		}
 		break;
 	case playerGrabbed:
 
-		p2co2->spd.y += 0.07f;
 
-		if (++data->counter.w[1] == 140) {
-			LoadObject(LoadObj_Data1, 1, FadeoutScreen);
+		p2->pos.y += 0.5f;
+		UpdateP1Position(p1co2, p2co2, p1, p2);
+
+		if (++data->counter.w[1] == 140) 
+		{
+			CreateElementalTask(LoadObj_Data1, 1, FadeoutScreen);
 		}
+
 
 		if (++data->wtimer == 200) //get Altitude
 		{
 			NJS_VECTOR getPos = CheckRescueArray(); //move player to safe point (ie: last grabbed checkpoint or specific spot in hub world)
-			if (getPos.x != -1 && getPos.y != -1 && getPos.z != -1) {
+			if (getPos.x != -1 && getPos.y != -1 && getPos.z != -1) 
+			{
 				p1->pos = getPos;
 			}
-			else {
+			else 
+			{
 				p1->pos = RestartLevel.Position;
 			}
 			p1->pos.y += 50.0f;
@@ -225,17 +236,17 @@ void MilesRescuesCharacterFall(task* obj) {
 			p1co2->spd = { 0, 0, 0 };
 			data->mode++;
 		}
-		else {
-			UpdateP1Position(p1co2, p2co2, p1, p2);
-		}
+
 		break;
 	case landingTransition:
 
-		if (!TailsRescueLanding) {
+		if (!TailsRescueLanding) 
+		{
 			TailsRescueLanding = CreateElementalTask((LoadObj)2, 1, TailsAI_LandingRescue);
 		}
 
-		if (TailsRescueLanding) {
+		if (TailsRescueLanding) 
+		{
 			TailsRescueLanding->twp->counter.b[0] = pnum;
 			FreeTask(obj);
 		}
@@ -344,6 +355,7 @@ void MilesRescueFromEnemy(task* obj) {
 	{
 	case 0:
 		co2p1->item |= Powerups_Invincibility;
+		co2p2->item |= Powerups_Invincibility;
 		obj->dest = MilesRescueEnemyDelete;
 		if (CurrentLevel < LevelIDs_Chaos0)
 			SetCameraEvent(CameraEvent_MilesRescue, CameraAdjustsIDs::None, CameraDirectIDs::Target);
@@ -362,11 +374,11 @@ void MilesRescueFromEnemy(task* obj) {
 		data->mode++;
 		break;
 	case 2:
-		LookAt(&p2->pos, &p1->pos, nullptr, &p2->ang.y);
+		SetTailsAILookAt(p2, p1);
 
-		p2->pos.x += 4;
+		co2p2->spd.x += 0.8f;
 
-		if (GetCollidingEntityA((EntityData1*)p2) || ++data->wtimer == 50)
+		if (GetCollidingEntityA((EntityData1*)p2) || ++data->wtimer == 120)
 			data->mode++;
 
 		break;

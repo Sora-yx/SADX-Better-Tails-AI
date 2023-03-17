@@ -108,6 +108,5 @@ void TailsAI_Delete_r(task* obj);
 void SnowboardRespawn(unsigned char ID);
 void AI_Improvement();
 int isCharacterPetting();
-void FadeoutScreen(ObjectMaster* obj);
 bool isFlyTravelEnabled();
 bool isRescue();
