@@ -19,7 +19,6 @@ extern "C" {
 		//Tails AI Stuff (Load, Fixes...)
 		AI_Init(helperFunctions);
 
-
 		multi = GetModuleHandleW(L"sadx-multiplayer");
 	}
 

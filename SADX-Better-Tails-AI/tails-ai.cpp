@@ -3,7 +3,6 @@
 bool isAIActive = false;
 bool FlagDeleteMilesAI = false;
 int FlagAI = 0;
-
 static FunctionHook<void, task*> TailsAI_Main_t((intptr_t)TailsAI_Main);
 static FunctionHook<void> LoadCharacter_t(LoadCharacter);
 
@@ -21,7 +20,8 @@ void DeleteMilesAI()
 }
 
 //Tails AI Flag Check
-int CheckTailsAI_R(void) {
+int CheckTailsAI_R(void) 
+{
 	bool isSA2Mod = GetModuleHandle(L"sadx-sa2-mod");
 
 	if (isMultiEnabled())
@@ -29,7 +29,8 @@ int CheckTailsAI_R(void) {
 		return 0x0;
 	}
 
-	if (NPCMilesStandByFlag || CurrentLevel == LevelIDs_SkyChase1 || CurrentLevel == LevelIDs_SkyChase2 || !isSA2Mod && CurrentLevel == LevelIDs_ChaoRace) {
+	if (NPCMilesStandByFlag || CurrentLevel == LevelIDs_SkyChase1 || CurrentLevel == LevelIDs_SkyChase2 || !isSA2Mod && CurrentLevel == LevelIDs_ChaoRace) 
+	{
 		return 0x0; //don't load AI
 	}
 
@@ -64,7 +65,8 @@ int CheckTailsAI_R(void) {
 			if (SonicSkyChaseAct1Clear == 1 && EventFlagArray[EventFlags_Sonic_RedMountainClear] == 0)
 				return 0x0;
 		}
-		else {
+		else 
+		{
 			if (!IsAdventureComplete(SelectedCharacter))
 				return 0x0;
 		}
@@ -108,11 +110,13 @@ task* LoadTails()
 
 //Load Tails AI
 void Load2PTails_r() {
-	if (TailsAI_ptr != nullptr)
+
+	if (TailsAI_ptr != nullptr || (banCharacter[CurrentCharacter] == true || playertwp[AIIndex]))
 	{
 		return;
 	}
 
+	NPCMilesStandByFlag = 0;
 	FlagAI = CheckTailsAI_R();
 
 	if (FlagAI != 1)
@@ -146,18 +150,17 @@ void Load2PTails_r() {
 	return;
 }
 
-void LoadCharacterAndAI() {
+void LoadCharacterAndAI() 
+{
 	if (isFlyTravel)
 		CheckAndLoadMapPVM();
 
-	if (banCharacter[CurrentCharacter] != true && !playertwp[AIIndex])
-		Load2PTails_r();
-
-	if (isCharSelActive()) {
+	if (isCharSelActive())
+	{
 		return LoadCharacter();
 	}
 
-	return LoadCharacter_t.Original();
+	LoadCharacter_t.Original();
 }
 
 void MilesAI_OnFrames(taskwk* data, unsigned char aiID) { //Only run when TailsAI_Main is active
@@ -178,6 +181,7 @@ void TailsAI_Delete_r(task* obj) {
 	isAIActive = false;
 	isRescued = false;
 	FlagDeleteMilesAI = false;
+	NPCMilesStandByFlag = 0;
 	rngRegularDeathRescue = 0;
 	return FUN_0042ce20();
 }

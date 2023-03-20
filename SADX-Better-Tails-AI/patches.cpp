@@ -341,7 +341,4 @@ void AI_Patches()
 	WriteCall((void*)0x53A29B, FixTailsAI_Train);
 	WriteCall((void*)0x51BDD0, FixTailsAI_ECAreaTransition);
 	WriteCall((void*)0x62EECA, FixTailsAI_ECAreaTransition); //fix hostel respawn pos
-
-	//WriteData((TaskFuncPtr*)0x47DA1C, KnucklesTheEchidna);
-	//WriteData((CollisionData***)0x461832, &Knuckles_Collision);
 }
