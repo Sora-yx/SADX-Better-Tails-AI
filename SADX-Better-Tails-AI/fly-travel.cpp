@@ -648,7 +648,7 @@ void TailsAI_Landing(task* tp)
 	auto co2p1 = playerpwp[0];
 	auto co2p2 = playerpwp[pnum];
 
-	if (!p1 || !p2 || !IsIngame()) {
+	if (!p1 || !p2 || !co2p1 || !co2p2 || !IsIngame()) {
 		return;
 	}
 
@@ -710,7 +710,7 @@ void CheckAndLoadTailsTravelObjects(task* obj) {
 	taskwk* data = obj->twp;
 	char pid = AIIndex;
 
-	if (!playertwp[pid])
+	if (!playertwp[pid] || !playerpwp[pid])
 		return;
 
 	if (data->mode == 0 && isMoving == 1 || data->mode > 0 && isMoving == 2) {

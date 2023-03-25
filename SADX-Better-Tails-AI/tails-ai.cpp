@@ -164,7 +164,8 @@ void LoadCharacterAndAI()
 }
 
 void MilesAI_OnFrames(taskwk* data, unsigned char aiID) { //Only run when TailsAI_Main is active
-	if (!playertwp[0] || !playertwp[aiID] || playertwp[aiID]->charID != Characters_Tails || !TailsAI_ptr)
+
+	if (!playertwp[0] || !playertwp[aiID] || !playerpwp[aiID] || playertwp[aiID]->charID != Characters_Tails || !TailsAI_ptr)
 		return;
 
 	Miles_AbilitiesOnFrames(aiID);
