@@ -200,7 +200,6 @@ void SetCharaInfo(task* obj, int i)
 	return;
 }
 
-
 int GetRaceWinnerPlayer_r()
 {
 	if (!isMultiEnabled())

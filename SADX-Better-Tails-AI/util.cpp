@@ -39,9 +39,18 @@ bool isRandoActive() {
 	return false;
 }
 
-bool isInputModActive() {
+bool isInputModActive() 
+{
+
 	bool Input = GetModuleHandle(L"input-mod") != nullptr;
 	bool Input2 = GetModuleHandle(L"sadx-input-mod") != nullptr;
+	bool input3 = false;
+
+	//To do
+	if (HelperFunctionsGlobal.Version >= 17)
+	{
+		
+	}
 
 	if (Input || Input2)
 		return true;
@@ -179,11 +188,11 @@ bool isTailsAI()
 
 bool isMPMod()
 {
-	auto mp = HelperFunctionsGlobal.Mods->find("sadx.Multiplayer");
+	auto mp = GetModuleHandle(L"sadx-multiplayer") != NULL;
 
-	if (!mp)
+	if (!mp && HelperFunctionsGlobal.Version >= 16)
 	{
-		return GetModuleHandle(L"sadx-multiplayer") != NULL;
+		return HelperFunctionsGlobal.Mods->find("sadx.Multiplayer") != NULL;
 	}
 
 	return mp != NULL;
