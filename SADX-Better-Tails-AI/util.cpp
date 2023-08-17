@@ -1,4 +1,5 @@
 #include "pch.h"
+#include "multiapi.h"
 
 float getMilesDistance(taskwk* p1, taskwk* p2)
 {
@@ -176,21 +177,24 @@ bool isTailsAI()
 	return true;
 }
 
-typedef bool (CALLBACK* multiE) (void);
-bool isMultiEnabled()
+bool isMPMod()
 {
-	if (!multi)
-		return false;
+	auto mp = HelperFunctionsGlobal.Mods->find("sadx.Multiplayer");
 
-	multiE result = (multiE)GetProcAddress(multi, "multi_is_active");
-
-	if (result)
+	if (!mp)
 	{
-		auto res = result();
-		return res;
+		return GetModuleHandle(L"sadx-multiplayer") != NULL;
 	}
 
-	return false;
+	return mp != NULL;
+}
+
+bool isMultiEnabled()
+{
+	if (!isMPMod())
+		return false;
+
+	return multi_is_enabled();
 }
 
 bool isP1AndTailsAIEnabled(char playerID)

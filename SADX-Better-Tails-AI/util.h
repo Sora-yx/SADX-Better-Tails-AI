@@ -24,6 +24,7 @@ bool isCharSelActive();
 bool isRandoActive();
 bool isUIScale();
 bool isMultiEnabled();
+bool isMPMod();
 bool IsPathExist(const std::string& s);
 void ResetPlayerLook(uint8_t pnum);
 

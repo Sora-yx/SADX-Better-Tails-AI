@@ -227,7 +227,6 @@ void TailsAI_Main_R(task* obj) {
 		}
 	}
 
-
 	TailsAI_Main_t.Original(obj);
 }
 
@@ -241,7 +240,7 @@ void AI_Init(const HelperFunctions& helperFunctions) {
 
 	if (!isRandoActive()) 
 	{
-		if (isCharSelActive())
+		if (isCharSelActive() && !isMPMod())
 			WriteCall((void*)0x415A25, LoadCharacter_r);
 		else
 			LoadCharacter_t.Hook(LoadCharacterAndAI);
