@@ -150,17 +150,31 @@ void Load2PTails_r() {
 	return;
 }
 
+void CheckAndLoadAI()
+{
+	if (!isAIActive && (CurrentCharacter != Characters_Sonic || isCharSelActive()))
+	{
+		Load2PTails_r();
+	}
+}
+
 void LoadCharacterAndAI() 
 {
 	if (isFlyTravel)
 		CheckAndLoadMapPVM();
 
-	if (isCharSelActive())
-	{
-		return LoadCharacter();
-	}
-
 	LoadCharacter_t.Original();
+
+	CheckAndLoadAI();
+}
+
+void LoadCharacter_r()
+{
+	if (isFlyTravel)
+		CheckAndLoadMapPVM();
+
+	LoadCharacter_Orgin();
+	CheckAndLoadAI();
 }
 
 void MilesAI_OnFrames(taskwk* data, unsigned char aiID) { //Only run when TailsAI_Main is active
@@ -228,7 +242,7 @@ void AI_Init(const HelperFunctions& helperFunctions) {
 	if (!isRandoActive()) 
 	{
 		if (isCharSelActive())
-			WriteCall((void*)0x415A25, LoadCharacterAndAI);
+			WriteCall((void*)0x415A25, LoadCharacter_r);
 		else
 			LoadCharacter_t.Hook(LoadCharacterAndAI);
 

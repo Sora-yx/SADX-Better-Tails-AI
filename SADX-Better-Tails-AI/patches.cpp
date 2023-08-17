@@ -199,7 +199,60 @@ void SetCharaInfo(task* obj, int i)
 	return;
 }
 
-void __cdecl LoadCharacter_r()
+
+int GetRaceWinnerPlayer_r() 
+{
+	unsigned char ID = getAI_ID();
+
+	if (ID > 0 && CurrentCharacter != Characters_Tails && playertwp[ID] != nullptr) {
+		if (playertwp[ID]->charID == Characters_Tails) {
+			return 1;
+		}
+	}
+
+	return RaceWinnerPlayer;
+}
+
+void FixTailsAI_Train(int ID, void* a2, int a3, void* a4)
+{
+	DisableTailsAICol(AIIndex);
+	moveAItoPlayer(AIIndex);
+
+	PlaySound(ID, a2, a3, a4);
+}
+
+void __cdecl FixTailsAI_ECAreaTransition(unsigned __int8 playerNum, char action)
+{
+	ForcePlayerAction(playerNum, action);
+	moveAItoPlayer(AIIndex);
+}
+
+void Fix_AIPos_ActTransition()
+{
+	moveAItoPlayer(AIIndex);
+	ResetMilesAI(AIIndex, 24);
+}
+
+void __cdecl PositionPlayer_r(Uint8 charIndex, float x, float y, float z)
+{
+	PositionPlayer_t.Original(charIndex, x, y, z);
+
+	if (!charIndex && CurrentLevel >= LevelIDs_StationSquare)
+		moveAItoPlayer(AIIndex);
+}
+
+void __cdecl LeaveSnowBoard(uint8_t pnum, char action)
+{
+	if (isAIActive)
+	{
+		ForcePlayerAction(AIIndex, action);
+	}
+
+	return ForcePlayerAction(pnum, action);
+}
+
+//charsel Compatibility
+void __cdecl LoadCharacter_Orgin()
 {
 	task* p1 = nullptr;
 
@@ -264,57 +317,6 @@ void __cdecl LoadCharacter_r()
 			SetCharaInfo(p1, i);
 		}
 	}
-}
-
-int GetRaceWinnerPlayer_r() 
-{
-	unsigned char ID = getAI_ID();
-
-	if (ID > 0 && CurrentCharacter != Characters_Tails && playertwp[ID] != nullptr) {
-		if (playertwp[ID]->charID == Characters_Tails) {
-			return 1;
-		}
-	}
-
-	return RaceWinnerPlayer;
-}
-
-void FixTailsAI_Train(int ID, void* a2, int a3, void* a4)
-{
-	DisableTailsAICol(AIIndex);
-	moveAItoPlayer(AIIndex);
-
-	PlaySound(ID, a2, a3, a4);
-}
-
-void __cdecl FixTailsAI_ECAreaTransition(unsigned __int8 playerNum, char action)
-{
-	ForcePlayerAction(playerNum, action);
-	moveAItoPlayer(AIIndex);
-}
-
-void Fix_AIPos_ActTransition()
-{
-	moveAItoPlayer(AIIndex);
-	ResetMilesAI(AIIndex, 24);
-}
-
-void __cdecl PositionPlayer_r(Uint8 charIndex, float x, float y, float z)
-{
-	PositionPlayer_t.Original(charIndex, x, y, z);
-
-	if (!charIndex && CurrentLevel >= LevelIDs_StationSquare)
-		moveAItoPlayer(AIIndex);
-}
-
-void __cdecl LeaveSnowBoard(uint8_t pnum, char action)
-{
-	if (isAIActive)
-	{
-		ForcePlayerAction(AIIndex, action);
-	}
-
-	return ForcePlayerAction(pnum, action);
 }
 
 void AI_Patches() 

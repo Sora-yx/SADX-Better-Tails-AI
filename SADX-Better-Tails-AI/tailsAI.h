@@ -63,7 +63,7 @@ enum milesAI_CustomAction
 extern int rngDeathZoneRescue;
 extern int rngRegularDeathRescue;
 
-void __cdecl LoadCharacter_r();
+
 void CheckMilesBossRescue(unsigned char ID);
 
 int CheckTailsAI_R(void); //Tails flag spawn allowed
