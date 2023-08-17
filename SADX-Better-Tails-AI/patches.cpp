@@ -3,6 +3,7 @@
 static FunctionHook<void, int> LoadCharacterBoss_t(LoadCharacterBoss);
 static FunctionHook<void, int> Ev_Load2_t(EV_Load2);
 static FunctionHook<void, Uint8, float, float, float> PositionPlayer_t(PositionPlayer);
+static FunctionHook<int> GetRaceWinnerPlayer_t(GetRaceWinnerPlayer);
 
 void __cdecl DisableTailsAI_Controller(Uint8 index)
 {
@@ -14,7 +15,7 @@ void __cdecl EnableTailsAI_Controller(Uint8 index)
 	ControllerEnabled[index] = 1;
 }
 
-unsigned char getAI_ID() 
+unsigned char getAI_ID()
 {
 	if (!playertwp[AIIndex])
 		return 0;
@@ -26,7 +27,7 @@ unsigned char getAI_ID()
 	return 0;
 }
 
-void RemoveAttackSolidColFlags(uint8_t pID) 
+void RemoveAttackSolidColFlags(uint8_t pID)
 {
 	if (!playertwp[pID] || EV_MainThread_ptr || CharacterBossActive || AIIndex > 1)
 		return;
@@ -43,7 +44,7 @@ void RemoveAttackSolidColFlags(uint8_t pID)
 	}
 }
 
-void RestorePlayerCollision(unsigned char ID) 
+void RestorePlayerCollision(unsigned char ID)
 {
 	if (!playertwp[ID])
 		return;
@@ -52,9 +53,9 @@ void RestorePlayerCollision(unsigned char ID)
 
 	if (data->cwp)
 	{
-		if (data->cwp->nbInfo) 
+		if (data->cwp->nbInfo)
 		{
-			for (int8_t i = 0; i < data->cwp->nbInfo; i++) 
+			for (int8_t i = 0; i < data->cwp->nbInfo; i++)
 			{
 				playertwp[ID]->cwp->info[i].damage |= 0x20u; //Restore damage on other players
 				playertwp[ID]->cwp->info[i].push |= 0x1u; //Restore push flag on other players
@@ -76,7 +77,7 @@ void __cdecl LoadCharacterBoss_r(int boss_id)
 	DeleteMilesAI();
 	LoadCharacterBoss_t.Original(boss_id);
 
-	for (uint8_t i = 0; i < MaxPlayers; i++) 
+	for (uint8_t i = 0; i < MaxPlayers; i++)
 	{
 		RestorePlayerCollision(i);
 	}
@@ -115,7 +116,7 @@ void moveAItoPlayer(unsigned char playerID, float posX, float posZ) {
 	}
 }
 
-bool isPlayerUsingSnowboard() 
+bool isPlayerUsingSnowboard()
 {
 	if (CurrentCharacter == Characters_Sonic && playertwp[0]->mode >= 62 && playertwp[0]->mode <= 68)
 		return true;
@@ -125,7 +126,7 @@ bool isPlayerUsingSnowboard()
 
 //Fix AI Start Position in hub world
 
-void FixAIHubTransition() 
+void FixAIHubTransition()
 {
 	ForcePlayerAction(0, 0x18);
 
@@ -146,7 +147,7 @@ void FixAIHubTransition()
 	return;
 }
 
-void FixAIHubTransition2() 
+void FixAIHubTransition2()
 {
 	HudDisplayRingTimeLife_Check();
 
@@ -188,7 +189,7 @@ void GetPlayerSidePos(NJS_VECTOR* v1, taskwk* a2, float m)
 	}
 }
 
-void SetCharaInfo(task* obj, int i) 
+void SetCharaInfo(task* obj, int i)
 {
 	obj->twp->charID = (char)CurrentCharacter;
 	obj->twp->pNum = i;
@@ -200,17 +201,21 @@ void SetCharaInfo(task* obj, int i)
 }
 
 
-int GetRaceWinnerPlayer_r() 
+int GetRaceWinnerPlayer_r()
 {
-	unsigned char ID = getAI_ID();
+	if (!isMultiEnabled())
+	{
+		unsigned char ID = getAI_ID();
 
-	if (ID > 0 && CurrentCharacter != Characters_Tails && playertwp[ID] != nullptr) {
-		if (playertwp[ID]->charID == Characters_Tails) {
-			return 1;
+		if (ID > 0 && CurrentCharacter != Characters_Tails && playertwp[ID] != nullptr) {
+			if (playertwp[ID]->charID == Characters_Tails) 
+			{
+				return 1;
+			}
 		}
 	}
 
-	return RaceWinnerPlayer;
+	return GetRaceWinnerPlayer_t.Original();
 }
 
 void FixTailsAI_Train(int ID, void* a2, int a3, void* a4)
@@ -319,9 +324,9 @@ void __cdecl LoadCharacter_Orgin()
 	}
 }
 
-void AI_Patches() 
+void AI_Patches()
 {
-	WriteJump(GetRaceWinnerPlayer, GetRaceWinnerPlayer_r); //fix wrong victory pose for Tails AI.
+	GetRaceWinnerPlayer_t.Hook(GetRaceWinnerPlayer_r);
 	//delete Tails AI when a cutscene start
 	Ev_Load2_t.Hook(FreeNpcMilesPlayerTask_r);
 	//re create Tails AI after a cutscene ends.
