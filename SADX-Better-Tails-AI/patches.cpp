@@ -84,7 +84,8 @@ void __cdecl LoadCharacterBoss_r(int boss_id)
 }
 
 //teleport AI to Player
-void moveAItoPlayer(unsigned char playerID) {
+void moveAItoPlayer(unsigned char playerID) 
+{
 	if (isAIActive)
 	{
 		if (isP1AndTailsAIEnabled(playerID))
@@ -96,6 +97,8 @@ void moveAItoPlayer(unsigned char playerID) {
 				p2->pos = UnitMatrix_GetPoint_Player(&p1->pos, &p1->ang, -7.0f, 0.0f, 5.0f);
 			else
 				p2->pos = UnitMatrix_GetPoint_Player(&p1->pos, &p1->ang, -10.0f, 0.0f, 8.0f);
+
+			p2->pos = p2->pos;
 		}
 	}
 }
@@ -241,8 +244,8 @@ void __cdecl PositionPlayer_r(Uint8 charIndex, float x, float y, float z)
 {
 	PositionPlayer_t.Original(charIndex, x, y, z);
 
-	if (!charIndex && CurrentLevel >= LevelIDs_StationSquare)
-		moveAItoPlayer(AIIndex);
+	if (!charIndex && CurrentLevel >= LevelIDs_StationSquare && playertwp[AIIndex])
+		PositionPlayer(AIIndex, x + 6.0f, y, z);
 }
 
 void __cdecl LeaveSnowBoard(uint8_t pnum, char action)
@@ -347,4 +350,6 @@ void AI_Patches()
 	WriteCall((void*)0x53A29B, FixTailsAI_Train);
 	WriteCall((void*)0x51BDD0, FixTailsAI_ECAreaTransition);
 	WriteCall((void*)0x62EECA, FixTailsAI_ECAreaTransition); //fix hostel respawn pos
+
+
 }

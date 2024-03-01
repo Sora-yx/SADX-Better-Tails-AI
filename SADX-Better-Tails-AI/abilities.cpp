@@ -459,6 +459,30 @@ void AI_SitInCart(taskwk* p1, taskwk* milesData, task* miles)
 	}
 }
 
+void AI_SetVehicleInHub()
+{
+	if (!isAIActive || !playertwp[0] || !playertwp[AIIndex] || playertwp[AIIndex]->counter.b[1] != Characters_Tails)
+		return;
+
+	auto milesData = playertwp[AIIndex];
+	auto miles = playertp[AIIndex];
+
+	moveAItoPlayer(AIIndex, -5.0, 0.0f);
+	ForcePlayerAction(AIIndex, 12);
+	milesData->ang = playertwp[0]->ang;
+	if (CurrentLevel != LevelIDs_StationSquare && CurrentAct != 3)
+		EV_SetAction(miles, &action_m_m9002_miles, &MILES_TEXLIST, 1.0f, 3, 0);
+	disableCol = true;
+	DisableTailsAICol(AIIndex);
+	milesData->mode = AIObjControl;
+}
+
+void __cdecl RotatePlayer_r(unsigned __int8 player, int amount)
+{
+	RotatePlayer(player, amount);
+	AI_SetVehicleInHub();
+}
+
 void AI_HubWorld_Vehicle(taskwk* p1, taskwk* milesData, task* miles)
 {
 	if (!isInHubWorld())
@@ -466,17 +490,6 @@ void AI_HubWorld_Vehicle(taskwk* p1, taskwk* milesData, task* miles)
 		return;
 	}
 
-	if (p1->mode == 20)
-	{
-		moveAItoPlayer(AIIndex, -5.0, 0.0f);
-		ForcePlayerAction(AIIndex, 12);
-		milesData->ang = p1->ang;
-		if (CurrentLevel != LevelIDs_StationSquare && CurrentAct != 3)
-			EV_SetAction(miles, &action_m_m9002_miles, &MILES_TEXLIST, 1.0f, 3, 0);
-		disableCol = true;
-		DisableTailsAICol(AIIndex);
-		milesData->mode = AIObjControl;
-	}
 
 	if (milesData->mode == AIObjControl)
 	{
@@ -611,4 +624,8 @@ void AI_Improvement() {
 
 	ScoreDisplay_main_t.Hook(ScoreDisplayMain_R);
 	execTPCoaster_t.Hook(execTPCoaster_r);
+
+	WriteCall((void*)0x63B59C, RotatePlayer_r);
+	WriteCall((void*)0x539A20, RotatePlayer_r);	
+	WriteCall((void*)0x53DC03, RotatePlayer_r);
 }
