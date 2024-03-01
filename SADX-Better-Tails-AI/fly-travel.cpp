@@ -455,7 +455,8 @@ void TailsAI_GrabDelete(task* obj) {
 	}
 }
 
-void TailsAI_Grab(task* obj) {
+void TailsAI_Grab(task* obj) 
+{
 	auto data = obj->twp;
 	auto p1 = playertwp[0];
 	auto pnum = data->pNum;
@@ -706,21 +707,24 @@ void TailsAI_Landing(task* tp)
 	}
 }
 
-void CheckAndLoadTailsTravelObjects(task* obj) {
+void CheckAndLoadTailsTravelObjects(task* obj) 
+{
 	taskwk* data = obj->twp;
 	char pid = AIIndex;
 
-	if (!playertwp[pid] || !playerpwp[pid])
+	if (!playertwp[pid] || !playerpwp[pid] || !isInHubWorld())
 		return;
 
-	if (data->mode == 0 && isMoving == 1 || data->mode > 0 && isMoving == 2) {
+	if (data->mode == 0 && isMoving == 1 || data->mode > 0 && isMoving == 2) 
+	{
 		if (!TailsGrab && !TailsLanding) {
 			TailsLanding = CreateElementalTask((LoadObj)2, 1, TailsAI_Landing);
 			TailsLanding->twp->pNum = pid;
 		}
 	}
 
-	if (data->mode > 0) {
+	if (data->mode > 0) 
+	{
 		if (isInputModActive() && ControllerPointers[0]->PressedButtons & Buttons_C || !isInputModActive() && ControllerPointers[0]->PressedButtons & Buttons_Y)
 		{
 			if (playertwp[pid]->charID == Characters_Tails && playertwp[pid]->mode < 3 && playertwp[0]->mode < 3) {
