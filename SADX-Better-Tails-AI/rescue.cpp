@@ -273,10 +273,11 @@ bool BannedRescueLevel() {
 	return false;
 }
 
-void PlayCharacterDeathSound_r(ObjectMaster* a1, int pid) {
+void PlayCharacterDeathSound_r(ObjectMaster* a1, int pid) 
+{
 	unsigned char ID = getAI_ID();
 
-	if (ID == 0 || ID > 0 && (!playertwp[ID] || playertwp[ID]->counter.b[1] != Characters_Tails))
+	if (ID == 0 || ID > 0 && (!playertwp[ID] || playertwp[ID]->counter.b[1] != Characters_Tails) || NPCMilesStandByFlag)
 	{
 		PlayCharacterDeathSound(a1, pid); //kill the player
 		return;
@@ -298,8 +299,6 @@ void PlayCharacterDeathSound_r(ObjectMaster* a1, int pid) {
 	}
 
 	CheckAndCallMilesRescue(ID);
-
-	return;
 }
 
 static void __declspec(naked) PlayCharacterDeathSoundAsm(ObjectMaster* eax, int pid)
@@ -408,7 +407,9 @@ void CheckPlayerDamage(unsigned __int8 player) {
 	if (ID == 0)
 		return KillPlayer(player);
 
-	if (isRescued || !playertwp[ID] || playertwp[ID]->counter.b[1] != Characters_Tails || player > 0 || BannedRescueLevel()) {
+	if (isRescued || !playertwp[ID] || playertwp[ID]->counter.b[1] != Characters_Tails || player > 0 || BannedRescueLevel()
+		|| NPCMilesStandByFlag) 
+	{
 		return KillPlayer(player);
 	}
 
