@@ -152,7 +152,7 @@ void Load2PTails_r() {
 
 void CheckAndLoadAI()
 {
-	if (!isAIActive && (CurrentCharacter != Characters_Sonic || isCharSelActive()))
+	if (!isAIActive && (CurrentCharacter != Characters_Sonic || isCharSelActive() || CurrentCharacter == Characters_Sonic && MetalSonicFlag))
 	{
 		Load2PTails_r();
 	}
