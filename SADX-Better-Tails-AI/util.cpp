@@ -41,21 +41,17 @@ bool isRandoActive() {
 
 bool isInputModActive() 
 {
-
-	bool Input = GetModuleHandle(L"input-mod") != nullptr;
-	bool Input2 = GetModuleHandle(L"sadx-input-mod") != nullptr;
+	bool input = GetModuleHandle(L"input-mod") != nullptr;
+	bool input2 = GetModuleHandle(L"sadx-input-mod") != nullptr;
 	bool input3 = false;
 
-	//To do
-	if (HelperFunctionsGlobal.Version >= 17)
+	//To do add SDL2 check with the new loader
+	if (HelperFunctionsGlobal.Version >= 19)
 	{
-		
+		input3 = HelperFunctionsGlobal.LoaderSettings->InputMod;
 	}
 
-	if (Input || Input2)
-		return true;
-
-	return false;
+	return input || input2 || input3;
 }
 
 bool isNewTricksActive() {
